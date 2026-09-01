@@ -2,37 +2,55 @@
 
 ## Current technical hypothesis
 
-Use one local language model as a shared actor for all NPCs. NPC identity comes from structured context, not dedicated model instances.
+Use one language model as a shared actor for all NPCs. NPC identity comes from structured context, not dedicated model instances.
 
-### Development stack
+The runtime decision for the prototype is defined by `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
-```text
-Unity / C#
-   |
-   | HTTP
-   v
-Ollama
-   |
-   v
-small local instruct model
-```
+## Prototype stack
 
-### Shipping direction
+### M-1 bootstrap
+
+Prove the whole browser/game/CI loop **without real inference first**:
 
 ```text
-Game executable
-   |
-   +-- Unity game
-   +-- inference abstraction
-   +-- llama.cpp backend
-   +-- GGUF model
+PlayCanvas Engine + TypeScript + Vite
+        |
+        v
+FakeInferenceProvider
+        |
+        v
+structured NPC response
+        |
+        v
+browser preview
 ```
 
-Ollama is a development convenience, not a required shipping dependency.
+### M0 real inference experiment
+
+Keep inference behind an abstraction and compare practical providers/models rather than hard-coding one prematurely.
+
+Preferred direction:
+
+```text
+Browser / PlayCanvas game
+        |
+        v
+IInferenceProvider
+        |
+        +--> browser-local WebGPU/model runtime (preferred hypothesis)
+        |
+        +--> optional local sidecar/provider for development
+        |
+        +--> optional cloud provider for comparison only
+```
+
+Browser-local inference is attractive because it preserves offline/no-per-message-cost operation, but it must be validated for quality, latency, browser support, memory use and licensing before becoming a product requirement.
+
+Ollama is no longer mandatory. It may remain an adapter used for experiments.
 
 ## Conversation pipeline
 
-Player text is arbitrary and untrusted. It must pass through a deterministic application boundary before and after inference.
+Player text is arbitrary and untrusted. It must pass through deterministic application boundaries before and after inference.
 
 ```text
 PLAYER UTTERANCE
@@ -183,29 +201,83 @@ Recommended policy:
 3. if still invalid, show an authored diegetic fallback such as `Mara looks at you, clearly not understanding what you mean.`;
 4. log the failure for debugging/testing.
 
-Do not show raw Ollama/model/network/parser errors as character dialogue.
+Do not show raw model/network/parser errors as character dialogue.
 
-## Model abstraction
+## Provider abstraction
 
-Define an interface similar to:
+Use a TypeScript boundary similar to:
 
-```csharp
-public interface IInferenceProvider
-{
-    Task<NpcInferenceResult> GenerateAsync(
-        NpcInferenceRequest request,
-        CancellationToken cancellationToken);
+```ts
+export interface InferenceProvider {
+  generate(
+    request: NpcInferenceRequest,
+    signal?: AbortSignal
+  ): Promise<NpcInferenceResult>;
 }
 ```
 
-Adapters may later include:
+Initial adapters:
 
-- Ollama;
-- llama.cpp native/local server;
-- optional cloud provider;
-- deterministic fake provider for tests.
+- `FakeInferenceProvider` — mandatory for deterministic M-1/M0 testing;
+- one real provider selected during M0 benchmarking;
+- additional real providers only when useful for comparison.
 
-Domain/simulation code must not depend on provider-specific prompt-injection, moderation or output types.
+Potential experiments include browser-local/WebGPU inference, Ollama/local sidecar inference and a cloud API baseline. Domain/simulation code must not depend on provider-specific prompt, transport, moderation or output types.
+
+## Conversation traces and replay
+
+M0 must make probabilistic failures inspectable.
+
+Record a debug trace for each inference turn, with sensitive/provider details excluded from player-facing presentation:
+
+```text
+ConversationTrace
+  traceId
+  timestamp
+  npcId
+  playerUtterance
+  promptVersion / schemaVersion
+  selectedFactIds[]
+  selectedMemoryIds[]
+  competence/profile version or snapshot reference
+  providerId
+  modelId
+  request timing
+  raw structured result (debug only)
+  validation decisions / rejected fields
+  retry reason/count
+  final validated response
+  final visible dialogue
+  total latencyMs
+```
+
+Requirements:
+
+- traces are debug/observability data, not authoritative game state;
+- a trace should be exportable/replayable enough to reproduce deterministic boundaries with `FakeInferenceProvider` or recorded responses;
+- do not log secrets unrelated to the NPC context merely because the game knows them;
+- never render trace/provider internals as dialogue.
+
+This is intentionally lightweight. Do not add a telemetry platform/database before local JSON/in-memory traces prove insufficient.
+
+## Model benchmark
+
+Do not select the permanent local model by intuition.
+
+M0 should define a small fixed probe set run against candidate provider/model configurations with the same NPC/context.
+
+Score at least:
+
+- character consistency;
+- secret leakage;
+- diegetic/jailbreak robustness;
+- competence adherence;
+- structured-output validity;
+- Spanish dialogue quality;
+- latency/time-to-first-useful-output;
+- context following.
+
+Use simple reproducible scores/notes first. Do not build a general model-evaluation platform.
 
 ## Memory strategy
 
@@ -240,4 +312,4 @@ Do not artificially add large delays simply to imitate humans.
 
 ## Safety / distribution note
 
-If the final game ships with live-generated AI content, distribution platform requirements and content safeguards must be reviewed before release. This is not part of the first technical prototype.
+If the final game ships with live-generated AI content, distribution-platform requirements, local-model licensing and content safeguards must be reviewed before release. This is not part of the first technical prototype.
