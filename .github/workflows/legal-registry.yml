@@ -1,0 +1,42 @@
+name: Legal registry
+
+on:
+  pull_request:
+    paths:
+      - "legal/**"
+      - "tools/legal/**"
+      - "runtime-assets/**"
+      - "art-source/sources/**"
+      - "package.json"
+      - "package-lock.json"
+      - "pnpm-lock.yaml"
+      - "yarn.lock"
+      - ".github/workflows/legal-registry.yml"
+  push:
+    branches: [main]
+    paths:
+      - "legal/**"
+      - "tools/legal/**"
+      - "runtime-assets/**"
+      - "art-source/sources/**"
+      - "package.json"
+      - "package-lock.json"
+      - "pnpm-lock.yaml"
+      - "yarn.lock"
+      - ".github/workflows/legal-registry.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-third-party:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate registry
+        run: python3 tools/legal/validate_third_party.py
+
+      - name: Verify generated attribution files
+        run: python3 tools/legal/generate_notices.py --check
