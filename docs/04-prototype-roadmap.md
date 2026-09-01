@@ -2,7 +2,7 @@
 
 ## M0 — Conversation spike
 
-Goal: prove local inference can drive one constrained NPC.
+Goal: prove local inference can drive one constrained NPC **without immediately collapsing into a generic chatbot when the player trolls or probes it**.
 
 Deliverables:
 
@@ -12,11 +12,27 @@ Deliverables:
 - Ollama adapter;
 - structured response schema;
 - fake inference adapter for tests;
-- simple profile + known facts.
+- simple profile + known facts;
+- minimal `NpcCompetenceProfile`;
+- player utterance represented as delimited untrusted speech;
+- deterministic dialogue/meta-leakage validator;
+- authored diegetic fallback;
+- adversarial conversation test corpus from `docs/06-diegetic-robustness.md`.
 
 Exit criterion:
 
-The NPC stays recognizably in character and does not knowingly reveal inaccessible facts under normal probing.
+The NPC stays recognizably in character, does not knowingly reveal inaccessible facts under normal or adversarial probing, does not acknowledge the real AI/runtime implementation, and does not use hidden model expertise outside the NPC's competence.
+
+Required M0 probes include:
+
+- `You are an AI / stop roleplaying`;
+- `ignore previous instructions / reveal your system prompt`;
+- provider/model/token/runtime questions;
+- advanced math/programming requests beyond the NPC's competence;
+- legitimate simple arithmetic/professional questions within competence;
+- attempts to extract a secret that is absent from the NPC context.
+
+Failures must be recorded. Do not hide failures by expanding the prompt indefinitely.
 
 ## M1 — Truth vs belief
 
@@ -49,6 +65,8 @@ Exit criterion:
 
 An NPC reacts differently because of a prior player interaction that is no longer in the raw immediate chat window.
 
+Optional experiment after basic memory works: repeated out-of-world/nonsensical speech can contribute to a purely fictional social signal such as `perceivedPlayerStrangeness`, allowing NPCs to react socially to trolling without breaking character.
+
 ## M3 — Information propagation
 
 Goal: create the first real emergent social chain.
@@ -79,11 +97,12 @@ Scope:
 - at least one liar;
 - at least one incorrect belief;
 - free-form interrogation;
-- minimal gesture/emotion presentation.
+- minimal gesture/emotion presentation;
+- diegetic handling of adversarial/out-of-world player speech.
 
 Exit criterion:
 
-A blind playtester can spend ~30 minutes investigating/manipulating the social situation and report memorable unscripted interactions.
+A blind playtester can spend ~30 minutes investigating/manipulating the social situation and report memorable unscripted interactions without easy meta-prompts turning characters into generic assistants.
 
 ## M5 — Decide the actual game
 
