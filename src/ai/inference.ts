@@ -1,16 +1,16 @@
-export interface NpcInferenceRequest {
+export type NpcInferenceRequest = {
   npcId: string;
   playerUtterance: string;
-}
+};
 
-export interface NpcInferenceResponse {
+export type NpcInferenceResponse = {
   schemaVersion: 1;
   dialogue: string;
   emotion: 'neutral';
   gesture: 'none';
   intent: 'continue';
-}
+};
 
-export interface InferenceProvider {
+export type InferenceProvider = {
   generate(request: NpcInferenceRequest): Promise<NpcInferenceResponse>;
-}
+};
