@@ -9,7 +9,32 @@
       "version": "v4",
       "sourceUrl": "https://github.com/actions/checkout",
       "licenseName": "MIT License",
-      "licenseUrl": "https://github.com/actions/checkout/blob/main/LICENSE",
+      "licenseUrl": "https://github.com/actions/checkout/blob/v4/LICENSE",
+      "reviewStatus": "removed",
+      "releaseAllowed": false,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [],
+      "notes": "Previously used by the legal CI workflow during initial repository setup; replaced by actions/checkout v7 before Bootstrap merge.",
+      "evidence": [
+        "legal/licenses/github-actions-checkout-v4-MIT.txt",
+        "https://github.com/actions/checkout/blob/v4/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "github-actions-checkout-v7",
+      "type": "software",
+      "name": "actions/checkout",
+      "creator": "GitHub, Inc. and contributors",
+      "version": "v7",
+      "sourceUrl": "https://github.com/actions/checkout",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/checkout/blob/v7/LICENSE",
       "reviewStatus": "approved",
       "releaseAllowed": true,
       "attributionRequired": false,
@@ -19,12 +44,253 @@
       "redistribution": "not_applicable",
       "aiProcessing": "not_applicable",
       "usedIn": [
-        ".github/workflows/legal-registry.yml"
+        ".github/workflows/legal-registry.yml",
+        ".github/workflows/bootstrap.yml"
       ],
-      "notes": "Build-time GitHub Actions checkout step. The project invokes the action in CI and does not ship or redistribute the action code as part of the game.",
+      "notes": "CI-only checkout action; not shipped with the game. v7 is the current stable major adopted for the Bootstrap.",
       "evidence": [
-        "legal/licenses/github-actions-checkout-v4-MIT.txt",
-        "https://github.com/actions/checkout/blob/main/LICENSE"
+        "legal/licenses/github-actions-checkout-v7-MIT.txt",
+        "https://github.com/actions/checkout/blob/v7/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "playcanvas-engine-2.21.4",
+      "type": "software",
+      "name": "PlayCanvas Engine",
+      "creator": "PlayCanvas Ltd.",
+      "version": "2.21.4",
+      "sourceUrl": "https://github.com/playcanvas/engine/tree/v2.21.4",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/playcanvas/engine/blob/v2.21.4/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "allowed",
+      "redistribution": "allowed",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "src/main.ts"
+      ],
+      "notes": "Runtime 3D engine bundled into the browser build. Preserve the MIT copyright/license notice with distributed copies or substantial portions of the engine.",
+      "evidence": [
+        "legal/licenses/playcanvas-engine-2.21.4-MIT.txt",
+        "https://github.com/playcanvas/engine/blob/v2.21.4/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "playcanvas-eslint-config-3.0.0-beta.8",
+      "type": "tool",
+      "name": "@playcanvas/eslint-config",
+      "creator": "PlayCanvas Ltd.",
+      "version": "3.0.0-beta.8",
+      "sourceUrl": "https://github.com/playcanvas/eslint-config/tree/v3.0.0-beta.8",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/playcanvas/eslint-config/blob/v3.0.0-beta.8/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "eslint.config.mjs"
+      ],
+      "notes": "Development/CI lint configuration only; not shipped as game runtime content.",
+      "evidence": [
+        "https://github.com/playcanvas/eslint-config/blob/v3.0.0-beta.8/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "eslint-9.39.5",
+      "type": "tool",
+      "name": "ESLint",
+      "creator": "OpenJS Foundation and other contributors",
+      "version": "9.39.5",
+      "sourceUrl": "https://github.com/eslint/eslint/tree/v9.39.5",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/eslint/eslint/blob/v9.39.5/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "eslint.config.mjs"
+      ],
+      "notes": "Development/CI lint tool only; not shipped as game runtime content. npm reports the 9.x line as unsupported; retained temporarily because it is the version in the current official PlayCanvas scaffold and is non-blocking for Bootstrap.",
+      "evidence": [
+        "https://github.com/eslint/eslint/blob/v9.39.5/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "typescript-6.0.3",
+      "type": "tool",
+      "name": "TypeScript",
+      "creator": "Microsoft Corporation and contributors",
+      "version": "6.0.3",
+      "sourceUrl": "https://github.com/microsoft/TypeScript/tree/v6.0.3",
+      "licenseName": "Apache License 2.0",
+      "licenseUrl": "https://github.com/microsoft/TypeScript/blob/v6.0.3/LICENSE.txt",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "tsconfig.json"
+      ],
+      "notes": "Development/CI compiler and typechecker only; the TypeScript tool itself is not shipped in the game runtime bundle.",
+      "evidence": [
+        "https://github.com/microsoft/TypeScript/blob/v6.0.3/LICENSE.txt"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "vite-8.2.1",
+      "type": "tool",
+      "name": "Vite",
+      "creator": "VoidZero Inc. and Vite contributors",
+      "version": "8.2.1",
+      "sourceUrl": "https://github.com/vitejs/vite/tree/v8.2.1",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/vitejs/vite/blob/v8.2.1/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "vite.config.ts"
+      ],
+      "notes": "Development/build tool. It produces the static browser bundle but is not itself intentionally shipped as runtime content.",
+      "evidence": [
+        "https://github.com/vitejs/vite/blob/v8.2.1/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "github-actions-setup-node-v7",
+      "type": "software",
+      "name": "actions/setup-node",
+      "creator": "GitHub, Inc. and contributors",
+      "version": "v7",
+      "sourceUrl": "https://github.com/actions/setup-node",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/setup-node/blob/v7/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        ".github/workflows/bootstrap.yml"
+      ],
+      "notes": "CI-only action used to configure Node.js; not shipped with the game.",
+      "evidence": [
+        "https://github.com/actions/setup-node/blob/v7/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "github-actions-configure-pages-v6",
+      "type": "software",
+      "name": "actions/configure-pages",
+      "creator": "GitHub, Inc.",
+      "version": "v6",
+      "sourceUrl": "https://github.com/actions/configure-pages",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/configure-pages/blob/v6/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        ".github/workflows/bootstrap.yml"
+      ],
+      "notes": "CI/deployment-only action used to configure GitHub Pages; not shipped with the game.",
+      "evidence": [
+        "https://github.com/actions/configure-pages/blob/v6/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "github-actions-upload-pages-artifact-v5",
+      "type": "software",
+      "name": "actions/upload-pages-artifact",
+      "creator": "GitHub, Inc.",
+      "version": "v5",
+      "sourceUrl": "https://github.com/actions/upload-pages-artifact",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/upload-pages-artifact/blob/v5/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        ".github/workflows/bootstrap.yml"
+      ],
+      "notes": "CI/deployment-only action used to package the Pages artifact; not shipped with the game.",
+      "evidence": [
+        "https://github.com/actions/upload-pages-artifact/blob/v5/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    },
+    {
+      "id": "github-actions-deploy-pages-v5",
+      "type": "software",
+      "name": "actions/deploy-pages",
+      "creator": "GitHub, Inc.",
+      "version": "v5",
+      "sourceUrl": "https://github.com/actions/deploy-pages",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/deploy-pages/blob/v5/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        ".github/workflows/bootstrap.yml"
+      ],
+      "notes": "CI/deployment-only action used to publish GitHub Pages; not shipped with the game.",
+      "evidence": [
+        "https://github.com/actions/deploy-pages/blob/v5/LICENSE"
       ],
       "lastReviewed": "2026-09-01"
     }
