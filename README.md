@@ -23,7 +23,7 @@ The goal is not “ChatGPT inside an NPC”. The goal is a believable social sim
 Start extremely small:
 
 - PC first.
-- Unity.
+- Runtime/engine choice remains evolvable while the first agentic prototype is proven.
 - One small location, initially a tavern or tiny village slice.
 - 3–5 NPCs.
 - One concrete event or mystery.
@@ -39,18 +39,15 @@ A strong success criterion is that, after ~30 minutes, the system produces socia
 
 ### Development
 
-Use **Ollama** as a local HTTP inference server because it is fast to iterate and free per inference.
+The inference layer must remain replaceable. Local development may use Ollama or another local/browser provider depending on the chosen runtime stack.
 
-Initial model candidates:
-
-- Qwen 3.5 4B-class local model as the default starting point.
-- Phi-class small model as a comparison baseline.
+Initial model target is a small local instruct model around the 4B class, with a deterministic fake provider for tests.
 
 Do not hard-code the project to a single model provider.
 
 ### Shipping direction
 
-For a commercial PC build, prefer embedding local inference using **llama.cpp / GGUF** rather than requiring players to install Ollama.
+Prefer local/offline inference for the commercial PC experience when practical.
 
 Reasons:
 
@@ -79,7 +76,8 @@ Each NPC should be represented by structured state, for example:
 - memories;
 - opinion of the player;
 - willingness to lie;
-- conversational boundaries.
+- conversational boundaries;
+- explicit competence separate from the underlying model's capabilities.
 
 The same loaded language model can play every NPC by receiving different context. We do **not** load one model per NPC.
 
@@ -203,8 +201,6 @@ External low-poly packs are welcome as production shortcuts, but should be treat
 
 > Buy/download geometry; author the art direction.
 
-Current practical candidates include Unity Starter Assets, modular Quaternius-style environment assets, individually licensed Poly Pizza models, Mixamo-style humanoid animations and ProBuilder for deformation/composition. None is a permanent dependency.
-
 Suggested NPC output can include a finite gesture/emotion token which maps to deterministic animation presentation:
 
 - neutral;
@@ -224,9 +220,51 @@ Conversation should remain visually situated in the world: the NPC stays physica
 
 The first deliberate visual style target should remain tiny: one crooked street, one tavern exterior/interior, two neighboring facades, 2–3 representative NPCs and a short first-person conversation.
 
-See **`docs/07-visual-direction.md`** for the detailed visual bible, art-asset strategy, ten agent rules and style-target acceptance questions.
+See **`docs/07-visual-direction.md`** for the detailed visual bible.
 
 A fallback lower-scope direction remains 2D/2.5D exploration with large illustrated portraits during dialogue if first-person 3D production proves too expensive.
+
+## Agentic asset production
+
+The project should support a cloud-first workflow in which the human does **not** routinely import assets by hand in a desktop editor.
+
+Ideal flow:
+
+```text
+Human finds/buys/provides asset source if needed
+        |
+        v
+art-source intake / source manifest
+        |
+        v
+Technical Art Director agent
+ inspect -> select -> normalize -> adapt -> validate
+        |
+        v
+runtime-assets/
+        |
+        v
+playable preview
+```
+
+Rules:
+
+- glTF 2.0 / GLB is the default portable 3D interchange/runtime format unless a concrete constraint requires otherwise;
+- source packs require provenance/license metadata;
+- agents never bypass purchase/login/access controls;
+- only the subset required by the current issue should enter production;
+- raw source archives should normally stay out of ordinary Git history;
+- runtime assets must not depend on accidental local-only paths;
+- asset packs are adapted to the visual bible rather than shipped with untouched default styling;
+- headless/repeatable conversion is preferred so routine production can be performed by agents in cloud environments.
+
+See **`docs/09-asset-pipeline.md`** for the normative asset ingestion contract. Use `.github/ISSUE_TEMPLATE/asset-import.md` for concrete asset-import work.
+
+## Agentic studio workflow
+
+Specialized repository agents live under `.github/agents/`. The studio defaults to one bounded issue with one accountable owner agent, followed by QA and human playtest/review.
+
+See **`docs/08-agent-studio-operating-model.md`**.
 
 ## Non-goals for the first prototype
 
@@ -238,3 +276,4 @@ A fallback lower-scope direction remains 2D/2.5D exploration with large illustra
 - realistic graphics;
 - voice synthesis;
 - lip sync;
+- a giant generic asset-processing framework before real asset imports justify it;
