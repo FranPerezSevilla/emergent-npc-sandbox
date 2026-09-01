@@ -17,8 +17,11 @@ Before changing code or design, read:
 5. `docs/04-prototype-roadmap.md`
 6. `docs/05-open-questions.md`
 7. `docs/06-diegetic-robustness.md`
+8. `docs/07-visual-direction.md`
 
 `docs/06-diegetic-robustness.md` is normative for any work touching player-to-NPC conversation, prompt/context construction, inference output, NPC capabilities or dialogue presentation.
+
+`docs/07-visual-direction.md` is the current visual north star for any work touching environments, characters, materials, lighting, camera/dialogue framing or art asset selection. It is intentionally designed to prevent drift into generic medieval low-poly.
 
 ## Agent priorities
 
@@ -34,6 +37,7 @@ In order:
 8. Model NPC competence separately from the underlying model's capabilities.
 9. Optimize prompts/context only after behavior can be inspected and tested.
 10. Do not build generic RPG systems unless a current experiment requires them.
+11. When visual work is required, preserve the gothic-expressionist low-poly shape language and spend custom effort on NPC identity, composition, materials and lighting rather than generic asset production.
 
 ## Hard architecture rules
 
@@ -56,6 +60,21 @@ In order:
 - Obvious meta leakage must be intercepted before presentation; use at most one constrained retry/rewrite, then a deterministic diegetic fallback.
 - Prompt resistance is not an authorization boundary. Withhold secrets/privileged information from context rather than instructing the model not to reveal them.
 
+## Visual rules for agent work
+
+When touching final-target visuals:
+
+- do not default to bright/saturated generic low-poly fantasy;
+- do not copy distinctive characters/sets/props from a specific copyrighted reference;
+- preserve tall/narrow, crooked, asymmetric gothic-expressionist shape language;
+- favor cold/desaturated exteriors and warmer intimate interiors;
+- treat asset packs as raw geometry, not final art direction;
+- recompose/reproportion/rematerial key visible assets;
+- prioritize NPC silhouette/head/pose and conversation staging over environment micro-detail;
+- use body/head gesture vocabulary before complex facial rigs;
+- preserve first-person readability and navigation despite distortion;
+- follow `docs/07-visual-direction.md` for the full rationale and style-target acceptance questions.
+
 ## Prototype constraints
 
 Assume initially:
@@ -68,9 +87,13 @@ Assume initially:
 - one location;
 - one incident/mystery;
 - text input and text response;
+- first-person presentation;
+- stylized low-poly visuals when art is required;
 - no combat;
 - no voice;
 - no lip sync.
+
+Do not spend time polishing an entire village before the core conversation loop works. The first deliberate visual style target is only the small street + tavern + neighboring facades + 2–3 NPC setup defined in `docs/07-visual-direction.md`.
 
 ## Suggested code boundaries
 
@@ -146,6 +169,12 @@ When considering an anti-trolling/jailbreak rule, also ask:
 
 Prefer diegetic reactions over generic refusals.
 
+When considering visual work, ask:
+
+> Does this make the place and the person more memorable during social interaction, or is it generic asset-pack polish?
+
+Prefer silhouette, staging, lighting and NPC identity over detail for detail's sake.
+
 ## Documentation discipline
 
-When an architectural choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture.
+When an architectural or visual choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture or silently drift away from the current visual north star.
