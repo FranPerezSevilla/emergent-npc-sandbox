@@ -1,16 +1,31 @@
-export type NpcInferenceRequest = {
-  npcId: string;
-  playerUtterance: string;
+export type InferenceRole = 'system' | 'user' | 'assistant';
+
+export type InferenceMessage = {
+  role: InferenceRole;
+  content: string;
 };
 
-export type NpcInferenceResponse = {
-  schemaVersion: 1;
-  dialogue: string;
-  emotion: 'neutral';
-  gesture: 'none';
-  intent: 'continue';
+export type InferenceProviderRequest = {
+  messages: InferenceMessage[];
+  maxTokens: number;
+  temperature: number;
+};
+
+export type InferenceProviderResult = {
+  text: string;
+  providerId: string;
+  modelId: string;
+  latencyMs: number;
+};
+
+export type InferenceLoadProgress = {
+  progress?: number;
+  text: string;
 };
 
 export type InferenceProvider = {
-  generate(request: NpcInferenceRequest): Promise<NpcInferenceResponse>;
+  readonly providerId: string;
+  readonly modelId: string;
+  initialize?(onProgress?: (progress: InferenceLoadProgress) => void): Promise<void>;
+  generate(request: InferenceProviderRequest): Promise<InferenceProviderResult>;
 };

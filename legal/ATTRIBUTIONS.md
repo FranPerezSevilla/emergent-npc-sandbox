@@ -4,6 +4,18 @@
 
 ## Software & runtimes
 
+### @mlc-ai/web-llm
+
+- Creator/provider: MLC community and contributors
+- Registry ID: `webllm-0.2.82`
+- License/terms: Apache License 2.0
+- Source: https://github.com/mlc-ai/web-llm/tree/v0.2.82
+- License/terms URL: https://github.com/mlc-ai/web-llm/blob/v0.2.82/LICENSE
+- Review status: approved
+- Attribution required: no
+- Used in: `package.json`, `src/ai/webllm-inference-provider.ts`, `src/ai/webllm-worker.ts`
+- Notes: Browser-local inference runtime pinned exactly for M0. Apache-2.0 was verified at the v0.2.82 source tag. Runtime is bundled with the browser application; preserve applicable Apache license/notice obligations.
+
 ### actions/checkout
 
 - Creator/provider: GitHub, Inc. and contributors
@@ -125,3 +137,17 @@
 - Attribution required: no
 - Used in: `package.json`, `vite.config.ts`
 - Notes: Development/build tool. It produces the static browser bundle but is not itself intentionally shipped as runtime content.
+
+## AI models
+
+### Qwen3-0.6B q4f16_1 (MLC)
+
+- Creator/provider: Qwen Team / MLC community
+- Registry ID: `qwen3-0.6b-q4f16-1-mlc`
+- License/terms: Quantized artifact license pending explicit verification; base Qwen3-0.6B is Apache License 2.0
+- Source: https://huggingface.co/mlc-ai/Qwen3-0.6B-q4f16_1-MLC
+- License/terms URL: https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/LICENSE
+- Review status: pending
+- Attribution required: no
+- Used in: `src/ai/webllm-inference-provider.ts`
+- Notes: M0 model candidate. The MLC model card identifies this as the q4f16_1 quantization of Qwen3-0.6B and explicitly targets MLC-LLM/WebLLM. The base Qwen3-0.6B repository is Apache-2.0, but the quantized artifact page does not currently expose an explicit license field in the evidence reviewed, so this entry remains pending rather than inheriting terms by assumption. The project does not commit or redistribute these weights in the Pages artifact; WebLLM downloads them from the upstream model repository into the user browser cache.

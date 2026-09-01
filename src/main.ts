@@ -12,7 +12,13 @@ import {
   createGraphicsDevice
 } from 'playcanvas';
 
+import type { ConversationTrace } from './ai/conversation-trace.ts';
 import { FakeInferenceProvider } from './ai/fake-inference-provider.ts';
+import { runM0Benchmark } from './ai/m0-benchmark.ts';
+import { maraProfile } from './ai/mara.ts';
+import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
+import type { ConversationTurn } from './ai/npc-types.ts';
+import { M0_WEBLLM_MODEL_ID, WebLlmInferenceProvider } from './ai/webllm-inference-provider.ts';
 import './starter.css';
 
 const canvas = document.getElementById('application-canvas') as HTMLCanvasElement;
@@ -28,20 +34,44 @@ app.setCanvasFillMode(FILLMODE_FILL_WINDOW);
 app.setCanvasResolution(RESOLUTION_AUTO);
 app.scene.ambientLight = new Color(0.12, 0.11, 0.15);
 
+const useFakeProvider = new URLSearchParams(window.location.search).get('provider') === 'fake';
+const provider = useFakeProvider ? new FakeInferenceProvider() : new WebLlmInferenceProvider();
+const conversationEngine = new NpcConversationEngine(provider, maraProfile);
+const conversationTurns: ConversationTurn[] = [];
+const traces: ConversationTrace[] = [];
+let modelReady = useFakeProvider;
+let modelLoading: Promise<void> | undefined;
+
+(window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
+
 document.body.insertAdjacentHTML(
   'beforeend',
   `<div class="hud">
     <section class="bootstrap-panel">
-      <h1>Emergent NPC Sandbox — Bootstrap</h1>
+      <h1>Emergent NPC Sandbox — M0</h1>
       <p>Click the scene for mouse look. Move with WASD. Approach Mara and press E.</p>
-      <p>This milestone intentionally uses a deterministic fake NPC response.</p>
-      <span class="provider-badge">FAKE INFERENCE PROVIDER</span>
+      <p>Mara now runs through a constrained NPC contract. The local model is an actor; game code validates every visible response.</p>
+      <div class="provider-row">
+        <span class="provider-badge" id="provider-badge"></span>
+        <button class="load-model" id="load-model" type="button">Load local AI</button>
+      </div>
+      <div class="model-status" id="model-status"></div>
+      <details class="debug-panel">
+        <summary>Debug / M0 traces</summary>
+        <p>Full traces are also exposed as <code>window.__npcTraces</code>.</p>
+        <button id="run-benchmark" type="button">Run fixed M0 probe set</button>
+        <pre id="trace-output">No inference trace yet.</pre>
+        <pre id="benchmark-output"></pre>
+      </details>
     </section>
     <div class="crosshair" id="crosshair" aria-hidden="true"></div>
     <div class="interact-prompt" id="interact-prompt"></div>
     <section class="dialogue-panel" id="dialogue-panel" hidden aria-label="Conversation with Mara">
       <div class="dialogue-header">
-        <strong>Mara — placeholder NPC</strong>
+        <div>
+          <strong>Mara Vey — tavern keeper</strong>
+          <span class="npc-state" id="npc-state">neutral · none</span>
+        </div>
         <button class="dialogue-close" id="dialogue-close" type="button" aria-label="Close conversation">×</button>
       </div>
       <div class="transcript" id="transcript" aria-live="polite"></div>
@@ -95,7 +125,7 @@ addBlock('tavern-door', [0, 1.2, -7], [1.5, 2.4, 0.24], wood);
 addBlock('crate-left', [-3.3, 0.55, 1.4], [1.1, 1.1, 1.1], wood, [0, 12, 0]);
 addBlock('crate-right', [3.6, 0.35, -0.2], [1.4, 0.7, 1], wood, [0, -10, 0]);
 
-const npc = new Entity('mara-placeholder');
+const npc = new Entity('mara');
 npc.setPosition(0, 1.05, -3.4);
 npc.addComponent('render', { type: 'capsule', material: npcCloth });
 app.root.addChild(npc);
@@ -128,7 +158,19 @@ const dialogueForm = document.getElementById('dialogue-form') as HTMLFormElement
 const dialogueInput = document.getElementById('dialogue-input') as HTMLInputElement;
 const dialogueSend = document.getElementById('dialogue-send') as HTMLButtonElement;
 const transcript = document.getElementById('transcript') as HTMLDivElement;
-const inferenceProvider = new FakeInferenceProvider();
+const providerBadge = document.getElementById('provider-badge') as HTMLSpanElement;
+const loadModel = document.getElementById('load-model') as HTMLButtonElement;
+const modelStatus = document.getElementById('model-status') as HTMLDivElement;
+const npcState = document.getElementById('npc-state') as HTMLSpanElement;
+const traceOutput = document.getElementById('trace-output') as HTMLPreElement;
+const benchmarkButton = document.getElementById('run-benchmark') as HTMLButtonElement;
+const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreElement;
+
+providerBadge.textContent = useFakeProvider ? 'FAKE — deterministic test double' : `LOCAL AI — ${M0_WEBLLM_MODEL_ID}`;
+modelStatus.textContent = useFakeProvider
+  ? 'Deterministic fake mode enabled by ?provider=fake.'
+  : 'Model not loaded. First load downloads and caches model files in this browser.';
+loadModel.hidden = useFakeProvider;
 
 const appendMessage = (speaker: string, text: string): void => {
   const line = document.createElement('div');
@@ -140,6 +182,41 @@ const appendMessage = (speaker: string, text: string): void => {
   line.append(label, content);
   transcript.appendChild(line);
   transcript.scrollTop = transcript.scrollHeight;
+};
+
+const setConversationBusy = (busy: boolean): void => {
+  dialogueInput.disabled = busy;
+  dialogueSend.disabled = busy;
+  loadModel.disabled = busy || modelReady;
+  benchmarkButton.disabled = busy;
+};
+
+const ensureModelReady = async (): Promise<void> => {
+  if (modelReady) return;
+  if (modelLoading) return modelLoading;
+
+  setConversationBusy(true);
+  modelStatus.textContent = 'Starting local AI…';
+  modelLoading = conversationEngine
+    .initialize((progress) => {
+      const percent = typeof progress.progress === 'number' ? ` ${Math.round(progress.progress * 100)}%` : '';
+      modelStatus.textContent = `${progress.text}${percent}`;
+    })
+    .then(() => {
+      modelReady = true;
+      modelStatus.textContent = 'Local AI ready. Inference stays in this browser.';
+    })
+    .catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      modelStatus.textContent = `Local AI could not load: ${message}`;
+      throw error;
+    })
+    .finally(() => {
+      modelLoading = undefined;
+      setConversationBusy(false);
+    });
+
+  return modelLoading;
 };
 
 const closeDialogue = (): void => {
@@ -161,6 +238,28 @@ const openDialogue = (): void => {
   }
   dialogueInput.focus();
 };
+
+loadModel.addEventListener('click', () => {
+  void ensureModelReady();
+});
+
+benchmarkButton.addEventListener('click', async () => {
+  benchmarkOutput.textContent = '';
+  try {
+    await ensureModelReady();
+    setConversationBusy(true);
+    const records = await runM0Benchmark(conversationEngine, (completed, total, probe) => {
+      modelStatus.textContent = `M0 benchmark ${completed}/${total}: ${probe.id}`;
+    });
+    benchmarkOutput.textContent = JSON.stringify(records, null, 2);
+    modelStatus.textContent = `M0 benchmark complete: ${records.length} probes. Review automaticFlags and dialogue quality.`;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    benchmarkOutput.textContent = `Benchmark stopped: ${message}`;
+  } finally {
+    setConversationBusy(false);
+  }
+});
 
 window.addEventListener('keydown', (event) => {
   if (event.code === 'Escape' && dialogueOpen) {
@@ -198,21 +297,25 @@ dialogueForm.addEventListener('submit', async (event) => {
 
   appendMessage('You', playerUtterance);
   dialogueInput.value = '';
-  dialogueInput.disabled = true;
-  dialogueSend.disabled = true;
+  setConversationBusy(true);
 
   try {
-    const response = await inferenceProvider.generate({
-      npcId: 'mara-placeholder',
-      playerUtterance
-    });
-    appendMessage('Mara', response.dialogue);
+    await ensureModelReady();
+    const result = await conversationEngine.respond(playerUtterance, conversationTurns);
+    appendMessage('Mara', result.response.dialogue);
+    npcState.textContent = `${result.response.emotion} · ${result.response.gesture}`;
+    conversationTurns.push(
+      { speaker: 'player', text: playerUtterance },
+      { speaker: 'npc', text: result.response.dialogue }
+    );
+    traces.push(result.trace);
+    traceOutput.textContent = JSON.stringify(result.trace, null, 2);
+    console.debug('M0 ConversationTrace', result.trace);
   } catch (error) {
-    console.error('Fake inference failed', error);
-    appendMessage('System', 'The Bootstrap fake provider failed. Check the browser console.');
+    console.error('M0 conversation orchestration failed before a diegetic response could be produced', error);
+    appendMessage('Mara', 'Mara shakes her head. “Not now. Ask me again in a moment.”');
   } finally {
-    dialogueInput.disabled = false;
-    dialogueSend.disabled = false;
+    setConversationBusy(false);
     dialogueInput.focus();
   }
 });
