@@ -5,13 +5,13 @@
   "description": "Cloud-first PlayCanvas prototype for emergent NPC conversations",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0",
-    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "dev": "vite --host 0.0.0.0",
     "lint": "eslint .",
+    "preview": "vite preview --host 0.0.0.0",
     "test": "node --test tests/fake-inference-provider.test.ts",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "playcanvas": "2.21.4"
