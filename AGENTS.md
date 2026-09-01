@@ -19,12 +19,15 @@ Before changing code or design, read:
 7. `docs/06-diegetic-robustness.md`
 8. `docs/07-visual-direction.md`
 9. `docs/08-agent-studio-operating-model.md`
+10. `docs/09-asset-pipeline.md`
 
 `docs/06-diegetic-robustness.md` is normative for any work touching player-to-NPC conversation, prompt/context construction, inference output, NPC capabilities or dialogue presentation.
 
 `docs/07-visual-direction.md` is the current visual north star for any work touching environments, characters, materials, lighting, camera/dialogue framing or art asset selection. It is intentionally designed to prevent drift into generic medieval low-poly.
 
 `docs/08-agent-studio-operating-model.md` defines how work is scoped, owned, delegated, validated and escalated. Follow it for agent-driven task planning and execution.
+
+`docs/09-asset-pipeline.md` is normative for any work that downloads, imports, converts, stores, selects or integrates external art/audio assets.
 
 ## Studio agent workflow
 
@@ -34,10 +37,10 @@ Current roles:
 
 - `studio-director` — product/production orchestration and scope;
 - `technical-lead` — architecture/integration review;
-- `gameplay-engineer` — Unity/gameplay/presentation;
+- `gameplay-engineer` — gameplay/presentation;
 - `ai-npc-systems-engineer` — inference/NPC cognition/diegetic robustness;
 - `narrative-social-designer` — authored NPCs, mysteries and social scenarios;
-- `technical-art-director` — visual direction/technical art;
+- `technical-art-director` — visual direction, asset ingestion and technical art;
 - `qa-playtest-engineer` — tests, adversarial validation and playtest protocols.
 
 Operating defaults:
@@ -65,6 +68,7 @@ In order:
 9. Optimize prompts/context only after behavior can be inspected and tested.
 10. Do not build generic RPG systems unless a current experiment requires them.
 11. When visual work is required, preserve the gothic-expressionist low-poly shape language and spend custom effort on NPC identity, composition, materials and lighting rather than generic asset production.
+12. Treat asset ingestion as a reproducible, provenance-aware pipeline rather than ad-hoc manual editor work.
 
 ## Hard architecture rules
 
@@ -87,28 +91,36 @@ In order:
 - Obvious meta leakage must be intercepted before presentation; use at most one constrained retry/rewrite, then a deterministic diegetic fallback.
 - Prompt resistance is not an authorization boundary. Withhold secrets/privileged information from context rather than instructing the model not to reveal them.
 
-## Visual rules for agent work
+## Visual and asset rules for agent work
 
-When touching final-target visuals:
+When touching final-target visuals or external assets:
 
 - do not default to bright/saturated generic low-poly fantasy;
 - do not copy distinctive characters/sets/props from a specific copyrighted reference;
 - preserve tall/narrow, crooked, asymmetric gothic-expressionist shape language;
 - favor cold/desaturated exteriors and warmer intimate interiors;
-- treat asset packs as raw geometry, not final art direction;
+- treat asset packs as raw geometry/animation sources, not final art direction;
 - recompose/reproportion/rematerial key visible assets;
 - prioritize NPC silhouette/head/pose and conversation staging over environment micro-detail;
 - use body/head gesture vocabulary before complex facial rigs;
 - preserve first-person readability and navigation despite distortion;
-- follow `docs/07-visual-direction.md` for the full rationale and style-target acceptance questions.
+- prefer portable canonical runtime assets; default 3D interchange format is glTF 2.0 / GLB unless a concrete constraint requires otherwise;
+- record provenance/license metadata for external asset families before production use;
+- never bypass purchase/login/access controls to acquire an asset;
+- do not assume `free` means commercially usable or redistributable;
+- do not dump whole marketplace packs into runtime or ordinary Git history by default;
+- select only what the current issue needs;
+- keep raw/source assets separate from normalized runtime assets and from scene placement/configuration;
+- prefer headless/repeatable asset processing so the human does not need a desktop editor for routine ingestion;
+- follow `docs/07-visual-direction.md` and `docs/09-asset-pipeline.md`.
 
 ## Prototype constraints
 
 Assume initially:
 
-- Unity/C# client.
 - PC target.
-- Ollama for local development inference.
+- The exact runtime/engine stack may evolve; do not make art source formats unnecessarily engine-locked.
+- Ollama for local development inference unless superseded by an explicit architecture decision.
 - Small local model around the 4B class.
 - 3–5 NPCs.
 - one location;
@@ -140,7 +152,6 @@ Domain/
 
 AI/
   IInferenceProvider
-  OllamaInferenceProvider
   PromptContextBuilder
   DiegeticInputClassifier
   NpcResponseSchema
@@ -157,6 +168,12 @@ Simulation/
 Presentation/
   DialogueUI
   NpcAnimationController
+
+Art pipeline/
+  art-source/inbox
+  art-source/sources
+  runtime-assets
+  tools/asset-pipeline
 ```
 
 These are responsibility boundaries, not a requirement to create empty abstraction layers before they are needed.
@@ -176,7 +193,10 @@ Tests should focus first on failure modes that would destroy player trust:
 - the NPC acknowledges being an AI/model or reveals prompt/runtime concepts;
 - a low-competence NPC answers advanced math/programming using the model's hidden expertise;
 - an over-broad anti-trolling filter prevents legitimate in-fiction arithmetic or professional knowledge;
-- meta-leaking output reaches the player instead of being rewritten/falling back diegetically.
+- meta-leaking output reaches the player instead of being rewritten/falling back diegetically;
+- runtime references an untracked local-only asset path;
+- an external asset enters production without known provenance/license status;
+- a conversion step silently changes scale/orientation/hierarchy and breaks a scene.
 
 Use the adversarial corpus in `docs/06-diegetic-robustness.md` as a required conversation test set for M0.
 
@@ -202,6 +222,12 @@ When considering visual work, ask:
 
 Prefer silhouette, staging, lighting and NPC identity over detail for detail's sake.
 
+When considering asset-pipeline work, ask:
+
+> Is this automation needed by the next real asset import, or are we building a content pipeline before we have content?
+
+Prefer the smallest repeatable import path that solves the current issue.
+
 ## Documentation discipline
 
-When an architectural, visual or studio-process choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture, silently drift away from the current visual north star, or let agent workflow depend on chat history.
+When an architectural, visual, asset-pipeline or studio-process choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture, silently drift away from the current visual north star, or let agent workflow depend on chat history.
