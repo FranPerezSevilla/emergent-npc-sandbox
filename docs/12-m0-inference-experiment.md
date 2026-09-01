@@ -4,30 +4,62 @@
 
 Roadmap milestone: **M0 — One living NPC** (`#1`).
 
-This document records the first real-model experiment. It is evidence and an operating note, not a permanent model commitment.
+This document records real-model experiments. It is evidence and an operating note, not a permanent model commitment.
 
-## Experiment A
+## Runtime baseline
 
 - Runtime: PlayCanvas + TypeScript browser build from Bootstrap.
 - Inference runtime: `@mlc-ai/web-llm` **0.2.82**, pinned exactly.
 - Execution: dedicated browser Web Worker.
-- Model candidate: `Qwen3-0.6B-q4f16_1-MLC`.
 - Context window requested for M0: 2048 tokens.
-- Thinking mode: disabled for the NPC response task.
 - Structured output strategy: prompt for one JSON object, then parse and validate in game code.
 - Real-model path is the default; `?provider=fake` retains a deterministic test/play path.
 
-## Why 0.2.82 instead of blindly tracking latest
+## Experiment A — Qwen3 q4f16_1
+
+Model: `Qwen3-0.6B-q4f16_1-MLC`.
+
+Purpose: start with a small modern Qwen model and measure character quality, first-load cost, memory and latency.
+
+Human playtest evidence on 2026-09-01:
+
+- first download was approximately 15% complete after ~3 minutes, which is unacceptable playtest friction;
+- after adding automatic preload/cache timing, a subsequent attempt progressed much faster but failed after 25.3 seconds with a WebGPU `GPUPipelineError` while compiling `copy_single_page_kernel`;
+- the q4f16_1 model entry requires the WebGPU `shader-f16` feature, so this candidate is not sufficiently compatible with the human test machine/driver path for M0.
+
+Decision: **Experiment A failed the hardware/latency part of the M0 gate. Do not keep trying to make the human test machine run this q4f16 candidate.**
+
+The failure is classified as `latency/hardware`, not as evidence about Mara's character quality.
+
+## Experiment B — Qwen2.5 q4f32_1
+
+Current model candidate: `Qwen2.5-0.5B-Instruct-q4f32_1-MLC`.
+
+Why this candidate:
+
+- it is already in WebLLM's supported prebuilt catalogue;
+- q4f32_1 does **not** require `shader-f16`;
+- the upstream MLC artifact is approximately 290 MB;
+- WebLLM lists roughly 945 MB VRAM for this model;
+- it keeps the experiment in the small Qwen family rather than switching architecture/model family at the same time;
+- base `Qwen/Qwen2.5-0.5B-Instruct` is Apache-2.0 and is suitable as a small multilingual instruction baseline.
+
+Unlike Qwen3, Qwen2.5 has no thinking mode to disable, so M0 does not send the Qwen3-specific `enable_thinking` option.
+
+Experiment B must answer, in order:
+
+1. Does it initialize successfully on the human test browser/GPU?
+2. Is first-load and warm-cache latency tolerable enough to iterate?
+3. Are free-form Spanish responses usable?
+4. Does Mara stay in character and survive the fixed robustness/competence probes?
+
+Do not move to a larger model until Experiment B is actually playable and the fixed probes show a model-capability limitation.
+
+## Why WebLLM 0.2.82 instead of blindly tracking latest
 
 The current M0 experiment deliberately pins WebLLM rather than using a floating range. During implementation review, a reported regression beginning in 0.2.83 described WebGPU device hangs with Qwen3 on some integrated GPUs while 0.2.82 remained unaffected for the reported cases.
 
 This is not evidence that 0.2.82 is universally safe. It is a bounded experimental choice that should be revisited only when the current gate gives us a reason.
-
-## Why Qwen3-0.6B first
-
-M0 is testing whether the architecture can produce a convincing constrained character at acceptable browser latency. Starting with a small model makes download, memory and latency costs visible without prematurely assuming that a larger model is required.
-
-If the fixed probe set shows that 0.6B is systematically too weak, the next comparison should reuse the exact same authored NPC, prompt contract, validators and probes with a larger compatible candidate such as the 1.7B class. Do not change several variables at once.
 
 ## Character under test: Mara Vey
 
@@ -92,6 +124,8 @@ Each real turn records enough evidence to distinguish:
 
 The current prototype exposes traces through the in-game debug panel and `window.__npcTraces`.
 
+Load/cache timing is exposed through `window.__npcLoadMetrics`.
+
 ## Fixed probe set
 
 The browser includes a repeatable M0 benchmark covering:
@@ -111,11 +145,12 @@ The runner records full responses/traces and a few deterministic warning flags. 
 ## Legal/provenance state
 
 - WebLLM 0.2.82: exact source license verified as Apache-2.0 and registered as approved.
-- Base `Qwen/Qwen3-0.6B`: Apache-2.0 verified.
-- `mlc-ai/Qwen3-0.6B-q4f16_1-MLC`: model card verifies that it is the MLC q4f16_1 quantization and intended for WebLLM, but the reviewed artifact page does not expose an explicit license of its own. The project registry therefore keeps this exact quantized artifact **pending / not release-approved** instead of assuming terms.
-- The Pages build does not contain model weights; WebLLM fetches the upstream model artifact into browser cache at runtime.
+- Experiment A base `Qwen/Qwen3-0.6B`: Apache-2.0 verified; its exact MLC q4f16_1 artifact remains preserved in the registry as an unsuccessful experiment rather than silently erased.
+- Experiment B base `Qwen/Qwen2.5-0.5B-Instruct`: Apache-2.0 verified.
+- The exact `mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC` artifact must be registered separately and conservatively if its artifact page does not expose explicit terms; do not inherit the base-model license by assumption.
+- The Pages build does not contain model weights; WebLLM fetches upstream model artifacts into browser cache at runtime.
 
-This uncertainty must be resolved before treating this exact model artifact as a production/release dependency.
+Any unresolved artifact-license uncertainty must be resolved before treating a model as a production/release dependency.
 
 ## M0 decision rule
 

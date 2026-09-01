@@ -8,7 +8,9 @@ import type {
   InferenceProviderResult
 } from './inference.ts';
 
-export const M0_WEBLLM_MODEL_ID = 'Qwen3-0.6B-q4f16_1-MLC';
+// M0 compatibility candidate: q4f32 avoids the shader-f16 requirement that failed
+// on the first human playtest GPU while keeping the model/download small enough to test.
+export const M0_WEBLLM_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f32_1-MLC';
 
 export class WebLlmInferenceProvider implements InferenceProvider {
   readonly providerId = 'webllm';
@@ -45,10 +47,7 @@ export class WebLlmInferenceProvider implements InferenceProvider {
       stream: false,
       max_tokens: request.maxTokens,
       temperature: request.temperature,
-      top_p: 0.9,
-      extra_body: {
-        enable_thinking: false
-      }
+      top_p: 0.9
     });
     const content = completion.choices[0]?.message.content;
 
