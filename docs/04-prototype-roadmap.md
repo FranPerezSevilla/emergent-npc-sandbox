@@ -1,27 +1,56 @@
 # Prototype Roadmap
 
-## M0 — Conversation spike
+## M-1 — Cloud playable bootstrap
 
-Goal: prove local inference can drive one constrained NPC **without immediately collapsing into a generic chatbot when the player trolls or probes it**.
+Goal: prove the project can be built, changed by agents and playtested by the human entirely through the repository/browser workflow before adding real AI complexity.
 
 Deliverables:
 
-- Unity scene with player movement or minimal interaction shell;
-- one NPC;
-- text input/output;
-- Ollama adapter;
+- PlayCanvas Engine + TypeScript + Vite scaffold using the official code-first workflow;
+- first-person starter or equivalent minimal movement shell;
+- one placeholder NPC/interactable object;
+- minimal text interaction UI;
+- deterministic `FakeInferenceProvider` returning a valid structured NPC response;
+- basic typecheck/lint/test/build commands;
+- GitHub Actions build validation;
+- static browser deployment/preview path suitable for human playtesting without a local engine/editor;
+- PlayCanvas agent skills retained/installed for compatible coding agents;
+- licensing registry updated for actual adopted dependencies.
+
+Exit criterion:
+
+An agent can change the repository, CI produces a valid web build, and the human can open a browser URL, walk to the placeholder NPC, type something and see a deterministic fake NPC response without installing PlayCanvas/Unity locally.
+
+Do not add a real LLM/model merely to complete M-1.
+
+## M0 — Conversation spike
+
+Goal: prove real inference can drive one constrained NPC **without immediately collapsing into a generic chatbot when the player trolls or probes it**.
+
+Depends on M-1.
+
+Deliverables:
+
+- one authored NPC in the PlayCanvas browser prototype;
+- free-form text input/output;
+- provider-agnostic `InferenceProvider` boundary;
+- deterministic fake/recorded provider for tests;
+- one real inference provider/model configuration for the experiment;
 - structured response schema;
-- fake inference adapter for tests;
 - simple profile + known facts;
 - minimal `NpcCompetenceProfile`;
 - player utterance represented as delimited untrusted speech;
 - deterministic dialogue/meta-leakage validator;
 - authored diegetic fallback;
-- adversarial conversation test corpus from `docs/06-diegetic-robustness.md`.
+- lightweight `ConversationTrace`/replay/debug output;
+- adversarial conversation test corpus from `docs/06-diegetic-robustness.md`;
+- small repeatable model/provider benchmark covering quality, robustness and latency.
+
+Preferred real-provider hypothesis is browser-local/WebGPU inference because it best matches the cloud/browser workflow and no-per-message-cost goal. It is an experiment, not an assumption: another provider may be used as a baseline or fallback if measured browser-local behavior is not adequate.
 
 Exit criterion:
 
-The NPC stays recognizably in character, does not knowingly reveal inaccessible facts under normal or adversarial probing, does not acknowledge the real AI/runtime implementation, and does not use hidden model expertise outside the NPC's competence.
+The NPC stays recognizably in character, does not knowingly reveal inaccessible facts under normal or adversarial probing, does not acknowledge the real AI/runtime implementation, does not use hidden model expertise outside the NPC's competence, and failures can be diagnosed from traces rather than guessed from visible dialogue alone.
 
 Required M0 probes include:
 
@@ -44,7 +73,7 @@ Deliverables:
 - Belief;
 - NPC-specific context filtering;
 - two NPCs with contradictory beliefs;
-- debug inspector showing truth and each NPC's beliefs.
+- browser-accessible debug inspector showing truth and each NPC's beliefs.
 
 Exit criterion:
 
@@ -59,7 +88,7 @@ Deliverables:
 - structured memories;
 - simple trust/suspicion relationship values;
 - relevant memory retrieval;
-- persistence through save/reload if cheap enough.
+- persistence through browser reload/save if cheap enough.
 
 Exit criterion:
 
@@ -89,7 +118,7 @@ Goal: determine whether this is fun.
 
 Scope:
 
-- one atmospheric low-poly location;
+- one atmospheric gothic-expressionist low-poly location playable in browser;
 - 3–5 NPCs;
 - one authored incident;
 - relationships among NPCs;
