@@ -45,7 +45,7 @@ May implement when a task is fundamentally architectural, but should prefer dele
 
 Owns:
 
-- Unity/C# gameplay implementation;
+- gameplay implementation for the current runtime stack;
 - first-person interaction;
 - dialogue UI and interaction shell;
 - scene/gameplay state integration;
@@ -57,7 +57,7 @@ Owns:
 Owns:
 
 - inference provider abstraction;
-- Ollama/llama.cpp integration boundaries;
+- local/cloud inference integration boundaries;
 - prompt/context construction;
 - structured output contracts;
 - `WorldFact` / `Belief` / `Memory` / competence integration;
@@ -84,13 +84,17 @@ This role authors game data/specification rather than replacing deterministic si
 Owns:
 
 - maintaining the visual language in `docs/07-visual-direction.md`;
-- asset-kit selection and adaptation rules;
+- the external asset ingestion contract in `docs/09-asset-pipeline.md`;
+- asset-kit selection, provenance and adaptation rules;
+- source -> canonical runtime asset normalization;
 - modular environment/character pipeline;
 - shaders/material strategy;
 - lighting/fog/presentation experiments;
 - ensuring prototypes do not drift into generic medieval low-poly aesthetics.
 
 External assets are raw material, never the art direction.
+
+For gated/purchased assets, the human acquires the legal access once; after the source is available, the Technical Art Director should own selection, conversion, organization, adaptation and integration wherever tooling permits.
 
 ### 7. QA & Playtest Engineer
 
@@ -151,6 +155,24 @@ Human review / playtest / merge decision
 Update docs + choose next bet
 ```
 
+For asset work the loop becomes:
+
+```text
+Human chooses/acquires source only if required
+        |
+        v
+Technical Art Director
+ inspect/provenance/select/normalize/adapt
+        |
+        v
+Playable preview
+        |
+        v
+Human visual approval
+```
+
+The human should not become the routine asset importer merely because traditional editor workflows expect manual steps.
+
 ## Concurrency rule
 
 Default to **one active implementation issue**.
@@ -180,6 +202,14 @@ Agent-ready issues should contain:
 
 Never assign an agent a goal like `improve the game`, `make AI better` or `polish graphics` without converting it into this contract first.
 
+Asset issues should additionally state:
+
+- source or source-manifest ID;
+- what subset is actually needed;
+- known license/provenance status;
+- expected visual adaptation;
+- whether the source is public, human-provided or gated.
+
 ## PR contract
 
 Every implementation PR should explain:
@@ -192,7 +222,9 @@ Every implementation PR should explain:
 - known limitations/failures;
 - docs changed because an assumption became a real decision.
 
-Agents must not hide failed tests, model regressions or subjective uncertainty behind a polished summary.
+For external assets, also include the relevant source manifest/provenance update and note any attribution/release obligation.
+
+Agents must not hide failed tests, model regressions, license ambiguity or subjective uncertainty behind a polished summary.
 
 ## Decision ownership
 
@@ -206,7 +238,9 @@ Agents may recommend, but the human owner decides:
 - commercial positioning;
 - accepting scope expansion;
 - merging risky architectural changes;
-- abandoning a failed experiment.
+- abandoning a failed experiment;
+- purchasing/accepting gated third-party asset licenses;
+- proceeding when an external asset license is genuinely ambiguous.
 
 ### Agent-autonomous decisions
 
@@ -216,7 +250,9 @@ Within an accepted issue, agents may normally decide:
 - straightforward implementation details;
 - test structure;
 - small refactors required by the issue;
-- naming consistent with repository conventions.
+- naming consistent with repository conventions;
+- which files from an approved asset pack are actually needed;
+- routine conversion/normalization details that preserve intended appearance and portability.
 
 ### Escalate instead of silently deciding
 
@@ -228,7 +264,9 @@ Record/escalate choices that would:
 - change supported platform/hardware assumptions;
 - materially expand scope;
 - permanently change the visual direction;
-- require paid infrastructure/services.
+- require paid infrastructure/services;
+- create new redistribution/license obligations;
+- require a manual desktop-art step to become part of the normal pipeline.
 
 ## Documentation model
 
@@ -248,9 +286,10 @@ Prefer:
 - one measurable latency improvement;
 - one reproducible failure fixed;
 - one validated art target;
+- one correctly imported/adapted asset actually used in that target;
 - one meaningful playtest observation;
 
-over a large amount of framework code or documentation with no new evidence.
+over a large amount of framework code, bulk asset ingestion or documentation with no new evidence.
 
 ## Current recommended usage
 
@@ -259,6 +298,6 @@ For the current M0/M1 phase:
 - Start with **Studio Director** when the next task is vague.
 - Assign implementation to **Gameplay Engineer** or **AI & NPC Systems Engineer**.
 - Use **Narrative & Social Simulation Designer** to author the smallest test scenario/data.
-- Bring in **Technical Art Director** only when validating the visual target, not while core conversation is broken.
+- Bring in **Technical Art Director** only when validating the visual target or integrating an actually-needed asset pack, not while core conversation is broken.
 - Run **QA & Playtest Engineer** before declaring the issue/milestone complete.
 - Use **Technical Lead** for integration/architecture review, not as a mandatory approval layer for every tiny change.
