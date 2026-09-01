@@ -10,6 +10,8 @@ The two central architectural invariants are:
 
 For any work involving conversation, prompt/context construction, NPC capabilities or inference output, read `docs/06-diegetic-robustness.md` before coding.
 
+For any work involving environments, characters, materials, lighting, animation presentation, first-person dialogue framing or art asset selection, read `docs/07-visual-direction.md` before implementation. The current visual north star is gothic-expressionist low-poly: tall/narrow/crooked silhouettes, deliberate asymmetry, cold/desaturated exteriors, warm intimate interiors and strong NPC silhouette/body acting. Do not silently replace this with generic medieval low-poly.
+
 Do not implement:
 
 - unrestricted LLM world mutation;
@@ -20,7 +22,10 @@ Do not implement:
 - generic `as an AI...` refusals;
 - blanket math/keyword blockers;
 - NPC answers that use underlying model expertise outside the character's competence;
-- raw model/provider errors as dialogue.
+- raw model/provider errors as dialogue;
+- final-target scenes made by dropping recognizable asset-pack prefabs unchanged;
+- realistic/AAA human rendering, complex mocap or production lip sync for the prototype;
+- direct imitation of distinctive characters, sets, costumes or props from a specific copyrighted visual reference.
 
 Prefer:
 
@@ -32,8 +37,15 @@ Prefer:
 - deterministic action and dialogue validation;
 - one constrained rewrite maximum for meta leakage;
 - authored in-fiction fallback after repeated invalid output;
-- fake/recorded inference responses for deterministic adversarial tests.
+- fake/recorded inference responses for deterministic adversarial tests;
+- commodity art assets used as raw geometry;
+- authored composition, proportions, materials, lighting and NPC identity;
+- silhouette before texture detail;
+- body/head acting before facial rig complexity;
+- one tiny visual style target before expanding environment scope.
 
 Use the adversarial corpus and M0 definition of done in `docs/06-diegetic-robustness.md` as acceptance criteria, not as optional hardening.
+
+Use the ten visual rules and style-target acceptance questions in `docs/07-visual-direction.md` for art-facing work.
 
 Favor narrow vertical experiments over broad framework construction.
