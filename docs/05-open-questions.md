@@ -40,15 +40,32 @@ These are intentionally unresolved. Agents should not silently choose permanent 
 
 ## Visuals
 
-Current hypothesis: stylized low-poly first-person.
+Current preferred visual north star is now documented in `docs/07-visual-direction.md`:
 
-Unresolved:
+- first-person;
+- stylized low-poly;
+- gothic-expressionist / melancholic / theatrical;
+- tall, narrow, subtly crooked architecture;
+- cold/desaturated exterior vs warm intimate interior;
+- strong NPC silhouettes and body acting;
+- commodity asset geometry transformed through composition, proportions, materials and lighting.
 
-- exact art style;
-- setting palette;
+This direction is **provisional but intentional**. Agents should test it rather than silently replace it with generic medieval low-poly.
+
+Still unresolved:
+
+- exact setting/lore justification for the architectural style;
+- exact production palette and color values after the first style target;
+- exact shader treatment (standard URP vs custom stylized Shader Graph);
 - modular character production pipeline;
-- facial animation vs head/body gestures only;
-- first-person interaction distance and framing.
+- how much facial animation is worth adding beyond head/body gestures;
+- first-person interaction distance and camera/framing details;
+- which base asset libraries survive after the style target and which should be replaced;
+- how distorted architecture can become before first-person navigation/readability suffers;
+- whether the final game should remain predominantly dusk/night or support a broader day/night range;
+- whether the 2D/2.5D fallback is ever needed if 3D production cost is too high.
+
+The first style-target experiment should answer the acceptance questions in `docs/07-visual-direction.md` before expanding visual scope.
 
 ## Commercial / platform
 
