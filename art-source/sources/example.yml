@@ -2,6 +2,8 @@
 # Never invent license metadata. If uncertain, block/escalate the import.
 
 id: example-asset-pack
+# Must reference the authoritative entry in legal/third-party.json when this source reaches production use.
+third_party_id: example-asset-pack
 name: Example Asset Pack
 provider: Example Provider
 source_url: https://example.invalid/asset
