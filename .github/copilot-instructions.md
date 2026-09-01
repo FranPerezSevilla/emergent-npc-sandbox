@@ -2,7 +2,9 @@
 
 Follow `AGENTS.md` and the documents under `docs/`.
 
-The two central architectural invariants are:
+The prototype runtime is **PlayCanvas Engine + TypeScript + Vite, code-first and browser/cloud-first**. Read `docs/adr/001-playcanvas-cloud-first-runtime.md` before implementation. Do not create a parallel Unity prototype or make the PlayCanvas Editor a required undocumented manual step.
+
+The two central AI architectural invariants are:
 
 > The game simulation owns truth and state; the language model only interprets a character and proposes structured outputs/actions.
 
@@ -10,16 +12,18 @@ The two central architectural invariants are:
 
 For agent-driven planning/execution, read `docs/08-agent-studio-operating-model.md`. Repository custom agents are defined under `.github/agents/`. Prefer one issue, one accountable owner, explicit non-goals and evidence-based acceptance criteria over loosely parallel autonomous work.
 
-For any work involving conversation, prompt/context construction, NPC capabilities or inference output, read `docs/06-diegetic-robustness.md` before coding.
+For conversation/inference work, read `docs/02-ai-architecture.md` and `docs/06-diegetic-robustness.md`. Preserve `FakeInferenceProvider`, provider isolation, deterministic validation and `ConversationTrace` observability. Browser-local/WebGPU inference is a preferred hypothesis for M0, not a conclusion to hard-code before benchmarking.
 
-For any work involving environments, characters, materials, lighting, animation presentation, first-person dialogue framing or art asset selection, read `docs/07-visual-direction.md` before implementation. The current visual north star is gothic-expressionist low-poly: tall/narrow/crooked silhouettes, deliberate asymmetry, cold/desaturated exteriors, warm intimate interiors and strong NPC silhouette/body acting. Do not silently replace this with generic medieval low-poly.
+For environments, characters, materials, lighting, animation presentation, first-person dialogue framing or art asset selection, read `docs/07-visual-direction.md`. Do not silently replace the gothic-expressionist low-poly direction with generic medieval low-poly.
 
-For any work involving downloading, importing, converting, storing or integrating external assets, read `docs/09-asset-pipeline.md`. External asset families require provenance/license tracking; use `art-source/` for intake metadata and `runtime-assets/` for selected normalized production assets.
+For downloading/importing/converting/storing external assets, read `docs/09-asset-pipeline.md`. Prefer GLB/glTF and repo-inspectable/headless workflows so the human owner does not need routine desktop-editor steps.
 
-For any work adding/changing/removing third-party software, AI models/services, assets, animation, music/SFX, fonts, stock content or external tools, read `docs/10-licensing-attribution.md` and update `legal/third-party.json`. The `licensing-attribution-steward` owns the authoritative registry/notices workflow; the agent introducing a resource still owns identifying it and supplying verifiable provenance data.
+For any third-party software, AI models/services, assets, animation, music/SFX, fonts, stock content or external tools, read `docs/10-licensing-attribution.md` and update `legal/third-party.json` with verifiable provenance. Never invent rights/credit metadata.
 
 Do not implement:
 
+- a Unity/C# implementation that contradicts ADR-001;
+- a required manual editor workflow for normal agent → browser iteration;
 - unrestricted LLM world mutation;
 - unlimited transcript memory;
 - direct coupling between domain logic and a single inference provider;
@@ -27,54 +31,35 @@ Do not implement:
 - raw player text as trusted system instructions;
 - generic `as an AI...` refusals;
 - blanket math/keyword blockers;
-- NPC answers that use underlying model expertise outside the character's competence;
+- NPC answers using underlying model expertise outside character competence;
 - raw model/provider errors as dialogue;
-- final-target scenes made by dropping recognizable asset-pack prefabs unchanged;
+- final-target scenes made from untouched recognizable asset-pack defaults;
 - realistic/AAA human rendering, complex mocap or production lip sync for the prototype;
-- direct imitation of distinctive characters, sets, costumes or props from a specific copyrighted visual reference;
-- external assets with unknown provenance silently entering production;
-- bypassing purchase/login/access controls for assets;
-- entire marketplace packs copied into runtime/ordinary Git history when only a small subset is needed;
-- engine-specific asset metadata as the only surviving source when a portable canonical asset is practical;
+- external resources with unknown provenance silently entering production;
 - multiple overlapping implementation agents editing the same subsystem without explicit coordination;
-- vague tasks such as `improve AI`, `polish the game` or `make graphics better` without a bounded issue contract;
-- unregistered production third-party resources;
-- invented license/creator/source/credit metadata;
-- silent approval of ambiguous commercial, redistribution, modification or AI-processing rights.
+- vague tasks like `improve AI`, `polish the game` or `make graphics better` without a bounded issue contract.
 
 Prefer:
 
+- official PlayCanvas code-first scaffolding/starter/agent skills during bootstrap;
+- TypeScript game/domain boundaries independent of rendering/provider details;
+- a deterministic M-1 browser path using `FakeInferenceProvider` before real model integration;
+- browser-playable previews for player-facing work;
 - secrets absent from NPC context when not known;
 - explicit `NpcCompetenceProfile`;
 - delimited untrusted `PlayerUtterance`;
-- optional advisory diegetic classification;
-- versioned structured output;
-- deterministic action and dialogue validation;
-- one constrained rewrite maximum for meta leakage;
-- authored in-fiction fallback after repeated invalid output;
+- versioned structured output and deterministic validation;
+- one constrained rewrite maximum for meta leakage then an authored diegetic fallback;
 - fake/recorded inference responses for deterministic adversarial tests;
-- commodity art assets used as raw geometry/animation sources;
-- source manifests under `art-source/sources/` cross-referenced to stable `legal/third-party.json` IDs;
-- glTF 2.0 / GLB as the default portable 3D format unless a concrete constraint requires otherwise;
-- selected normalized production assets under `runtime-assets/`;
-- headless/repeatable asset conversion instead of routine manual desktop-editor steps;
+- lightweight `ConversationTrace` data for probabilistic failures;
+- fixed probe sets/benchmarks instead of model choice by anecdote;
+- source manifests under `art-source/sources/` cross-referenced to stable legal IDs;
+- glTF 2.0 / GLB for portable 3D assets;
+- headless/repeatable asset conversion;
 - authored composition, proportions, materials, lighting and NPC identity;
-- silhouette before texture detail;
-- body/head acting before facial rig complexity;
-- one tiny visual style target before expanding environment scope;
-- exact preservation of required credit/NOTICE wording;
 - explicit `pending`/`blocked` rights states instead of guessing;
-- `.github/ISSUE_TEMPLATE/agent-task.md` for agent-ready task definitions;
-- `.github/pull_request_template.md` for evidence-driven completion reports.
+- `.github/ISSUE_TEMPLATE/agent-task.md` and `.github/pull_request_template.md` for bounded work/evidence.
 
-Use the adversarial corpus and M0 definition of done in `docs/06-diegetic-robustness.md` as acceptance criteria, not as optional hardening.
+Run legal registry validation/generation checks whenever third-party records change.
 
-Use the ten visual rules and style-target acceptance questions in `docs/07-visual-direction.md` for art-facing work.
-
-Use the asset ingestion/acceptance contract in `docs/09-asset-pipeline.md` for external content and `docs/10-licensing-attribution.md` for cross-project provenance/license/credit governance.
-
-Run `python3 tools/legal/validate_third_party.py` and `python3 tools/legal/generate_notices.py --check` whenever third-party records change.
-
-Use the operating loop and decision ownership rules in `docs/08-agent-studio-operating-model.md` when coordinating specialist agents.
-
-Favor narrow vertical experiments over broad framework construction.
+Favor playable experiments over broad framework construction.
