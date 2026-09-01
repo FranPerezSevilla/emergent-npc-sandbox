@@ -18,46 +18,74 @@ The important distinction is:
 
 The goal is not “ChatGPT inside an NPC”. The goal is a believable social simulation where information, lies, rumors, secrets, relationships and memories propagate through a small community.
 
+## Prototype runtime — decided
+
+The first playable prototype is **cloud/browser-first using PlayCanvas Engine + TypeScript + Vite**.
+
+See `docs/adr/001-playcanvas-cloud-first-runtime.md`.
+
+Why this stack:
+
+- browser-playable builds/previews;
+- code-first scenes/gameplay that agents can inspect and modify;
+- official PlayCanvas first-person starter and agent skills;
+- no requirement for the human owner to install Unity or maintain ordinary scene changes in a desktop editor;
+- direct fit with GLB/glTF asset ingestion;
+- simple static deployment for rapid playtest loops.
+
+The PlayCanvas Editor may be used when useful, but it is not the authoritative source of truth for routine development.
+
 ## Prototype target
 
 Start extremely small:
 
-- PC first.
-- Runtime/engine choice remains evolvable while the first agentic prototype is proven.
-- One small location, initially a tavern or tiny village slice.
-- 3–5 NPCs.
-- One concrete event or mystery.
-- One hidden truth.
-- Different partial knowledge per NPC.
-- Free-form text conversation.
-- NPC memory and relationship changes.
-- Information transfer between NPCs.
+- PC/browser first;
+- PlayCanvas Engine + TypeScript;
+- one small location, initially a tavern or tiny village slice;
+- 3–5 NPCs;
+- one concrete event or mystery;
+- one hidden truth;
+- different partial knowledge per NPC;
+- free-form text conversation;
+- NPC memory and relationship changes;
+- information transfer between NPCs.
 
 A strong success criterion is that, after ~30 minutes, the system produces social situations or conversations the designer did not script directly, while still respecting the authored world truth.
 
+## Development milestones
+
+Before real inference, **M-1** proves the cloud workflow:
+
+```text
+agent changes repo
+     ↓
+CI tests/build
+     ↓
+web preview
+     ↓
+human opens browser and playtests
+```
+
+M-1 uses a deterministic fake NPC provider so runtime/deployment problems are not confused with LLM problems.
+
+**M0** then adds one real AI-driven NPC, diegetic jailbreak resistance, structured validation, conversation traces and a small model/provider benchmark.
+
+See `docs/04-prototype-roadmap.md`.
+
 ## AI strategy
 
-### Development
+The inference layer remains replaceable.
 
-The inference layer must remain replaceable. Local development may use Ollama or another local/browser provider depending on the chosen runtime stack.
+Initial architecture includes:
 
-Initial model target is a small local instruct model around the 4B class, with a deterministic fake provider for tests.
+- deterministic `FakeInferenceProvider` for tests and M-1;
+- one real provider/model experiment in M0;
+- browser-local/WebGPU inference as the preferred product hypothesis;
+- optional local sidecar/Ollama or cloud providers only when useful for comparison/fallback.
 
-Do not hard-code the project to a single model provider.
+Initial model target remains a small instruct model around the few-billion-parameter class, but no permanent model should be selected before benchmarking character quality, robustness, structured output and latency.
 
-### Shipping direction
-
-Prefer local/offline inference for the commercial PC experience when practical.
-
-Reasons:
-
-- no per-conversation inference bill;
-- offline play;
-- no exposed cloud API key;
-- simpler long-term operating costs;
-- suitable for a game whose core loop depends on frequent dialogue.
-
-Cloud APIs remain a possible optional high-quality mode later, but should not be required for the first architecture.
+Prefer local/offline inference for the commercial PC experience when practical because it avoids per-conversation cost, exposed API keys and mandatory connectivity.
 
 ## Core NPC model
 
@@ -97,13 +125,13 @@ Knowledge:
 - Priest: 40%, suspicion
 ```
 
-A character may tell the truth, lie, omit information or repeat a false rumor. The simulation tracks the provenance and confidence of information independently from objective world truth.
+A character may tell the truth, lie, omit information or repeat a false rumor. The simulation tracks provenance and confidence independently from objective world truth.
 
 This “information as an object” idea is one of the central design pillars.
 
 ## LLM contract
 
-The model should receive a controlled context containing only relevant information and return structured output, e.g.:
+The model receives controlled context and returns structured output, e.g.:
 
 ```json
 {
@@ -119,21 +147,9 @@ The model should receive a controlled context containing only relevant informati
 
 The game validates and applies allowed changes.
 
-The model may **request** actions such as:
-
-- end conversation;
-- walk away;
-- threaten the player;
-- tell another NPC something later;
-- give an item;
-- attack;
-- accuse someone;
-
-But authoritative gameplay systems decide whether those actions are possible.
+The model may request actions such as ending a conversation, walking away, warning another NPC or threatening the player, but authoritative gameplay systems decide whether those actions are possible.
 
 ## Conversation architecture
-
-Conceptually:
 
 ```text
 World state
@@ -151,7 +167,7 @@ Relationship to player
 Player message
        |
        v
-    LLM agent
+    LLM actor
        |
        v
 Structured response
@@ -163,7 +179,7 @@ Validation / game rules
 State changes + visible dialogue
 ```
 
-Avoid dumping the entire world or complete conversation history into every prompt. Retrieval of relevant memories/facts should become a first-class subsystem.
+Avoid dumping the entire world or complete conversation history into every prompt. Retrieval of relevant memories/facts should become a first-class subsystem only as evidence requires it.
 
 ## Possible game directions
 
@@ -177,94 +193,66 @@ The investigation format is currently the strongest prototype because conversati
 
 ## Visual direction
 
-The current preferred direction is **first-person gothic-expressionist low-poly**: a melancholic, theatrical, slightly uncanny world with distorted proportions rather than generic bright medieval low-poly.
+The preferred direction is **first-person gothic-expressionist low-poly**: a melancholic, theatrical, slightly uncanny world with distorted proportions rather than generic bright medieval low-poly.
 
 Core visual principles:
 
-- PC / first person;
-- stylized low-poly 3D;
 - tall, narrow and subtly crooked architecture;
 - exaggerated roofs, long chimneys, irregular windows and compressed streets;
 - silhouette before surface detail;
-- asymmetry without harming navigation/readability;
-- cold/desaturated exteriors vs warmer, intimate interiors;
-- skeletal/graphic vegetation rather than round cheerful foliage;
+- cold/desaturated exteriors vs warmer intimate interiors;
+- skeletal/graphic vegetation;
 - highly recognizable NPC silhouettes, heads and postures;
 - caricature with melancholy rather than chibi/comedy;
 - body/head gestures before complex facial rigs;
-- simple shared materials and strong art-directed lighting;
-- no realistic human rendering, mocap or production lip sync for the prototype.
+- simple materials and strongly art-directed lighting.
 
-Gothic stop-motion works such as `Corpse Bride` are a **mood/shape-language reference only**. The project should translate general qualities—distorted proportions, theatrical asymmetry, melancholy and expressionist silhouettes—into original designs rather than imitate distinctive copyrighted characters, sets or props.
+Gothic stop-motion works such as `Corpse Bride` are a **mood/shape-language reference only**. The project translates general qualities into original designs rather than imitating distinctive copyrighted characters, sets or props.
 
-External low-poly packs are welcome as production shortcuts, but should be treated as **raw geometry**. The identity should come from project-authored composition, reproportioning, palette, materials, lighting and NPC design. The desired rule is:
+External low-poly packs are production shortcuts, not art direction:
 
 > Buy/download geometry; author the art direction.
 
-Suggested NPC output can include a finite gesture/emotion token which maps to deterministic animation presentation:
+Conversation remains visually situated in the world: the NPC stays physically in front of the player rather than being replaced by a giant chatbot window.
 
-- neutral;
-- angry;
-- happy;
-- sad;
-- afraid;
-- nervous;
-- suspicious;
-- embarrassed;
-- look away;
-- cross arms;
-- point;
-- walk away.
-
-Conversation should remain visually situated in the world: the NPC stays physically in front of the player rather than being replaced by a giant chatbot/dialogue window.
-
-The first deliberate visual style target should remain tiny: one crooked street, one tavern exterior/interior, two neighboring facades, 2–3 representative NPCs and a short first-person conversation.
-
-See **`docs/07-visual-direction.md`** for the detailed visual bible.
-
-A fallback lower-scope direction remains 2D/2.5D exploration with large illustrated portraits during dialogue if first-person 3D production proves too expensive.
+See `docs/07-visual-direction.md`.
 
 ## Agentic asset production
 
-The project should support a cloud-first workflow in which the human does **not** routinely import assets by hand in a desktop editor.
-
-Ideal flow:
+The human should not routinely import assets by hand in a desktop editor.
 
 ```text
 Human finds/buys/provides asset source if needed
-        |
-        v
-art-source intake / source manifest
-        |
-        v
+        ↓
+art-source manifest
+        ↓
 Technical Art Director agent
- inspect -> select -> normalize -> adapt -> validate
-        |
-        v
+inspect → select → normalize → adapt → validate
+        ↓
 runtime-assets/
-        |
-        v
+        ↓
+PlayCanvas scene/build
+        ↓
 playable preview
 ```
 
-Rules:
+GLB/glTF is the default portable 3D format. Source packs require provenance/license metadata and only the subset needed by the current issue should enter production.
 
-- glTF 2.0 / GLB is the default portable 3D interchange/runtime format unless a concrete constraint requires otherwise;
-- source packs require provenance/license metadata;
-- agents never bypass purchase/login/access controls;
-- only the subset required by the current issue should enter production;
-- raw source archives should normally stay out of ordinary Git history;
-- runtime assets must not depend on accidental local-only paths;
-- asset packs are adapted to the visual bible rather than shipped with untouched default styling;
-- headless/repeatable conversion is preferred so routine production can be performed by agents in cloud environments.
+See `docs/09-asset-pipeline.md`.
 
-See **`docs/09-asset-pipeline.md`** for the normative asset ingestion contract. Use `.github/ISSUE_TEMPLATE/asset-import.md` for concrete asset-import work.
+## Licensing and attribution
+
+Every external resource actually adopted by the project—software, AI models/services, assets, animations, fonts, music, SFX or tools—must be traceable through `legal/third-party.json`.
+
+The `licensing-attribution-steward` owns registry/notices hygiene; agents introducing a resource must identify it immediately rather than expecting credits to be reconstructed at release time.
+
+See `docs/10-licensing-attribution.md`.
 
 ## Agentic studio workflow
 
 Specialized repository agents live under `.github/agents/`. The studio defaults to one bounded issue with one accountable owner agent, followed by QA and human playtest/review.
 
-See **`docs/08-agent-studio-operating-model.md`**.
+See `docs/08-agent-studio-operating-model.md`.
 
 ## Non-goals for the first prototype
 
@@ -276,4 +264,5 @@ See **`docs/08-agent-studio-operating-model.md`**.
 - realistic graphics;
 - voice synthesis;
 - lip sync;
-- a giant generic asset-processing framework before real asset imports justify it;
+- vector databases or generic multi-agent NPC frameworks before evidence requires them;
+- a giant generic asset-processing framework before real asset imports justify it.
