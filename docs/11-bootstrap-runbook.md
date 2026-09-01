@@ -23,9 +23,11 @@ The Bootstrap intentionally uses a small kinematic first-person controller inste
 Requires Node `>=22.23.2`.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
+
+`package-lock.json` is committed and CI also uses `npm ci`, so clean/cloud installs use the same locked dependency graph.
 
 The Vite server listens on all interfaces so Codespaces/cloud environments can expose it as a forwarded port.
 
@@ -62,7 +64,7 @@ No real model/provider is needed.
 
 Pull requests run deterministic checks/builds.
 
-Pushes to `main` additionally deploy `dist/` through GitHub Pages using the official Pages actions. The first Pages run may expose a repository/account configuration blocker; record that exact blocker instead of adding another hosting platform prematurely.
+Pushes to `main` additionally deploy `dist/` through GitHub Pages using the registered current stable action majors selected during Bootstrap. The first Pages run may expose a repository/account configuration blocker; record that exact blocker instead of adding another hosting platform prematurely.
 
 ## Known Bootstrap limitations
 
@@ -70,7 +72,7 @@ Pushes to `main` additionally deploy `dist/` through GitHub Pages using the offi
 - no jump;
 - no real LLM;
 - no final art/assets;
-- no package lock yet in the first scaffold commit — generate and commit it before declaring the Bootstrap gate complete;
-- Pages URL is only considered proven after a successful `main` deployment and human browser playtest.
+- Pages URL is only considered proven after a successful `main` deployment and human browser playtest;
+- the direct ESLint version currently follows the PlayCanvas scaffold line and npm reports ESLint 9.x as unsupported; this is recorded as non-blocking Bootstrap tooling debt unless it affects deterministic validation.
 
-These are deliberate unless they block the Bootstrap exit gate.
+These are deliberate or explicitly bounded unless they block the Bootstrap exit gate.
