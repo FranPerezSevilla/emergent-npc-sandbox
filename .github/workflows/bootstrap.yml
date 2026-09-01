@@ -13,9 +13,7 @@ on:
       - 'eslint.config.mjs'
       - '.github/workflows/bootstrap.yml'
   push:
-    branches:
-      - main
-      - bootstrap/playcanvas-cloud-loop
+    branches: [main]
     paths:
       - 'src/**'
       - 'tests/**'
@@ -50,7 +48,7 @@ jobs:
         run: npm run check
 
   deploy:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: check
     runs-on: ubuntu-latest
     permissions:
