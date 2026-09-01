@@ -179,19 +179,33 @@ The investigation format is currently the strongest prototype because conversati
 
 ## Visual direction
 
-Preferred current direction:
+The current preferred direction is **first-person gothic-expressionist low-poly**: a melancholic, theatrical, slightly uncanny world with distorted proportions rather than generic bright medieval low-poly.
 
-- PC;
-- first-person;
+Core visual principles:
+
+- PC / first person;
 - stylized low-poly 3D;
-- deliberately limited geometry and simple materials;
-- strong lighting, fog, atmosphere and audio;
-- highly recognizable NPC silhouettes;
-- small reusable gesture/emotion animation set rather than facial realism.
+- tall, narrow and subtly crooked architecture;
+- exaggerated roofs, long chimneys, irregular windows and compressed streets;
+- silhouette before surface detail;
+- asymmetry without harming navigation/readability;
+- cold/desaturated exteriors vs warmer, intimate interiors;
+- skeletal/graphic vegetation rather than round cheerful foliage;
+- highly recognizable NPC silhouettes, heads and postures;
+- caricature with melancholy rather than chibi/comedy;
+- body/head gestures before complex facial rigs;
+- simple shared materials and strong art-directed lighting;
+- no realistic human rendering, mocap or production lip sync for the prototype.
 
-Do **not** target realistic human rendering, mocap or complex lip sync.
+Gothic stop-motion works such as `Corpse Bride` are a **mood/shape-language reference only**. The project should translate general qualities—distorted proportions, theatrical asymmetry, melancholy and expressionist silhouettes—into original designs rather than imitate distinctive copyrighted characters, sets or props.
 
-Suggested NPC output can include a gesture/emotion token which maps to a finite animation catalogue:
+External low-poly packs are welcome as production shortcuts, but should be treated as **raw geometry**. The identity should come from project-authored composition, reproportioning, palette, materials, lighting and NPC design. The desired rule is:
+
+> Buy/download geometry; author the art direction.
+
+Current practical candidates include Unity Starter Assets, modular Quaternius-style environment assets, individually licensed Poly Pizza models, Mixamo-style humanoid animations and ProBuilder for deformation/composition. None is a permanent dependency.
+
+Suggested NPC output can include a finite gesture/emotion token which maps to deterministic animation presentation:
 
 - neutral;
 - angry;
@@ -206,7 +220,13 @@ Suggested NPC output can include a gesture/emotion token which maps to a finite 
 - point;
 - walk away.
 
-A fallback lower-scope direction is 2D/2.5D exploration with large illustrated portraits during dialogue.
+Conversation should remain visually situated in the world: the NPC stays physically in front of the player rather than being replaced by a giant chatbot/dialogue window.
+
+The first deliberate visual style target should remain tiny: one crooked street, one tavern exterior/interior, two neighboring facades, 2–3 representative NPCs and a short first-person conversation.
+
+See **`docs/07-visual-direction.md`** for the detailed visual bible, art-asset strategy, ten agent rules and style-target acceptance questions.
+
+A fallback lower-scope direction remains 2D/2.5D exploration with large illustrated portraits during dialogue if first-person 3D production proves too expensive.
 
 ## Non-goals for the first prototype
 
