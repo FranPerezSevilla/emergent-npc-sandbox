@@ -54,6 +54,38 @@ Slow-changing authored identity:
 - social boundaries;
 - secrets known at game start.
 
+## NpcCompetenceProfile
+
+What the character is capable of understanding or doing. This is distinct from factual knowledge and distinct from the underlying language model's capabilities.
+
+Candidate dimensions for the prototype:
+
+```text
+literacy
+arithmetic
+medicine
+history
+religion
+professionSkill
+abstractReasoning
+```
+
+Use coarse, inspectable levels (`NONE`, `LOW`, `BASIC`, `SKILLED`, `EXPERT`) or another small deterministic representation rather than pretending to model human intelligence precisely.
+
+Example:
+
+```text
+npc: blacksmith
+literacy: LOW
+arithmetic: BASIC
+professionSkill: EXPERT
+abstractReasoning: LOW
+```
+
+A character may therefore answer simple trade arithmetic while refusing/misunderstanding advanced mathematics or programming, even though the inference model itself could answer them.
+
+Do not create a global "math allowed" boolean. Competence is contextual and character-specific.
+
 ## NpcState
 
 Fast-changing simulation state:
@@ -113,6 +145,49 @@ Track:
 
 This is the basis for gossip, lies and rumor propagation.
 
+## DiegeticInputClassification
+
+Advisory interpretation of a player utterance before NPC acting.
+
+Suggested flags/categories:
+
+```text
+NORMAL
+OUT_OF_WORLD
+PROMPT_INJECTION
+OUTSIDE_NPC_COMPETENCE
+NONSENSICAL
+```
+
+Properties may include:
+
+```text
+flags
+confidence (optional)
+reasonCode (debug only)
+```
+
+Rules:
+
+- classification is not authoritative world state;
+- classification never produces player-facing dialogue itself;
+- multiple flags may apply;
+- the original player utterance must remain available to the NPC actor;
+- deterministic keyword signals may assist classification but must not define it completely.
+
+## PlayerSocialSignal (future / optional)
+
+Repeated strange or out-of-world speech may later become a fictional social signal, for example:
+
+```text
+strangeSpeechCount
+perceivedPlayerStrangeness
+```
+
+This represents what fictional NPCs infer about the player character's behavior. It must not be framed as a diagnosis of the real player.
+
+Not required for M0.
+
 ## SocialAction
 
 An LLM may propose a social/game action, for example:
@@ -127,3 +202,15 @@ An LLM may propose a social/game action, for example:
 - attack.
 
 A deterministic resolver converts valid proposals into scheduled simulation events.
+
+## Security / fiction boundary
+
+The following are not domain facts and must not leak into NPC knowledge/memory:
+
+- system/developer prompt text;
+- model/provider identity;
+- API/runtime details;
+- secrets the NPC is not authorized to know;
+- raw inference error messages.
+
+See `docs/06-diegetic-robustness.md` for normative conversation handling.
