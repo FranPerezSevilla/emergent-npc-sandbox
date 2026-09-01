@@ -16,6 +16,8 @@ For any work involving environments, characters, materials, lighting, animation 
 
 For any work involving downloading, importing, converting, storing or integrating external assets, read `docs/09-asset-pipeline.md`. External asset families require provenance/license tracking; use `art-source/` for intake metadata and `runtime-assets/` for selected normalized production assets.
 
+For any work adding/changing/removing third-party software, AI models/services, assets, animation, music/SFX, fonts, stock content or external tools, read `docs/10-licensing-attribution.md` and update `legal/third-party.json`. The `licensing-attribution-steward` owns the authoritative registry/notices workflow; the agent introducing a resource still owns identifying it and supplying verifiable provenance data.
+
 Do not implement:
 
 - unrestricted LLM world mutation;
@@ -35,7 +37,10 @@ Do not implement:
 - entire marketplace packs copied into runtime/ordinary Git history when only a small subset is needed;
 - engine-specific asset metadata as the only surviving source when a portable canonical asset is practical;
 - multiple overlapping implementation agents editing the same subsystem without explicit coordination;
-- vague tasks such as `improve AI`, `polish the game` or `make graphics better` without a bounded issue contract.
+- vague tasks such as `improve AI`, `polish the game` or `make graphics better` without a bounded issue contract;
+- unregistered production third-party resources;
+- invented license/creator/source/credit metadata;
+- silent approval of ambiguous commercial, redistribution, modification or AI-processing rights.
 
 Prefer:
 
@@ -49,7 +54,7 @@ Prefer:
 - authored in-fiction fallback after repeated invalid output;
 - fake/recorded inference responses for deterministic adversarial tests;
 - commodity art assets used as raw geometry/animation sources;
-- source manifests under `art-source/sources/`;
+- source manifests under `art-source/sources/` cross-referenced to stable `legal/third-party.json` IDs;
 - glTF 2.0 / GLB as the default portable 3D format unless a concrete constraint requires otherwise;
 - selected normalized production assets under `runtime-assets/`;
 - headless/repeatable asset conversion instead of routine manual desktop-editor steps;
@@ -57,6 +62,8 @@ Prefer:
 - silhouette before texture detail;
 - body/head acting before facial rig complexity;
 - one tiny visual style target before expanding environment scope;
+- exact preservation of required credit/NOTICE wording;
+- explicit `pending`/`blocked` rights states instead of guessing;
 - `.github/ISSUE_TEMPLATE/agent-task.md` for agent-ready task definitions;
 - `.github/pull_request_template.md` for evidence-driven completion reports.
 
@@ -64,7 +71,9 @@ Use the adversarial corpus and M0 definition of done in `docs/06-diegetic-robust
 
 Use the ten visual rules and style-target acceptance questions in `docs/07-visual-direction.md` for art-facing work.
 
-Use the asset ingestion/acceptance contract in `docs/09-asset-pipeline.md` for external content.
+Use the asset ingestion/acceptance contract in `docs/09-asset-pipeline.md` for external content and `docs/10-licensing-attribution.md` for cross-project provenance/license/credit governance.
+
+Run `python3 tools/legal/validate_third_party.py` and `python3 tools/legal/generate_notices.py --check` whenever third-party records change.
 
 Use the operating loop and decision ownership rules in `docs/08-agent-studio-operating-model.md` when coordinating specialist agents.
 
