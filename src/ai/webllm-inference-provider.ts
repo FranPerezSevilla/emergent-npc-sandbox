@@ -41,7 +41,9 @@ export class WebLlmInferenceProvider implements InferenceProvider {
       max_tokens: request.maxTokens,
       temperature: request.temperature,
       top_p: 0.9,
-      enable_thinking: false
+      extra_body: {
+        enable_thinking: false
+      }
     });
     const content = completion.choices[0]?.message.content;
 
