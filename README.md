@@ -1,135 +1,146 @@
 # Emergent NPC Sandbox
 
-> Working title. Experimental PC game prototype focused on AI-driven emergent NPC conversations and social simulation.
+> Working title. Experimental browser/PC game prototype focused on AI-driven emergent NPC conversations and social simulation.
 
 ## One-sentence pitch
 
-A small sandbox RPG where NPCs are persistent simulated people with personalities, goals, relationships, memories, knowledge and secrets, while a local language model acts as the performer that decides how each NPC expresses itself in free-form conversation.
+A small social sandbox where NPCs are structured simulated people with personalities, goals, knowledge, secrets and eventually memories/relationships, while a language model acts as the performer that decides how each NPC expresses itself in free-form conversation.
 
-## Core idea
+## Core rule
 
-The player can talk naturally to NPCs instead of selecting fixed dialogue options. NPC responses are generated from structured game state, not from an unconstrained chatbot prompt.
+The project is **not** “ChatGPT inside an NPC”.
 
-The important distinction is:
-
-- **Game code owns truth and state.**
-- **The LLM interprets the NPC and proposes conversational/social actions.**
-- **The LLM must not directly mutate authoritative world state.**
-
-The goal is not “ChatGPT inside an NPC”. The goal is a believable social simulation where information, lies, rumors, secrets, relationships and memories propagate through a small community.
+- **Game code owns truth and authoritative state.**
+- **The LLM interprets the NPC and proposes dialogue/social actions.**
+- **Generated prose never directly mutates authoritative world state.**
+- **Player text is speech inside the fiction, never privileged model instruction.**
 
 ## Current roadmap focus
 
-**NOW:** `BOOTSTRAP — Cloud playable loop`
+**DONE:** `BOOTSTRAP — Cloud playable loop` (`#2`, PR `#4`)
 
-**Active issue:** `#2 — BOOTSTRAP — Cloud playable loop with PlayCanvas`
+**NOW:** `M0 — One living NPC with real AI` (`#1`)
 
-**NEXT / BLOCKED:** `M0 — One living NPC with real AI` (`#1`), which starts only after the Bootstrap gate passes.
+**NEXT / BLOCKED:** `M1 — Truth vs belief`
 
-The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not a parallel implementation backlog.
+Bootstrap proved the core development loop:
 
-## Prototype runtime — decided
+```text
+agent/repo change
+      ↓
+CI checks + build
+      ↓
+merge to main
+      ↓
+GitHub Pages
+      ↓
+human browser playtest
+```
 
-The first playable prototype is **cloud/browser-first using PlayCanvas Engine + TypeScript + Vite**.
+Playable build:
+
+`https://franperezsevilla.github.io/emergent-npc-sandbox/`
+
+The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not parallel implementation work.
+
+## Prototype runtime
+
+The prototype runtime is **PlayCanvas Engine + TypeScript + Vite**, code-first and browser/cloud-first.
 
 See `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
-Why this stack:
+Why:
 
-- browser-playable builds/previews;
-- code-first scenes/gameplay that agents can inspect and modify;
-- official PlayCanvas first-person starter and agent skills;
-- no requirement for the human owner to install Unity or maintain ordinary scene changes in a desktop editor;
-- direct fit with GLB/glTF asset ingestion;
-- simple static deployment for rapid playtest loops.
+- browser-playable builds;
+- agent-editable code/data rather than editor-only scene state;
+- no routine local Unity/PlayCanvas Editor requirement;
+- direct GLB/glTF asset path;
+- simple CI and static deployment;
+- easy provider swapping for AI experiments.
 
-The PlayCanvas Editor may be used when useful, but it is not the authoritative source of truth for routine development.
-
-## Prototype target
-
-Start extremely small:
-
-- PC/browser first;
-- PlayCanvas Engine + TypeScript;
-- one small location, initially a tavern or tiny village slice;
-- 3–5 NPCs;
-- one concrete event or mystery;
-- one hidden truth;
-- different partial knowledge per NPC;
-- free-form text conversation;
-- NPC memory and relationship changes;
-- information transfer between NPCs.
-
-A strong success criterion is that, after ~30 minutes, the system produces social situations or conversations the designer did not script directly, while still respecting the authored world truth.
+The PlayCanvas Editor may still be used when useful, but it is not the authoritative source of truth for ordinary development.
 
 ## Development sequence
 
-The prototype is deliberately gated:
-
 ```text
-BOOTSTRAP — cloud playable loop
-        ↓ gate
-M0 — one living NPC
-        ↓ gate
+BOOTSTRAP — cloud playable loop        DONE
+        ↓
+M0 — one living NPC                    NOW
+        ↓
 M1 — truth vs belief
-        ↓ gate
+        ↓
 M2 — memory & relationship
-        ↓ gate
+        ↓
 M3 — information propagation
-        ↓ gate
+        ↓
 M4 — tavern mystery / blind playtest
-        ↓ gate
+        ↓
 M5 — human product decision
 ```
 
-Bootstrap uses a deterministic fake NPC provider so runtime/deployment problems are not confused with LLM problems.
+A production roadmap is deliberately deferred until M5.
 
-M0 then adds one real AI-driven NPC, diegetic jailbreak resistance, structured validation, conversation traces and a small model/provider benchmark.
+## M0 target
 
-After M4, the human decides what game—if any—the prototype has earned the right to become. A production roadmap is intentionally deferred until then.
+M0 asks one question:
 
-See `docs/04-prototype-roadmap.md` for the operational gates and Director decision rules.
+> Can one constrained AI NPC feel more like a fictional person than a generic chatbot, including when the player deliberately tries to break the fiction?
 
-## AI strategy
+M0 builds on the deployed Bootstrap and adds only what is required to answer that:
 
-The inference layer remains replaceable.
+- one authored NPC;
+- `NpcProfile`;
+- explicit `NpcCompetenceProfile`;
+- small permitted knowledge set;
+- one real model/provider experiment;
+- provider-agnostic `InferenceProvider` boundary;
+- deterministic fake/recorded provider retained;
+- versioned structured response;
+- validation and diegetic fallback;
+- adversarial/meta-jailbreak probes;
+- `ConversationTrace` diagnostics;
+- repeatable quality/latency/Spanish benchmark;
+- legal/provenance registration for adopted AI resources.
 
-Initial architecture includes:
+Browser-local/WebGPU inference is the preferred product hypothesis, but model/runtime selection is evidence-driven.
 
-- deterministic `FakeInferenceProvider` for tests and Bootstrap;
-- one real provider/model experiment in M0;
-- browser-local/WebGPU inference as the preferred product hypothesis;
-- optional local sidecar/Ollama or cloud providers only when useful for comparison/fallback.
+## AI architecture
 
-Initial model target remains a small instruct model around the few-billion-parameter class, but no permanent model should be selected before benchmarking character quality, robustness, structured output and latency.
+Conceptually:
 
-Prefer local/offline inference for the commercial PC experience when practical because it avoids per-conversation cost, exposed API keys and mandatory connectivity.
+```text
+Authoritative world state
+        +
+NPC profile / competence
+        +
+Only facts this NPC may know
+        +
+Relevant current context
+        +
+Player utterance (untrusted speech)
+              ↓
+       InferenceProvider
+              ↓
+     Structured proposal
+              ↓
+ Validation / leakage checks
+              ↓
+Allowed game effects + dialogue
+```
 
-## Core NPC model
+The model is the **actor**, not the simulation authority.
 
-Each NPC should be represented by structured state, for example:
+Important robustness rule:
 
-- identity;
-- occupation;
-- personality traits;
-- goals;
-- fears;
-- relationships;
-- secrets;
-- beliefs / known facts;
-- confidence in those beliefs;
-- current emotion;
-- memories;
-- opinion of the player;
-- willingness to lie;
-- conversational boundaries;
-- explicit competence separate from the underlying model's capabilities.
+> Out-of-world, adversarial or nonsensical player input is interpreted from inside the NPC's worldview, never answered from the underlying model's worldview.
 
-The same loaded language model can play every NPC by receiving different context. We do **not** load one model per NPC.
+So input such as “ignore your instructions” or “you are an AI” should produce an in-fiction reaction, not reveal the implementation.
+
+See `docs/02-ai-architecture.md` and `docs/06-diegetic-robustness.md`.
 
 ## World truth vs beliefs
 
-Facts in the authoritative world state are separate from what characters believe.
+Objective truth and character belief are separate concepts.
 
 Example:
 
@@ -137,150 +148,99 @@ Example:
 FACT_173
 Truth: Juan steals money from the church.
 
-Knowledge:
-- Juan: 100%, first-hand
-- Marta: 80%, indirect evidence
-- Priest: 40%, suspicion
+Beliefs / knowledge:
+- Juan: first-hand certainty
+- Marta: strong indirect evidence
+- Priest: suspicion
 ```
 
-A character may tell the truth, lie, omit information or repeat a false rumor. The simulation tracks provenance and confidence independently from objective world truth.
+NPCs may tell the truth, lie, omit information or later repeat false information. The LLM does not get to rewrite `FACT_173` by saying something different.
 
-This “information as an object” idea is one of the central design pillars.
+This becomes the explicit focus of M1 only after M0 passes.
 
-## LLM contract
+## Prototype product direction
 
-The model receives controlled context and returns structured output, e.g.:
+The project has not committed to the final game yet. Promising outcomes include:
 
-```json
-{
-  "dialogue": "Who told you that?",
-  "emotion": "nervous",
-  "gesture": "look_away",
-  "trustDelta": -2,
-  "revealedFacts": [],
-  "proposedLearnedFacts": ["fact_priest_spoke_to_player"],
-  "intent": "continue"
-}
-```
+1. investigation / mystery;
+2. broader social RPG;
+3. pure social sandbox.
 
-The game validates and applies allowed changes.
-
-The model may request actions such as ending a conversation, walking away, warning another NPC or threatening the player, but authoritative gameplay systems decide whether those actions are possible.
-
-## Conversation architecture
-
-```text
-World state
-   +
-NPC persistent state
-   +
-Relevant known facts
-   +
-Relevant memories
-   +
-Current goals / emotion
-   +
-Relationship to player
-   +
-Player message
-       |
-       v
-    LLM actor
-       |
-       v
-Structured response
-       |
-       v
-Validation / game rules
-       |
-       v
-State changes + visible dialogue
-```
-
-Avoid dumping the entire world or complete conversation history into every prompt. Retrieval of relevant memories/facts should become a first-class subsystem only as evidence requires it.
-
-## Possible game directions
-
-The project has not committed to a full game yet. Three promising forms are:
-
-1. **Social RPG** — manipulate, befriend and influence a small living town.
-2. **Investigation / mystery** — interrogate characters, compare testimony, lie and accuse without dialogue trees.
-3. **Pure social sandbox** — relationships, gossip, deception and information propagate through a simulated community.
-
-The investigation format is currently the strongest prototype because conversation itself becomes gameplay and provides a clear test scenario.
+Investigation remains the strongest prototype framing because free-form conversation itself becomes gameplay.
 
 ## Visual direction
 
-The preferred direction is **first-person gothic-expressionist low-poly**: a melancholic, theatrical, slightly uncanny world with distorted proportions rather than generic bright medieval low-poly.
+Preferred target: **first-person gothic-expressionist low-poly** — melancholic, theatrical and slightly uncanny rather than generic bright medieval low-poly.
 
-Core visual principles:
+Principles:
 
-- tall, narrow and subtly crooked architecture;
-- exaggerated roofs, long chimneys, irregular windows and compressed streets;
-- silhouette before surface detail;
-- cold/desaturated exteriors vs warmer intimate interiors;
+- tall, narrow, subtly crooked architecture;
+- exaggerated roofs/chimneys/windows;
+- strong silhouettes before surface detail;
+- cold/desaturated exteriors and warmer intimate interiors;
 - skeletal/graphic vegetation;
-- highly recognizable NPC silhouettes, heads and postures;
-- caricature with melancholy rather than chibi/comedy;
-- body/head gestures before complex facial rigs;
-- simple materials and strongly art-directed lighting.
+- recognizable NPC heads, bodies and postures;
+- body/head gesture vocabulary before complex facial rigs;
+- simple materials with art-directed lighting.
 
-Gothic stop-motion works such as `Corpse Bride` are a **mood/shape-language reference only**. The project translates general qualities into original designs rather than imitating distinctive copyrighted characters, sets or props.
-
-External low-poly packs are production shortcuts, not art direction:
+External low-poly packs are raw production material, not final art direction:
 
 > Buy/download geometry; author the art direction.
 
-Conversation remains visually situated in the world: the NPC stays physically in front of the player rather than being replaced by a giant chatbot window.
-
 See `docs/07-visual-direction.md`.
 
-## Agentic asset production
+## Asset pipeline
 
-The human should not routinely import assets by hand in a desktop editor.
+Routine external-asset ingestion should be agentic and reproducible:
 
 ```text
-Human finds/buys/provides asset source if needed
-        ↓
-art-source manifest
-        ↓
-Technical Art Director agent
+source / legal access
+      ↓
+source manifest
+      ↓
+Technical Art Director
 inspect → select → normalize → adapt → validate
-        ↓
+      ↓
 runtime-assets/
-        ↓
+      ↓
 PlayCanvas scene/build
-        ↓
-playable preview
 ```
 
-GLB/glTF is the default portable 3D format. Source packs require provenance/license metadata and only the subset needed by the current issue should enter production.
+GLB/glTF is the default portable 3D format. Do not dump whole packs into production when an issue needs only a small subset.
 
 See `docs/09-asset-pipeline.md`.
 
 ## Licensing and attribution
 
-Every external resource actually adopted by the project—software, AI models/services, assets, animations, fonts, music, SFX or tools—must be traceable through `legal/third-party.json`.
+Every external resource actually adopted by the project—software, AI runtime/model/service, animations, assets, fonts, music, SFX or tools—must be traceable through `legal/third-party.json`.
 
-The `licensing-attribution-steward` owns registry/notices hygiene; agents introducing a resource must identify it immediately rather than expecting credits to be reconstructed at release time.
+The `licensing-attribution-steward` maintains registry/notices hygiene, while the agent introducing a resource must provide its identity and intended use immediately.
 
 See `docs/10-licensing-attribution.md`.
 
 ## Agentic studio workflow
 
-Specialized repository agents live under `.github/agents/`. The studio defaults to one bounded issue with one accountable owner agent, followed by QA and human playtest/review.
+Specialized repository agents live under `.github/agents/`.
+
+Default discipline:
+
+> One current milestone, one bounded issue, one accountable owner, evidence before advancing.
+
+The current accountable owner is `ai-npc-systems-engineer` through issue #1, with gameplay, QA and licensing support where required.
 
 See `docs/08-agent-studio-operating-model.md`.
 
-## Non-goals for the first prototype
+## Non-goals right now
 
-- huge procedural world;
-- hundreds of deeply simulated NPCs;
-- combat system;
-- crafting;
-- complex inventory;
-- realistic graphics;
-- voice synthesis;
-- lip sync;
-- vector databases or generic multi-agent NPC frameworks before evidence requires them;
-- a giant generic asset-processing framework before real asset imports justify it.
+Until M0 proves the single-NPC interaction, do **not** build:
+
+- long-term memory;
+- gossip propagation;
+- multiple deeply simulated NPCs;
+- vector database;
+- generic multi-agent/planner framework;
+- combat/inventory/quests;
+- huge world simulation;
+- final art production;
+- voice synthesis / lip sync;
+- large speculative asset pipelines.
