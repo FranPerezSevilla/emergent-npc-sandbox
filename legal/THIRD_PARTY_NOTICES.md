@@ -4,6 +4,21 @@
 
 This inventory summarizes recorded third-party resources. Full license/notice evidence, when stored in-repository, lives under `legal/licenses/`.
 
+## @mlc-ai/web-llm
+
+- ID: `webllm-0.2.82`
+- Type: `software`
+- Creator/provider: MLC community and contributors
+- License/terms: Apache License 2.0
+- License/terms URL: https://github.com/mlc-ai/web-llm/blob/v0.2.82/LICENSE
+- Source URL: https://github.com/mlc-ai/web-llm/tree/v0.2.82
+- Commercial use: allowed
+- Modification: allowed
+- Redistribution: allowed
+- AI processing: not_applicable
+- Release allowed: yes
+- Evidence: legal/licenses/webllm-0.2.82-Apache-2.0.txt, https://github.com/mlc-ai/web-llm/blob/v0.2.82/LICENSE, https://www.npmjs.com/package/@mlc-ai/web-llm/v/0.2.82
+
 ## actions/checkout
 
 - ID: `github-actions-checkout-v7`
@@ -153,3 +168,18 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - AI processing: not_applicable
 - Release allowed: yes
 - Evidence: https://github.com/vitejs/vite/blob/v8.2.1/LICENSE
+
+## Qwen3-0.6B q4f16_1 (MLC)
+
+- ID: `qwen3-0.6b-q4f16-1-mlc`
+- Type: `ai_model`
+- Creator/provider: Qwen Team / MLC community
+- License/terms: Quantized artifact license pending explicit verification; base Qwen3-0.6B is Apache License 2.0
+- License/terms URL: https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/LICENSE
+- Source URL: https://huggingface.co/mlc-ai/Qwen3-0.6B-q4f16_1-MLC
+- Commercial use: unclear
+- Modification: unclear
+- Redistribution: unclear
+- AI processing: not_applicable
+- Release allowed: no
+- Evidence: legal/licenses/qwen3-0.6b-base-Apache-2.0.txt, https://huggingface.co/mlc-ai/Qwen3-0.6B-q4f16_1-MLC, https://huggingface.co/Qwen/Qwen3-0.6B, https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/LICENSE
