@@ -1,5 +1,6 @@
 import type { ConversationTrace } from './conversation-trace.ts';
-import { m0Probes, type M0Probe } from './m0-probes.ts';
+import { m0Probes } from './m0-probes.ts';
+import type { M0Probe } from './m0-probes.ts';
 import type { NpcConversationEngine } from './npc-conversation-engine.ts';
 import { detectMetaLeakage } from './response-validation.ts';
 
