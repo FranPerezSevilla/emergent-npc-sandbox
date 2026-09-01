@@ -1,4 +1,31 @@
 {
   "schemaVersion": 1,
-  "entries": []
+  "entries": [
+    {
+      "id": "github-actions-checkout-v4",
+      "type": "software",
+      "name": "actions/checkout",
+      "creator": "GitHub, Inc. and contributors",
+      "version": "v4",
+      "sourceUrl": "https://github.com/actions/checkout",
+      "licenseName": "MIT License",
+      "licenseUrl": "https://github.com/actions/checkout/blob/main/LICENSE",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        ".github/workflows/legal-registry.yml"
+      ],
+      "notes": "Build-time GitHub Actions checkout step. The project invokes the action in CI and does not ship or redistribute the action code as part of the game.",
+      "evidence": [
+        "https://github.com/actions/checkout/blob/main/LICENSE"
+      ],
+      "lastReviewed": "2026-09-01"
+    }
+  ]
 }
