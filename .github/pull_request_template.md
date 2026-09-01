@@ -32,6 +32,24 @@ Closes #
 
 - 
 
+## Third-party / licensing impact
+
+- [ ] No external resource/dependency/model/service/content was added or materially changed
+- [ ] External resource(s) changed and `legal/third-party.json` was updated
+- [ ] Required attribution/notices were regenerated
+- [ ] `python3 tools/legal/validate_third_party.py` passes
+- [ ] `python3 tools/legal/generate_notices.py --check` passes
+
+Registry IDs affected:
+
+- 
+
+Unresolved license/provenance/AI-processing questions:
+
+- None / describe explicitly
+
+<!-- Never invent legal facts. Pending/ambiguous terms must be surfaced rather than silently approved. -->
+
 ## Documentation impact
 
 - [ ] No source-of-truth decision changed
@@ -39,6 +57,6 @@ Closes #
 
 ## Human review needed for
 
-<!-- Note subjective product/art/fun decisions or risky choices that an agent should not self-approve. -->
+<!-- Note subjective product/art/fun decisions, risky architecture, paid services, or legal/commercial ambiguity that an agent should not self-approve. -->
 
 - 
