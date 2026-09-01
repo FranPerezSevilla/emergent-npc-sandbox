@@ -140,14 +140,14 @@
 
 ## AI models
 
-### Qwen3-0.6B q4f16_1 (MLC)
+### Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
 - Creator/provider: Qwen Team / MLC community
-- Registry ID: `qwen3-0.6b-q4f16-1-mlc`
-- License/terms: Quantized artifact license pending explicit verification; base Qwen3-0.6B is Apache License 2.0
-- Source: https://huggingface.co/mlc-ai/Qwen3-0.6B-q4f16_1-MLC
-- License/terms URL: https://huggingface.co/Qwen/Qwen3-0.6B/blob/main/LICENSE
+- Registry ID: `qwen2-5-0-5b-instruct-q4f32-1-mlc`
+- License/terms: Quantized artifact license pending explicit verification; base Qwen2.5-0.5B-Instruct is Apache License 2.0
+- Source: https://huggingface.co/mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC
+- License/terms URL: https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE
 - Review status: pending
 - Attribution required: no
 - Used in: `src/ai/webllm-inference-provider.ts`
-- Notes: M0 model candidate. The MLC model card identifies this as the q4f16_1 quantization of Qwen3-0.6B and explicitly targets MLC-LLM/WebLLM. The base Qwen3-0.6B repository is Apache-2.0, but the quantized artifact page does not currently expose an explicit license field in the evidence reviewed, so this entry remains pending rather than inheriting terms by assumption. The project does not commit or redistribute these weights in the Pages artifact; WebLLM downloads them from the upstream model repository into the user browser cache.
+- Notes: Active M0 compatibility candidate after the q4f16 Qwen3 experiment failed on the human test GPU. WebLLM includes this q4f32_1 model in its prebuilt catalogue without a shader-f16 requirement; the upstream MLC artifact is about 290 MB and WebLLM reports about 945 MB VRAM. Base Qwen/Qwen2.5-0.5B-Instruct is Apache-2.0, but the exact MLC artifact page was not treated as inheriting that license without explicit evidence. The project does not commit or redistribute model weights; WebLLM downloads the upstream artifact into browser cache at runtime.
