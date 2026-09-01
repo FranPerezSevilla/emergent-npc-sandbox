@@ -11,22 +11,25 @@ Build the smallest possible playable experiment that proves or disproves the cor
 Before changing code or design, read:
 
 1. `README.md`
-2. `docs/01-design-pillars.md`
-3. `docs/02-ai-architecture.md`
-4. `docs/03-domain-model.md`
-5. `docs/04-prototype-roadmap.md`
-6. `docs/05-open-questions.md`
-7. `docs/06-diegetic-robustness.md`
-8. `docs/07-visual-direction.md`
-9. `docs/08-agent-studio-operating-model.md`
-10. `docs/09-asset-pipeline.md`
-11. `docs/10-licensing-attribution.md`
+2. `docs/adr/001-playcanvas-cloud-first-runtime.md`
+3. `docs/01-design-pillars.md`
+4. `docs/02-ai-architecture.md`
+5. `docs/03-domain-model.md`
+6. `docs/04-prototype-roadmap.md`
+7. `docs/05-open-questions.md`
+8. `docs/06-diegetic-robustness.md`
+9. `docs/07-visual-direction.md`
+10. `docs/08-agent-studio-operating-model.md`
+11. `docs/09-asset-pipeline.md`
+12. `docs/10-licensing-attribution.md`
+
+`docs/adr/001-playcanvas-cloud-first-runtime.md` is authoritative for the prototype runtime: **PlayCanvas Engine + TypeScript + Vite, code-first and browser/cloud-first**.
 
 `docs/06-diegetic-robustness.md` is normative for any work touching player-to-NPC conversation, prompt/context construction, inference output, NPC capabilities or dialogue presentation.
 
-`docs/07-visual-direction.md` is the current visual north star for any work touching environments, characters, materials, lighting, camera/dialogue framing or art asset selection. It is intentionally designed to prevent drift into generic medieval low-poly.
+`docs/07-visual-direction.md` is the current visual north star for environments, characters, materials, lighting, camera/dialogue framing or art asset selection.
 
-`docs/08-agent-studio-operating-model.md` defines how work is scoped, owned, delegated, validated and escalated. Follow it for agent-driven task planning and execution.
+`docs/08-agent-studio-operating-model.md` defines how work is scoped, owned, delegated, validated and escalated.
 
 `docs/09-asset-pipeline.md` is normative for any work that downloads, imports, converts, stores, selects or integrates external art/audio assets.
 
@@ -40,10 +43,10 @@ Current roles:
 
 - `studio-director` — product/production orchestration and scope;
 - `technical-lead` — architecture/integration review;
-- `gameplay-engineer` — gameplay/presentation;
+- `gameplay-engineer` — PlayCanvas/TypeScript gameplay and presentation;
 - `ai-npc-systems-engineer` — inference/NPC cognition/diegetic robustness;
 - `narrative-social-designer` — authored NPCs, mysteries and social scenarios;
-- `technical-art-director` — visual direction, asset ingestion and technical art;
+- `technical-art-director` — PlayCanvas visual direction, asset ingestion and technical art;
 - `qa-playtest-engineer` — tests, adversarial validation and playtest protocols;
 - `licensing-attribution-steward` — project-wide provenance, licenses, credits, notices and third-party release-readiness.
 
@@ -52,7 +55,7 @@ Operating defaults:
 - one issue = one accountable owner agent;
 - default to one active implementation issue;
 - use specialists only when their expertise materially reduces risk or context switching;
-- the owner agent identifies every external resource it introduces; attribution is not something to reconstruct at the end of development;
+- the owner agent identifies every external resource it introduces;
 - Licensing & Attribution Steward owns the authoritative registry/notice workflow, but does not invent missing legal facts;
 - QA validates acceptance criteria before a milestone is declared complete;
 - Technical Lead review is for cross-cutting/risky changes, not mandatory bureaucracy for every small edit;
@@ -65,19 +68,30 @@ In order:
 
 1. Preserve the separation between **authoritative world state** and **LLM-generated expression**.
 2. Preserve **diegetic robustness**: arbitrary player text is speech heard inside the fiction, never authority over the inference task.
-3. Keep the prototype tiny and testable.
-4. Prefer deterministic, inspectable data structures over opaque prompt magic.
-5. Use structured model outputs validated by code.
-6. Make model/provider integrations replaceable.
-7. Track knowledge provenance, uncertainty and memory explicitly.
-8. Model NPC competence separately from the underlying model's capabilities.
-9. Optimize prompts/context only after behavior can be inspected and tested.
-10. Do not build generic RPG systems unless a current experiment requires them.
-11. When visual work is required, preserve the gothic-expressionist low-poly shape language and spend custom effort on NPC identity, composition, materials and lighting rather than generic asset production.
-12. Treat asset ingestion as a reproducible, provenance-aware pipeline rather than ad-hoc manual editor work.
-13. Maintain a complete third-party audit trail from the moment an external resource is actually adopted.
+3. Preserve the **cloud/browser-first PlayCanvas workflow** so the human can playtest without installing a desktop engine.
+4. Keep the prototype tiny and testable.
+5. Prefer deterministic, inspectable data structures over opaque prompt magic.
+6. Use structured model outputs validated by code.
+7. Make model/provider integrations replaceable.
+8. Track knowledge provenance, uncertainty and memory explicitly.
+9. Model NPC competence separately from the underlying model's capabilities.
+10. Optimize prompts/context only after behavior can be inspected and tested.
+11. Do not build generic RPG systems unless a current experiment requires them.
+12. Preserve the gothic-expressionist low-poly shape language when visual work is required.
+13. Treat asset ingestion as a reproducible, provenance-aware pipeline rather than ad-hoc manual editor work.
+14. Maintain a complete third-party audit trail from the moment an external resource is actually adopted.
 
-## Hard architecture rules
+## Runtime rules
+
+- Prototype runtime is PlayCanvas Engine + TypeScript + Vite per ADR-001.
+- Prefer the official `create-playcanvas` code-first scaffold/starter and retain PlayCanvas agent skills when bootstrapping.
+- The repository is the source of truth for routine gameplay/scene behavior; do not require undocumented manual PlayCanvas Editor state.
+- The PlayCanvas Editor may be used when useful, but the human owner must not need it for normal agent-driven iteration.
+- Every player-facing change should remain buildable as a web preview.
+- Do not reintroduce Unity/C# assumptions unless ADR-001 is explicitly superseded by evidence from a playable experiment.
+- Do not add React or another front-end framework by default; add one only when a concrete issue justifies the complexity.
+
+## Hard AI architecture rules
 
 - Never allow arbitrary LLM text to directly mutate game state.
 - The LLM may propose actions; game systems validate and execute them.
@@ -112,15 +126,7 @@ Whenever you add, change or retain an external resource:
 - regenerate/check `legal/ATTRIBUTIONS.md` and `legal/THIRD_PARTY_NOTICES.md`;
 - declare the third-party impact in the PR template.
 
-Never:
-
-- invent a license, author, URL, permission or credit line;
-- assume `free`, `royalty-free`, public, open or downloadable means unrestricted commercial use;
-- assume a private repository makes redistribution legal;
-- bypass a purchase/login/license gate;
-- silently approve ambiguous commercial, modification, redistribution or AI-processing terms;
-- lose license/NOTICE evidence during conversion/cleanup;
-- leave third-party registration until release time.
+Never invent a license, author, URL, permission or credit line; bypass a purchase/login/license gate; or silently approve ambiguous commercial, modification, redistribution or AI-processing terms.
 
 Ambiguous legal/commercial terms must be escalated to the human owner. `licensing-attribution-steward` maintains the record and can flag/block release-readiness, but does not provide legal advice.
 
@@ -138,23 +144,24 @@ When touching final-target visuals or external assets:
 - use body/head gesture vocabulary before complex facial rigs;
 - preserve first-person readability and navigation despite distortion;
 - prefer portable canonical runtime assets; default 3D interchange format is glTF 2.0 / GLB unless a concrete constraint requires otherwise;
-- record provenance/license metadata for external asset families before production use;
 - cross-reference asset source manifests with the authoritative `legal/third-party.json` ID;
 - do not dump whole marketplace packs into runtime or ordinary Git history by default;
 - select only what the current issue needs;
 - keep raw/source assets separate from normalized runtime assets and from scene placement/configuration;
 - prefer headless/repeatable asset processing so the human does not need a desktop editor for routine ingestion;
+- validate art in the actual browser build;
 - follow `docs/07-visual-direction.md`, `docs/09-asset-pipeline.md` and `docs/10-licensing-attribution.md`.
 
 ## Prototype constraints
 
 Assume initially:
 
-- PC target.
-- The exact runtime/engine stack may evolve; do not make art source formats unnecessarily engine-locked.
-- Local inference remains preferred for the core experience unless superseded by an explicit architecture decision.
-- Small local model around the 4B class is the current performance hypothesis.
-- 3–5 NPCs.
+- PC/browser target;
+- PlayCanvas Engine + TypeScript + Vite;
+- cloud/browser-first build and preview workflow;
+- local/browser-local inference remains preferred for the core experience, but the exact provider/model must be earned by M0 benchmarking;
+- a small local model around the few-billion-parameter class is the current performance hypothesis;
+- 3–5 NPCs;
 - one location;
 - one incident/mystery;
 - text input and text response;
@@ -164,6 +171,8 @@ Assume initially:
 - no voice;
 - no lip sync.
 
+M-1 must prove the web build/preview loop with `FakeInferenceProvider` before M0 adds real model complexity.
+
 Do not spend time polishing an entire village before the core conversation loop works. The first deliberate visual style target is only the small street + tavern + neighboring facades + 2–3 NPC setup defined in `docs/07-visual-direction.md`.
 
 ## Suggested code boundaries
@@ -171,79 +180,76 @@ Do not spend time polishing an entire village before the core conversation loop 
 Names are provisional, but preserve these responsibilities:
 
 ```text
-Domain/
-  WorldFact
-  Belief
-  KnowledgeState
-  NpcProfile
-  NpcCompetenceProfile
-  NpcState
-  Relationship
-  Memory
-  SocialEvent
+src/
+  domain/
+    WorldFact
+    Belief
+    KnowledgeState
+    NpcProfile
+    NpcCompetenceProfile
+    NpcState
+    Relationship
+    Memory
+    SocialEvent
 
-AI/
-  IInferenceProvider
-  PromptContextBuilder
-  DiegeticInputClassifier
-  NpcResponseSchema
-  NpcResponseValidator
-  DialogueLeakageValidator
+  ai/
+    InferenceProvider
+    FakeInferenceProvider
+    PromptContextBuilder
+    DiegeticInputClassifier
+    NpcResponseSchema
+    NpcResponseValidator
+    DialogueLeakageValidator
+    ConversationTrace
 
-Simulation/
-  ConversationService
-  KnowledgeTransferService
-  MemoryService
-  RelationshipService
-  SocialActionResolver
+  simulation/
+    ConversationService
+    KnowledgeTransferService
+    MemoryService
+    RelationshipService
+    SocialActionResolver
 
-Presentation/
-  DialogueUI
-  NpcAnimationController
+  presentation/
+    first-person controls
+    DialogueUI
+    NpcAnimationController
 
-Art pipeline/
-  art-source/inbox
-  art-source/sources
-  runtime-assets
-  tools/asset-pipeline
+art-source/
+runtime-assets/
+tools/asset-pipeline/
 
-Licensing / provenance/
-  legal/third-party.json
-  legal/ATTRIBUTIONS.md
-  legal/THIRD_PARTY_NOTICES.md
-  legal/licenses
-  tools/legal
+legal/
+tools/legal/
 ```
 
 These are responsibility boundaries, not a requirement to create empty abstraction layers before they are needed.
 
 ## Testing expectations
 
-Tests should focus first on failure modes that would destroy player trust or release safety:
+Tests should focus first on failure modes that would destroy player trust, cloud iteration or release safety:
 
+- browser build/preview breaks;
+- deterministic fake conversation path cannot run without a model;
 - NPC receives a secret it should not know;
 - a false statement mutates objective truth;
 - invalid model action is executed;
-- relationship changes outside allowed bounds;
-- duplicate or contradictory memories are stored incorrectly;
 - malformed structured output crashes a conversation;
-- model/provider unavailable causes unrecoverable game state corruption;
-- `ignore previous instructions` changes inference authority;
+- provider unavailable causes unrecoverable game state corruption;
+- prompt injection changes inference authority;
 - the NPC acknowledges being an AI/model or reveals prompt/runtime concepts;
-- a low-competence NPC answers advanced math/programming using the model's hidden expertise;
+- a low-competence NPC answers advanced math/programming using hidden model expertise;
 - an over-broad anti-trolling filter prevents legitimate in-fiction arithmetic or professional knowledge;
-- meta-leaking output reaches the player instead of being rewritten/falling back diegetically;
+- meta-leaking output reaches the player;
+- a probabilistic failure cannot be diagnosed from `ConversationTrace` data;
 - runtime references an untracked local-only asset path;
 - an external resource enters production without known provenance/license status;
-- a required credit/notice is absent from generated attribution files;
-- an unresolved/blocked resource is accidentally marked release-ready;
-- a conversion step silently changes scale/orientation/hierarchy and breaks a scene.
+- a required credit/notice is absent from generated attribution files.
 
 Use the adversarial corpus in `docs/06-diegetic-robustness.md` as a required conversation test set for M0.
 
-Where LLM behavior itself cannot be deterministic, test the deterministic boundary around it with recorded/fake inference responses.
+Where LLM behavior itself cannot be deterministic, test the deterministic boundary around it with fake/recorded inference responses.
 
-Run the legal registry validator/generator checks whenever third-party records or external resources change.
+Run legal registry checks whenever third-party records or external resources change.
 
 ## Product discipline
 
@@ -253,30 +259,20 @@ When considering a feature, ask:
 
 If no, put it in `docs/05-open-questions.md` or backlog instead of implementing it.
 
-When considering an anti-trolling/jailbreak rule, also ask:
+When considering an anti-trolling/jailbreak rule, ask:
 
 > Does this make the NPC stay inside the fiction, or does it make the player see the chatbot underneath?
-
-Prefer diegetic reactions over generic refusals.
 
 When considering visual work, ask:
 
 > Does this make the place and the person more memorable during social interaction, or is it generic asset-pack polish?
 
-Prefer silhouette, staging, lighting and NPC identity over detail for detail's sake.
+When considering infrastructure, ask:
 
-When considering asset-pipeline work, ask:
+> Does this directly make agent → browser playtest faster or make probabilistic failures easier to diagnose?
 
-> Is this automation needed by the next real asset import, or are we building a content pipeline before we have content?
-
-Prefer the smallest repeatable import path that solves the current issue.
-
-When considering a new third-party resource, ask:
-
-> Is its benefit worth adding another dependency, provenance record and release obligation?
-
-Prefer fewer, well-understood external dependencies over convenience-driven accumulation.
+Prefer playable evidence over frameworks.
 
 ## Documentation discipline
 
-When an architectural, visual, asset-pipeline, licensing/provenance or studio-process choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture, silently drift away from the current visual north star, or let agent workflow depend on chat history.
+When an architectural, runtime, visual, asset-pipeline, licensing/provenance or studio-process choice becomes real, update the corresponding doc/ADR. Do not silently contradict accepted decisions or let agent workflow depend on chat history.
