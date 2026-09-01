@@ -16,7 +16,7 @@ assignees: ""
 
 ## Suggested owner
 
-<!-- studio-director | technical-lead | gameplay-engineer | ai-npc-systems-engineer | narrative-social-designer | technical-art-director | qa-playtest-engineer -->
+<!-- studio-director | technical-lead | gameplay-engineer | ai-npc-systems-engineer | narrative-social-designer | technical-art-director | qa-playtest-engineer | licensing-attribution-steward -->
 
 ## Read first
 
@@ -40,6 +40,17 @@ assignees: ""
 
 - 
 
+## Third-party impact
+
+Will this task add/change/remove any external software, AI model/service, asset, animation, audio, font, stock media, external tool, or retained generated-content source?
+
+- [ ] No known third-party impact
+- [ ] Yes — include `docs/10-licensing-attribution.md` in Read first and identify/update the relevant `legal/third-party.json` record(s)
+
+Expected/proposed registry IDs:
+
+- 
+
 ## Acceptance criteria
 
 <!-- Observable pass/fail conditions, not vague quality aspirations. -->
@@ -48,7 +59,7 @@ assignees: ""
 
 ## Validation
 
-<!-- Automated tests, manual checks, adversarial probes, screenshots, playtest procedure, etc. -->
+<!-- Automated tests, manual checks, adversarial probes, screenshots, playtest procedure, legal registry checks, etc. -->
 
 - [ ]
 
