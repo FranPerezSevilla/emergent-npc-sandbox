@@ -17,4 +17,4 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - Redistribution: not_applicable
 - AI processing: not_applicable
 - Release allowed: yes
-- Evidence: https://github.com/actions/checkout/blob/main/LICENSE
+- Evidence: legal/licenses/github-actions-checkout-v4-MIT.txt, https://github.com/actions/checkout/blob/main/LICENSE
