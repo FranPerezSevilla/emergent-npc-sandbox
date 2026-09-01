@@ -2,6 +2,24 @@
 
 These are intentionally unresolved. Agents should not silently choose permanent answers unless an implementation experiment requires a provisional choice.
 
+## Runtime — decided for prototype
+
+Accepted in `docs/adr/001-playcanvas-cloud-first-runtime.md`:
+
+- PlayCanvas Engine;
+- TypeScript;
+- Vite;
+- code-first repository workflow;
+- browser/cloud-first builds and playtesting.
+
+Do not treat the engine choice as open during M-1/M0. Revisit only if a playable experiment exposes a concrete blocker.
+
+Still unresolved runtime/product questions:
+
+- final desktop distribution/packaging strategy if the commercial game needs a native wrapper;
+- browser hardware/browser floor for local inference;
+- long-term static hosting/preview provider after the first CI deployment works.
+
 ## Game identity
 
 - Final genre: investigation, social RPG or pure sandbox?
@@ -25,11 +43,15 @@ These are intentionally unresolved. Agents should not silently choose permanent 
 
 ## Inference
 
-- Best local model for Spanish/English character dialogue at acceptable latency?
-- Minimum supported hardware?
-- Context budget target?
-- Quantization target?
-- llama.cpp direct integration vs local sidecar process for shipping?
+M0 should benchmark rather than answer these by opinion:
+
+- best browser-local/local model for Spanish/English character dialogue at acceptable latency;
+- whether browser-local WebGPU inference is good enough to be the primary direction;
+- minimum supported browser/GPU/RAM profile;
+- context budget target;
+- quantization/model-size target;
+- whether an optional local sidecar/native inference path is eventually required for desktop distribution;
+- whether an optional cloud quality mode provides enough benefit to justify server/operating complexity.
 
 ## UX
 
@@ -40,7 +62,7 @@ These are intentionally unresolved. Agents should not silently choose permanent 
 
 ## Visuals
 
-Current preferred visual north star is now documented in `docs/07-visual-direction.md`:
+Current preferred visual north star is documented in `docs/07-visual-direction.md`:
 
 - first-person;
 - stylized low-poly;
@@ -56,7 +78,7 @@ Still unresolved:
 
 - exact setting/lore justification for the architectural style;
 - exact production palette and color values after the first style target;
-- exact shader treatment (standard URP vs custom stylized Shader Graph);
+- exact PlayCanvas material/shading/post-processing treatment;
 - modular character production pipeline;
 - how much facial animation is worth adding beyond head/body gestures;
 - first-person interaction distance and camera/framing details;
@@ -69,8 +91,8 @@ The first style-target experiment should answer the acceptance questions in `doc
 
 ## Commercial / platform
 
-- Steam first?
-- Bundle local model with the game or download on first run?
+- Steam first after the browser prototype proves the game?
+- Bundle/download a local model in a future desktop build, or rely on browser cache/runtime distribution?
 - Offer model quality presets?
 - Optional cloud quality mode?
 - AI-generated content moderation/platform compliance strategy?
