@@ -18,6 +18,16 @@ The important distinction is:
 
 The goal is not “ChatGPT inside an NPC”. The goal is a believable social simulation where information, lies, rumors, secrets, relationships and memories propagate through a small community.
 
+## Current roadmap focus
+
+**NOW:** `BOOTSTRAP — Cloud playable loop`
+
+**Active issue:** `#2 — BOOTSTRAP — Cloud playable loop with PlayCanvas`
+
+**NEXT / BLOCKED:** `M0 — One living NPC with real AI` (`#1`), which starts only after the Bootstrap gate passes.
+
+The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not a parallel implementation backlog.
+
 ## Prototype runtime — decided
 
 The first playable prototype is **cloud/browser-first using PlayCanvas Engine + TypeScript + Vite**.
@@ -52,25 +62,33 @@ Start extremely small:
 
 A strong success criterion is that, after ~30 minutes, the system produces social situations or conversations the designer did not script directly, while still respecting the authored world truth.
 
-## Development milestones
+## Development sequence
 
-Before real inference, **M-1** proves the cloud workflow:
+The prototype is deliberately gated:
 
 ```text
-agent changes repo
-     ↓
-CI tests/build
-     ↓
-web preview
-     ↓
-human opens browser and playtests
+BOOTSTRAP — cloud playable loop
+        ↓ gate
+M0 — one living NPC
+        ↓ gate
+M1 — truth vs belief
+        ↓ gate
+M2 — memory & relationship
+        ↓ gate
+M3 — information propagation
+        ↓ gate
+M4 — tavern mystery / blind playtest
+        ↓ gate
+M5 — human product decision
 ```
 
-M-1 uses a deterministic fake NPC provider so runtime/deployment problems are not confused with LLM problems.
+Bootstrap uses a deterministic fake NPC provider so runtime/deployment problems are not confused with LLM problems.
 
-**M0** then adds one real AI-driven NPC, diegetic jailbreak resistance, structured validation, conversation traces and a small model/provider benchmark.
+M0 then adds one real AI-driven NPC, diegetic jailbreak resistance, structured validation, conversation traces and a small model/provider benchmark.
 
-See `docs/04-prototype-roadmap.md`.
+After M4, the human decides what game—if any—the prototype has earned the right to become. A production roadmap is intentionally deferred until then.
+
+See `docs/04-prototype-roadmap.md` for the operational gates and Director decision rules.
 
 ## AI strategy
 
@@ -78,7 +96,7 @@ The inference layer remains replaceable.
 
 Initial architecture includes:
 
-- deterministic `FakeInferenceProvider` for tests and M-1;
+- deterministic `FakeInferenceProvider` for tests and Bootstrap;
 - one real provider/model experiment in M0;
 - browser-local/WebGPU inference as the preferred product hypothesis;
 - optional local sidecar/Ollama or cloud providers only when useful for comparison/fallback.
