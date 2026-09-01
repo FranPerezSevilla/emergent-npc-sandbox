@@ -18,10 +18,37 @@ Before changing code or design, read:
 6. `docs/05-open-questions.md`
 7. `docs/06-diegetic-robustness.md`
 8. `docs/07-visual-direction.md`
+9. `docs/08-agent-studio-operating-model.md`
 
 `docs/06-diegetic-robustness.md` is normative for any work touching player-to-NPC conversation, prompt/context construction, inference output, NPC capabilities or dialogue presentation.
 
 `docs/07-visual-direction.md` is the current visual north star for any work touching environments, characters, materials, lighting, camera/dialogue framing or art asset selection. It is intentionally designed to prevent drift into generic medieval low-poly.
+
+`docs/08-agent-studio-operating-model.md` defines how work is scoped, owned, delegated, validated and escalated. Follow it for agent-driven task planning and execution.
+
+## Studio agent workflow
+
+Repository custom-agent profiles live under `.github/agents/`.
+
+Current roles:
+
+- `studio-director` — product/production orchestration and scope;
+- `technical-lead` — architecture/integration review;
+- `gameplay-engineer` — Unity/gameplay/presentation;
+- `ai-npc-systems-engineer` — inference/NPC cognition/diegetic robustness;
+- `narrative-social-designer` — authored NPCs, mysteries and social scenarios;
+- `technical-art-director` — visual direction/technical art;
+- `qa-playtest-engineer` — tests, adversarial validation and playtest protocols.
+
+Operating defaults:
+
+- one issue = one accountable owner agent;
+- default to one active implementation issue;
+- use specialists only when their expertise materially reduces risk or context switching;
+- QA validates acceptance criteria before a milestone is declared complete;
+- Technical Lead review is for cross-cutting/risky changes, not mandatory bureaucracy for every small edit;
+- subjective product/art/fun decisions remain human decisions;
+- use `.github/ISSUE_TEMPLATE/agent-task.md` and `.github/pull_request_template.md` for agent-ready work.
 
 ## Agent priorities
 
@@ -177,4 +204,4 @@ Prefer silhouette, staging, lighting and NPC identity over detail for detail's s
 
 ## Documentation discipline
 
-When an architectural or visual choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture or silently drift away from the current visual north star.
+When an architectural, visual or studio-process choice becomes real, update the corresponding doc. Do not silently turn provisional assumptions into permanent architecture, silently drift away from the current visual north star, or let agent workflow depend on chat history.
