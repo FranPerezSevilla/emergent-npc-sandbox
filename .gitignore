@@ -1,4 +1,16 @@
-# Unity / legacy desktop-engine caches (keep while engine decision is still evolving)
+# Node / PlayCanvas / Vite
+node_modules/
+dist/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Legacy desktop-engine caches (not part of the accepted prototype runtime)
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -31,6 +43,7 @@ ollama-data/
 # Runtime/debug state
 saves/
 logs/
+conversation-traces/
 
 # Asset pipeline staging/cache
 # Raw asset bundles are inputs, not normal Git history. Keep the inbox contract tracked.
