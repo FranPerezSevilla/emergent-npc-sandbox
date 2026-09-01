@@ -1,8 +1,5 @@
-import {
-  CreateWebWorkerMLCEngine,
-  type InitProgressReport,
-  type WebWorkerMLCEngine
-} from '@mlc-ai/web-llm';
+import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import type { InitProgressReport, WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 
 import type {
   InferenceLoadProgress,
