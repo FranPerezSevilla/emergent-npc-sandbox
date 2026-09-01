@@ -1,4 +1,4 @@
-import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm';
+import { CreateWebWorkerMLCEngine, hasModelInCache } from '@mlc-ai/web-llm';
 import type { InitProgressReport, WebWorkerMLCEngine } from '@mlc-ai/web-llm';
 
 import type {
@@ -16,6 +16,14 @@ export class WebLlmInferenceProvider implements InferenceProvider {
 
   private engine?: WebWorkerMLCEngine;
   private initialization?: Promise<void>;
+
+  async isModelCached(): Promise<boolean> {
+    try {
+      return await hasModelInCache(this.modelId);
+    } catch {
+      return false;
+    }
+  }
 
   initialize(onProgress?: (progress: InferenceLoadProgress) => void): Promise<void> {
     if (this.initialization) return this.initialization;

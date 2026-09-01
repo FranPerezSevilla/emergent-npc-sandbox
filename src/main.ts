@@ -35,14 +35,26 @@ app.setCanvasResolution(RESOLUTION_AUTO);
 app.scene.ambientLight = new Color(0.12, 0.11, 0.15);
 
 const useFakeProvider = new URLSearchParams(window.location.search).get('provider') === 'fake';
-const provider = useFakeProvider ? new FakeInferenceProvider() : new WebLlmInferenceProvider();
+const webLlmProvider = useFakeProvider ? undefined : new WebLlmInferenceProvider();
+const provider = useFakeProvider ? new FakeInferenceProvider() : webLlmProvider!;
 const conversationEngine = new NpcConversationEngine(provider, maraProfile);
 const conversationTurns: ConversationTurn[] = [];
 const traces: ConversationTrace[] = [];
 let modelReady = useFakeProvider;
 let modelLoading: Promise<void> | undefined;
+let modelLoadStartedAt: number | undefined;
+let modelLoadWasCached: boolean | undefined;
+
+const loadMetrics: {
+  cached?: boolean;
+  durationMs?: number;
+  modelId: string;
+} = {
+  modelId: provider.modelId
+};
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
+(window as unknown as { __npcLoadMetrics: typeof loadMetrics }).__npcLoadMetrics = loadMetrics;
 
 document.body.insertAdjacentHTML(
   'beforeend',
@@ -53,12 +65,13 @@ document.body.insertAdjacentHTML(
       <p>Mara now runs through a constrained NPC contract. The local model is an actor; game code validates every visible response.</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
-        <button class="load-model" id="load-model" type="button">Load local AI</button>
+        <button class="load-model" id="load-model" type="button">Retry AI load</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
         <summary>Debug / M0 traces</summary>
         <p>Full traces are also exposed as <code>window.__npcTraces</code>.</p>
+        <p>Load timing is exposed as <code>window.__npcLoadMetrics</code>.</p>
         <button id="run-benchmark" type="button">Run fixed M0 probe set</button>
         <pre id="trace-output">No inference trace yet.</pre>
         <pre id="benchmark-output"></pre>
@@ -166,10 +179,12 @@ const traceOutput = document.getElementById('trace-output') as HTMLPreElement;
 const benchmarkButton = document.getElementById('run-benchmark') as HTMLButtonElement;
 const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreElement;
 
-providerBadge.textContent = useFakeProvider ? 'FAKE — deterministic test double' : `LOCAL AI — ${M0_WEBLLM_MODEL_ID}`;
+providerBadge.textContent = useFakeProvider
+  ? 'FAKE — deterministic test double'
+  : `LOCAL AI — ${M0_WEBLLM_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
   ? 'Deterministic fake mode enabled by ?provider=fake.'
-  : 'Model not loaded. First load downloads and caches model files in this browser.';
+  : 'Checking whether the local model is already cached…';
 loadModel.hidden = useFakeProvider;
 
 const appendMessage = (speaker: string, text: string): void => {
@@ -191,24 +206,34 @@ const setConversationBusy = (busy: boolean): void => {
   benchmarkButton.disabled = busy;
 };
 
+const elapsedLoadSeconds = (): string => {
+  if (modelLoadStartedAt === undefined) return '0.0';
+  return ((performance.now() - modelLoadStartedAt) / 1000).toFixed(1);
+};
+
 const ensureModelReady = async (): Promise<void> => {
   if (modelReady) return;
   if (modelLoading) return modelLoading;
 
   setConversationBusy(true);
-  modelStatus.textContent = 'Starting local AI…';
+  modelLoadStartedAt = performance.now();
+  const loadKind = modelLoadWasCached ? 'cached load' : 'first download';
+  modelStatus.textContent = `Starting local AI in background (${loadKind})…`;
   modelLoading = conversationEngine
     .initialize((progress) => {
-      const percent = typeof progress.progress === 'number' ? ` ${Math.round(progress.progress * 100)}%` : '';
-      modelStatus.textContent = `${progress.text}${percent}`;
+      const percent =
+        typeof progress.progress === 'number' ? ` ${Math.round(progress.progress * 100)}%` : '';
+      modelStatus.textContent = `${progress.text}${percent} · ${elapsedLoadSeconds()}s · ${loadKind}`;
     })
     .then(() => {
       modelReady = true;
-      modelStatus.textContent = 'Local AI ready. Inference stays in this browser.';
+      loadMetrics.cached = modelLoadWasCached;
+      loadMetrics.durationMs = Math.round(performance.now() - modelLoadStartedAt!);
+      modelStatus.textContent = `Local AI ready in ${(loadMetrics.durationMs / 1000).toFixed(1)}s (${loadKind}).`;
     })
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
-      modelStatus.textContent = `Local AI could not load: ${message}`;
+      modelStatus.textContent = `Local AI could not load after ${elapsedLoadSeconds()}s: ${message}`;
       throw error;
     })
     .finally(() => {
@@ -217,6 +242,22 @@ const ensureModelReady = async (): Promise<void> => {
     });
 
   return modelLoading;
+};
+
+const startBackgroundModelLoad = async (): Promise<void> => {
+  if (!webLlmProvider) return;
+
+  modelLoadWasCached = await webLlmProvider.isModelCached();
+  loadMetrics.cached = modelLoadWasCached;
+  modelStatus.textContent = modelLoadWasCached
+    ? 'Cached model found. Warming local AI in the background…'
+    : 'First load needs roughly 335 MB of model weights. Downloading in the background…';
+
+  try {
+    await ensureModelReady();
+  } catch {
+    // The status line already contains the actionable load error. Manual retry stays available.
+  }
 };
 
 const closeDialogue = (): void => {
@@ -240,7 +281,7 @@ const openDialogue = (): void => {
 };
 
 loadModel.addEventListener('click', () => {
-  void ensureModelReady();
+  void ensureModelReady().catch(() => undefined);
 });
 
 benchmarkButton.addEventListener('click', async () => {
@@ -340,8 +381,14 @@ app.on('update', (dt: number) => {
       const rightZ = -Math.sin(radians);
       const speed = 4.2;
       const current = player.getPosition();
-      const nextX = Math.max(-7.7, Math.min(7.7, current.x + (forwardX * forward + rightX * strafe) * speed * dt));
-      const nextZ = Math.max(-7.7, Math.min(7.7, current.z + (forwardZ * forward + rightZ * strafe) * speed * dt));
+      const nextX = Math.max(
+        -7.7,
+        Math.min(7.7, current.x + (forwardX * forward + rightX * strafe) * speed * dt)
+      );
+      const nextZ = Math.max(
+        -7.7,
+        Math.min(7.7, current.z + (forwardZ * forward + rightZ * strafe) * speed * dt)
+      );
       player.setPosition(nextX, 1.65, nextZ);
     }
   }
@@ -381,5 +428,9 @@ tavernLight.addComponent('light', {
   color: new Color(1, 0.57, 0.28)
 });
 app.root.addChild(tavernLight);
+
+if (!useFakeProvider) {
+  void startBackgroundModelLoad();
+}
 
 window.addEventListener('resize', () => app.resizeCanvas());
