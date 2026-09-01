@@ -23,6 +23,7 @@
       ],
       "notes": "Build-time GitHub Actions checkout step. The project invokes the action in CI and does not ship or redistribute the action code as part of the game.",
       "evidence": [
+        "legal/licenses/github-actions-checkout-v4-MIT.txt",
         "https://github.com/actions/checkout/blob/main/LICENSE"
       ],
       "lastReviewed": "2026-09-01"
