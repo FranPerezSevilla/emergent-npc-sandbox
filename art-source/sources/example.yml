@@ -1,0 +1,16 @@
+# Copy this file and replace every example value.
+# Never invent license metadata. If uncertain, block/escalate the import.
+
+id: example-asset-pack
+name: Example Asset Pack
+provider: Example Provider
+source_url: https://example.invalid/asset
+license_name: Example License
+license_url: https://example.invalid/license
+acquired_by_human: false
+redistribution_notes: "Example only — replace with real terms"
+ai_processing_notes: "Example only — verify compatibility with intended workflow"
+requested_scope:
+  - example building
+  - example prop
+notes: "Use as raw geometry; adapt proportions/materials according to docs/07-visual-direction.md"
