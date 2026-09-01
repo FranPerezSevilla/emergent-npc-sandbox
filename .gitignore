@@ -1,4 +1,4 @@
-# Unity
+# Unity / legacy desktop-engine caches (keep while engine decision is still evolving)
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -31,3 +31,11 @@ ollama-data/
 # Runtime/debug state
 saves/
 logs/
+
+# Asset pipeline staging/cache
+# Raw asset bundles are inputs, not normal Git history. Keep the inbox contract tracked.
+art-source/inbox/*
+!art-source/inbox/README.md
+art-source/work/
+.asset-cache/
+asset-pipeline-cache/
