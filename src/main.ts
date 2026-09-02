@@ -16,7 +16,7 @@ import type { ConversationTrace } from './ai/conversation-trace.ts';
 import type { InferenceProvider } from './ai/inference.ts';
 import { ivenProfile } from './ai/iven.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
-import { M2FakeInferenceProvider } from './ai/m2-fake-inference-provider.ts';
+import { M3FakeInferenceProvider } from './ai/m3-fake-inference-provider.ts';
 import { maraProfile } from './ai/mara.ts';
 import {
   MARA_BAKER_DEBT_MEMORY_ID,
@@ -30,6 +30,17 @@ import {
 } from './ai/memory-state.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
+import {
+  IVEN_PROPAGATED_CLAIM_BELIEF_ID,
+  MARA_TO_IVEN_TRANSFER_ID,
+  PLAYER_RED_TRAVELER_EXIT_CLAIM_ID,
+  loadM3State,
+  propagatedBeliefsForNpc,
+  recordPlayerRedTravelerClaimToMara,
+  resetM3State,
+  saveM3State,
+  transferPlayerClaimFromMaraToIven
+} from './ai/propagation-state.ts';
 import {
   M1_OPENROUTER_MODEL_ID,
   OpenRouterInferenceProvider
@@ -63,14 +74,20 @@ if (openRouterProvider) {
   }
 }
 
-const provider: InferenceProvider = useFakeProvider ? new M2FakeInferenceProvider() : openRouterProvider!;
-const maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForNpc('mara'));
-const ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForNpc('iven'));
+let m3State = loadM3State(localStorage);
+const provider: InferenceProvider = useFakeProvider ? new M3FakeInferenceProvider() : openRouterProvider!;
+const beliefsForRuntimeNpc = (npcId: string) => [
+  ...beliefsForNpc(npcId),
+  ...propagatedBeliefsForNpc(m3State, npcId)
+];
+let maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForRuntimeNpc('mara'));
+let ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForRuntimeNpc('iven'));
 const traces: ConversationTrace[] = [];
 const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
 let m2State = loadM2State(localStorage);
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
+(window as unknown as { __m3State: unknown }).__m3State = m3State;
 (window as unknown as { __m2State: unknown }).__m2State = m2State;
 (window as unknown as { __m1TruthBeliefs: unknown }).__m1TruthBeliefs = {
   objectiveTruth: redTravelerExitFact,
@@ -81,21 +98,28 @@ document.body.insertAdjacentHTML(
   'beforeend',
   `<div class="hud">
     <section class="bootstrap-panel">
-      <h1>Emergent NPC Sandbox — M2</h1>
+      <h1>Emergent NPC Sandbox — M3</h1>
       <p>Click the scene for mouse look. Move with WASD. Approach Mara or Iven and press E.</p>
-      <p>M2 test: talk to Mara, use the explicit three-silver action, close or reload the page, then ask «¿Te acuerdas de lo que hice por ti antes?».</p>
+      <p>M3 test: explicitly tell Mara you saw the red-cloaked traveler leave, resolve the Mara → Iven social event in Debug, then ask Iven what he thinks happened.</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
         <button class="load-model" id="load-model" type="button">Connect OpenRouter</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
-        <summary>Debug / M2 memory &amp; relationship</summary>
-        <p>Only structured memory/relationship state persists. Raw dialogue turns are deliberately not saved.</p>
-        <pre id="m2-state-output"></pre>
-        <button class="load-model" id="m2-reset-state" type="button">Reset M2 memory + relationship</button>
+        <summary>Debug / M3 information propagation</summary>
+        <p>Claim creation and transfer are explicit game-owned transitions. Generated dialogue cannot grant Iven the rumor.</p>
+        <pre id="m3-state-output"></pre>
+        <button class="load-model" id="m3-transfer" type="button">Resolve Mara → Iven social event</button>
+        <button class="load-model" id="m3-reset-state" type="button">Reset M3 claim + transfer</button>
         <p>Last trace below. All traces remain available as <code>window.__npcTraces</code>.</p>
         <pre id="trace-output">No inference trace yet.</pre>
+        <details>
+          <summary>M2 regression / memory &amp; relationship</summary>
+          <p>Only structured memory/relationship state persists. Raw dialogue turns are deliberately not saved.</p>
+          <pre id="m2-state-output"></pre>
+          <button class="load-model" id="m2-reset-state" type="button">Reset M2 memory + relationship</button>
+        </details>
         <details>
           <summary>M1 regression / truth vs belief</summary>
           <p>Objective truth remains visible here for the tester and is never supplied as NPC truth.</p>
@@ -119,6 +143,7 @@ document.body.insertAdjacentHTML(
         <button class="dialogue-close" id="dialogue-close" type="button" aria-label="Close conversation">×</button>
       </div>
       <div class="transcript" id="transcript" aria-live="polite"></div>
+      <button class="load-model" id="m3-tell-mara" type="button" hidden>Tell Mara: I saw the red-cloaked traveler leave</button>
       <button class="load-model" id="m2-help-mara" type="button" hidden>Give Mara 3 silver for baker debt</button>
       <form class="dialogue-form" id="dialogue-form">
         <input id="dialogue-input" autocomplete="off" maxlength="500" placeholder="Say anything…" aria-label="Message to NPC" />
@@ -245,6 +270,10 @@ const loadModel = document.getElementById('load-model') as HTMLButtonElement;
 const modelStatus = document.getElementById('model-status') as HTMLDivElement;
 const npcName = document.getElementById('npc-name') as HTMLElement;
 const npcState = document.getElementById('npc-state') as HTMLSpanElement;
+const m3StateOutput = document.getElementById('m3-state-output') as HTMLPreElement;
+const m3TellMara = document.getElementById('m3-tell-mara') as HTMLButtonElement;
+const m3Transfer = document.getElementById('m3-transfer') as HTMLButtonElement;
+const m3ResetState = document.getElementById('m3-reset-state') as HTMLButtonElement;
 const m2StateOutput = document.getElementById('m2-state-output') as HTMLPreElement;
 const m2HelpMara = document.getElementById('m2-help-mara') as HTMLButtonElement;
 const m2ResetState = document.getElementById('m2-reset-state') as HTMLButtonElement;
@@ -254,10 +283,10 @@ const benchmarkButton = document.getElementById('run-benchmark') as HTMLButtonEl
 const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreElement;
 
 providerBadge.textContent = useFakeProvider
-  ? 'FAKE M2 — deterministic memory + relationship fixture'
+  ? 'FAKE M3 — deterministic information propagation fixture'
   : `REMOTE AI — OpenRouter / ${M1_OPENROUTER_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
-  ? 'Deterministic M2 fake mode enabled by ?provider=fake.'
+  ? 'Deterministic M3 fake mode enabled by ?provider=fake.'
   : authCallbackError
     ? `OpenRouter connection failed: ${authCallbackError}`
     : providerReady
@@ -273,6 +302,48 @@ m1StateOutput.textContent = JSON.stringify(
   null,
   2
 );
+
+const refreshM3Engines = (): void => {
+  maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForRuntimeNpc('mara'));
+  ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForRuntimeNpc('iven'));
+  const maraRuntime = runtimeNpcs.find((runtime) => runtime.profile.id === 'mara');
+  const ivenRuntime = runtimeNpcs.find((runtime) => runtime.profile.id === 'iven');
+  if (maraRuntime) maraRuntime.engine = maraEngine;
+  if (ivenRuntime) ivenRuntime.engine = ivenEngine;
+};
+
+const updateM3Actions = (): void => {
+  const hasClaim = m3State.claims.some((claim) => claim.id === PLAYER_RED_TRAVELER_EXIT_CLAIM_ID);
+  const hasTransfer = m3State.transfers.some((transfer) => transfer.id === MARA_TO_IVEN_TRANSFER_ID);
+  m3TellMara.hidden = activeNpc?.profile.id !== 'mara';
+  m3TellMara.disabled = hasClaim;
+  m3TellMara.textContent = hasClaim
+    ? 'M3 claim already recorded'
+    : 'Tell Mara: I saw the red-cloaked traveler leave';
+  m3Transfer.disabled = !hasClaim || hasTransfer;
+  m3Transfer.textContent = hasTransfer
+    ? 'Mara → Iven rumor already transferred'
+    : 'Resolve Mara → Iven social event';
+};
+
+const renderM3State = (): void => {
+  m3StateOutput.textContent = JSON.stringify(
+    {
+      claims: m3State.claims,
+      transfers: m3State.transfers,
+      derivedBeliefs: {
+        mara: propagatedBeliefsForNpc(m3State, 'mara'),
+        iven: propagatedBeliefsForNpc(m3State, 'iven')
+      }
+    },
+    null,
+    2
+  );
+  (window as unknown as { __m3State: unknown }).__m3State = m3State;
+  updateM3Actions();
+};
+
+renderM3State();
 
 const updateM2Action = (): void => {
   const talkingToMara = activeNpc?.profile.id === 'mara';
@@ -365,12 +436,48 @@ const openDialogue = (): void => {
   interactPrompt.textContent = '';
   document.exitPointerLock();
   renderTranscript(activeNpc);
+  updateM3Actions();
   updateM2Action();
   dialogueInput.focus();
 };
 
 loadModel.addEventListener('click', () => {
   void connectRemoteProvider().catch(() => undefined);
+});
+
+m3TellMara.addEventListener('click', () => {
+  if (activeNpc?.profile.id !== 'mara') return;
+  const previousState = m3State;
+  m3State = recordPlayerRedTravelerClaimToMara(m3State, new Date().toISOString());
+  if (m3State !== previousState) {
+    saveM3State(localStorage, m3State);
+    refreshM3Engines();
+    appendMessage('You', "[You tell Mara that you personally saw the red-cloaked traveler leave through the back door after midnight.]");
+    appendMessage('System', 'M3 claim recorded with source=player and recipient=Mara. Now resolve the Mara → Iven social event in Debug.');
+    modelStatus.textContent = 'M3 structured claim recorded for Mara.';
+  }
+  renderM3State();
+  dialogueInput.focus();
+});
+
+m3Transfer.addEventListener('click', () => {
+  const previousState = m3State;
+  m3State = transferPlayerClaimFromMaraToIven(m3State, new Date().toISOString());
+  if (m3State !== previousState) {
+    saveM3State(localStorage, m3State);
+    refreshM3Engines();
+    modelStatus.textContent = 'M3 social event resolved: Mara relayed the player claim to Iven as hearsay.';
+  }
+  renderM3State();
+});
+
+m3ResetState.addEventListener('click', () => {
+  m3State = resetM3State(localStorage);
+  refreshM3Engines();
+  traces.length = 0;
+  traceOutput.textContent = 'No inference trace yet.';
+  modelStatus.textContent = 'M3 claim and transfer state reset.';
+  renderM3State();
 });
 
 m2HelpMara.addEventListener('click', () => {
@@ -472,7 +579,7 @@ dialogueForm.addEventListener('submit', async (event) => {
     const result = await runtime.engine.respond(playerUtterance, runtime.turns, socialContext);
     traces.push(result.trace);
     traceOutput.textContent = JSON.stringify(result.trace, null, 2);
-    console.debug('M2 ConversationTrace', result.trace);
+    console.debug('M3 ConversationTrace', result.trace);
 
     const providerFailure = result.trace.attempts.find((attempt) => attempt.providerError !== undefined);
     if (providerFailure?.providerError) {
@@ -490,7 +597,7 @@ dialogueForm.addEventListener('submit', async (event) => {
     );
     modelStatus.textContent = `OpenRouter connected · last response ${result.trace.totalLatencyMs} ms.`;
   } catch (error) {
-    console.error('M2 conversation orchestration failed before a validated response could be produced', error);
+    console.error('M3 conversation orchestration failed before a validated response could be produced', error);
     const message = error instanceof Error ? error.message : String(error);
     modelStatus.textContent = `Conversation system error: ${message}`;
     appendMessage('System', 'Conversation failed before a validated NPC response could be produced.');
