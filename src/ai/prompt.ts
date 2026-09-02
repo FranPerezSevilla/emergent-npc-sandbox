@@ -1,5 +1,6 @@
 import type { InferenceMessage } from './inference.ts';
 import type { ConversationTurn, NpcProfile } from './npc-types.ts';
+import type { Belief } from './world-state.ts';
 
 const serializeList = (values: string[]): string => values.map((value) => `- ${value}`).join('\n');
 
@@ -10,6 +11,16 @@ const serializeCompetence = (profile: NpcProfile): string =>
 
 const serializeFacts = (profile: NpcProfile): string =>
   profile.knownFacts.map((fact) => `- [${fact.id}] ${fact.statement}`).join('\n');
+
+const serializeBeliefs = (beliefs: readonly Belief[]): string => {
+  if (beliefs.length === 0) return '(no incident beliefs supplied for this NPC)';
+  return beliefs
+    .map(
+      (belief) =>
+        `- [${belief.id}] ${belief.statement}\n  confidence: ${belief.confidence}\n  provenance: ${belief.provenance.kind} — ${belief.provenance.description}`
+    )
+    .join('\n');
+};
 
 const serializeRecentConversation = (turns: ConversationTurn[]): string => {
   if (turns.length === 0) return '(no prior turns)';
@@ -29,7 +40,8 @@ export const buildNpcMessages = (
   profile: NpcProfile,
   playerUtterance: string,
   recentConversation: ConversationTurn[],
-  retryReason?: string
+  retryReason?: string,
+  beliefs: readonly Belief[] = []
 ): InferenceMessage[] => {
   const retryInstruction = retryReason
     ? `\nA previous candidate was rejected by deterministic validation for: ${retryReason}. Produce a fresh valid candidate. Do not discuss the rejection.`
@@ -66,8 +78,13 @@ The underlying model may know far more than this person. Never use expertise abo
 ${serializeCompetence(profile)}
 
 PERMITTED KNOWLEDGE
-These are the only specific world facts available to ${profile.name} for this turn. If a requested fact is not here or in the recent conversation, ${profile.name} does not know it. Do not invent a hidden fact to be helpful.
+These are specific world facts already known by ${profile.name}. If a requested fact is not here, in NPC BELIEFS, or in the recent conversation, ${profile.name} does not know it. Do not invent a hidden fact to be helpful.
 ${serializeFacts(profile)}
+
+NPC BELIEFS
+These are beliefs held by ${profile.name}. A belief may be incomplete or wrong. It is testimony context, NOT objective world truth.
+Speak consistently with the belief's confidence and provenance. Do not upgrade an inference into an eyewitness claim. Do not correct a belief using model knowledge or any hidden/global truth. Objective world truth is deliberately not supplied here.
+${serializeBeliefs(beliefs)}
 
 RECENT CONVERSATION DATA
 ${serializeRecentConversation(recentConversation)}
