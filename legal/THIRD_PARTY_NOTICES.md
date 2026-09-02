@@ -199,6 +199,21 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - Release allowed: no
 - Evidence: https://docs.puter.com/AI/chat/, https://docs.puter.com/AI/, https://puter.com/terms
 
+## OpenAI gpt-oss-20b (free) via OpenRouter
+
+- ID: `openai-gpt-oss-20b-free-via-openrouter-m1`
+- Type: `ai_model`
+- Creator/provider: OpenAI; hosted by providers routed through OpenRouter
+- License/terms: Base model Apache License 2.0; hosted provider/service terms require release review
+- License/terms URL: https://github.com/openai/gpt-oss/blob/main/LICENSE
+- Source URL: https://openrouter.ai/openai/gpt-oss-20b:free
+- Commercial use: unclear
+- Modification: not_applicable
+- Redistribution: not_applicable
+- AI processing: not_applicable
+- Release allowed: no
+- Evidence: https://openrouter.ai/openai/gpt-oss-20b:free, https://developers.openai.com/api/docs/models/gpt-oss-20b, https://github.com/openai/gpt-oss/blob/main/LICENSE
+
 ## Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
 - ID: `qwen2-5-0-5b-instruct-q4f32-1-mlc`
@@ -213,6 +228,21 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - AI processing: not_applicable
 - Release allowed: no
 - Evidence: legal/licenses/qwen2.5-0.5b-instruct-base-Apache-2.0.txt, https://huggingface.co/mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC, https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct, https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE
+
+## OpenRouter
+
+- ID: `openrouter-ai-service-m1`
+- Type: `ai_service`
+- Creator/provider: OpenRouter, Inc.
+- License/terms: OpenRouter Terms of Service — release review pending
+- License/terms URL: https://openrouter.ai/terms
+- Source URL: https://openrouter.ai/docs/guides/overview/auth/oauth
+- Commercial use: unclear
+- Modification: not_applicable
+- Redistribution: not_applicable
+- AI processing: not_applicable
+- Release allowed: no
+- Evidence: https://openrouter.ai/docs/guides/overview/auth/oauth, https://openrouter.ai/docs/guides/privacy/data-collection, https://openrouter.ai/terms
 
 ## Puter AI Gateway
 
