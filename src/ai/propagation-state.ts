@@ -99,6 +99,7 @@ export const propagatedBeliefsForNpc = (state: M3State, npcId: string): readonly
         confidence: 'medium',
         provenance: {
           kind: 'hearsay',
+          immediateSourceLabel: 'player',
           description: 'The player told Mara this directly. Mara did not witness the claimed event herself.'
         }
       }
@@ -120,6 +121,7 @@ export const propagatedBeliefsForNpc = (state: M3State, npcId: string): readonly
         confidence: 'medium',
         provenance: {
           kind: 'hearsay',
+          immediateSourceLabel: 'Mara',
           description: 'Mara relayed the player\'s claim to Iven. Iven did not witness the claimed departure and knows this is second-hand information.'
         }
       }
