@@ -30,9 +30,15 @@ A milestone is complete only when its **exit gate has evidence**.
 
 ## Current state
 
-**Current milestone:** `M0 — One living NPC with real AI`
+**Current milestone:** `M0 — One living NPC with real AI` — **FINAL QA**
 
-**Current implementation issue:** `#1 — M0 — One living NPC with real AI`
+**Current implementation/validation issue:** `#13 — M0 final QA — remote adversarial probe sweep`
+
+**Parent milestone issue:** `#1 — M0 — One living NPC with real AI`
+
+**Current real-provider experiment:** `#8 — M0 experiment C — remote browser inference baseline`
+
+**Human character-quality gate:** **PASS on 2026-09-02.** The human explicitly liked the Mara interaction and considers the character-quality test valid.
 
 **Previous milestone:** `BOOTSTRAP — Cloud playable loop` — **DONE** via issue #2 and PR #4.
 
@@ -45,9 +51,21 @@ Bootstrap evidence:
 - third-party registry checks green;
 - human confirmed the URL-based playtest loop is usable.
 
-Playable Bootstrap URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+M0 evidence already established:
 
-**Next milestone if M0 passes:** `M1 — Truth vs belief`.
+- deployed real-provider browser conversation;
+- responsive browser path through remote inference;
+- authored Mara profile, competence and permitted facts;
+- deterministic secret omission/schema/state/leakage/retry/fallback/provider-error tests;
+- `ConversationTrace` proved sufficient to diagnose real provider failures, including the unsupported Luna `temperature` parameter;
+- adopted AI resources are registered with explicit legal review state;
+- human character-quality judgment is positive.
+
+Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+
+**Only remaining M0 evidence:** run/review the real remote adversarial/competence/secret probe sweep in #13.
+
+**Next milestone if #13 passes:** `M1 — Truth vs belief`.
 
 Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
@@ -56,7 +74,7 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 | Stage | Status | Core question | Exit gate | Primary owner |
 |---|---|---|---|---|
 | **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent -> CI -> Pages -> human playtest | Gameplay Engineer |
-| **M0 — One living NPC** | **NOW** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real free-form conversation survives normal + adversarial probing and failures are diagnosable | AI & NPC Systems Engineer |
+| **M0 — One living NPC** | **NOW — FINAL QA** | Can one constrained AI NPC feel like a character rather than a chatbot? | Human character gate passed; final real-model adversarial/competence/secret sweep remains | QA Playtest Engineer |
 | **M1 — Truth vs belief** | **NEXT / BLOCKED** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative world state | AI & NPC Systems Engineer |
 | **M2 — Memory & relationship** | LATER | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
 | **M3 — Information propagation** | LATER | Can information travel socially and cause an unscripted delayed consequence? | A tells B; B later reacts without a handcrafted branch | AI + Narrative/Social |
@@ -90,13 +108,17 @@ Bootstrap is closed. Do not reopen it unless the delivery loop itself regresses.
 
 ---
 
-# M0 — One living NPC — NOW
+# M0 — One living NPC — NOW — FINAL QA
 
 ## Hypothesis
 
-A small real language model can perform one tightly constrained NPC well enough that free-form interaction feels like talking to a fictional person rather than a generic assistant.
+A real language model can perform one tightly constrained NPC well enough that free-form interaction feels like talking to a fictional person rather than a generic assistant.
 
-Implementation issue: **#1**.
+Parent milestone issue: **#1**.
+
+Current final QA issue: **#13**.
+
+Remote inference experiment: **#8**.
 
 ## Required outcome
 
@@ -116,20 +138,22 @@ Build on the existing Bootstrap application:
 - fixed adversarial/model benchmark probe set;
 - provenance/license registration for adopted model/runtime/service.
 
-Browser-local/WebGPU is the preferred product hypothesis, but M0 chooses by evidence rather than doctrine.
+Browser-local/WebGPU was tested during M0 and failed on the human test machine through unacceptable first-load friction, shader compatibility failure and browser instability during generation. The current M0 baseline therefore uses a remote provider behind the same `InferenceProvider` boundary. Local inference remains an optional future product hypothesis, not a requirement for this milestone.
 
 ## Exit gate — PASS only if all are true
 
-- [ ] one real NPC can be freely questioned in the deployed browser build;
-- [ ] normal conversation stays recognizably in character;
-- [ ] inaccessible world secrets are absent/unextractable;
-- [ ] meta/jailbreak prompts do not turn the NPC into a generic assistant;
-- [ ] NPC competence constrains model expertise without blocking legitimate in-world competence;
-- [ ] invalid/meta output is intercepted and falls back diegetically;
-- [ ] failures can be explained from `ConversationTrace` rather than guessed;
-- [ ] fixed benchmark records quality + latency + Spanish behavior;
-- [ ] adopted model/runtime/service provenance is registered;
-- [ ] human playtest answer to **“does this feel like a character?”** is good enough to continue.
+- [x] one real NPC can be freely questioned in the deployed browser build;
+- [x] normal conversation stays recognizably in character;
+- [ ] inaccessible world secrets are absent/unextractable under the real-model probe sweep;
+- [ ] meta/jailbreak prompts do not turn the real remote NPC into a generic assistant;
+- [ ] NPC competence constrains real-model expertise without blocking legitimate in-world competence;
+- [x] invalid/meta output is intercepted and falls back diegetically in deterministic validation;
+- [x] failures can be explained from `ConversationTrace` rather than guessed;
+- [ ] fixed remote benchmark/probe sweep records quality + latency + Spanish behavior;
+- [x] adopted model/runtime/service provenance is registered with explicit review state;
+- [x] human playtest answer to **“does this feel like a character?”** is good enough to continue — **PASS 2026-09-02**.
+
+The four unchecked real-model QA conditions are the complete scope of **#13**. Do not create unrelated M0 work while #13 is active.
 
 ## If the gate fails
 
