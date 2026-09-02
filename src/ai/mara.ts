@@ -44,6 +44,11 @@ export const maraProfile: NpcProfile = {
     programming: 'none',
     modernTechnology: 'none'
   },
+  socialPolicy: {
+    hearsayStance: 'neutral',
+    conflictStance: 'balanced',
+    disclosureStyle: 'selective'
+  },
   knownFacts: [
     {
       id: 'mara-tavern-price',
