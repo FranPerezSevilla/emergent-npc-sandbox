@@ -501,6 +501,32 @@
       "sourceUrl": "https://openrouter.ai/openai/gpt-oss-20b:free",
       "licenseName": "Base model Apache License 2.0; hosted provider/service terms require release review",
       "licenseUrl": "https://github.com/openai/gpt-oss/blob/main/LICENSE",
+      "reviewStatus": "removed",
+      "releaseAllowed": false,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "unclear",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [],
+      "notes": "Former M1 OpenRouter candidate. Human runtime test on 2026-09-02 returned HTTP 404 stating that the free variant was unavailable and only the paid slug remained. Preserved as experiment provenance; no longer used by the application.",
+      "evidence": [
+        "https://openrouter.ai/openai/gpt-oss-20b:free",
+        "https://developers.openai.com/api/docs/models/gpt-oss-20b",
+        "https://github.com/openai/gpt-oss/blob/main/LICENSE"
+      ],
+      "lastReviewed": "2026-09-02"
+    },
+    {
+      "id": "minimax-m3-free-via-openrouter-m1",
+      "type": "ai_model",
+      "name": "MiniMax M3 (free) via OpenRouter",
+      "creator": "MiniMax; hosted by providers routed through OpenRouter",
+      "version": "minimax/minimax-m3:free",
+      "sourceUrl": "https://openrouter.ai/minimax/minimax-m3:free",
+      "licenseName": "Model/provider/service terms — release review pending",
+      "licenseUrl": "https://openrouter.ai/minimax/minimax-m3:free",
       "reviewStatus": "pending",
       "releaseAllowed": false,
       "attributionRequired": false,
@@ -512,11 +538,11 @@
       "usedIn": [
         "src/ai/openrouter-inference-provider.ts"
       ],
-      "notes": "Explicit M1 prototype model to keep behavior comparable while avoiding per-turn prototype cost. OpenAI publishes gpt-oss-20b under Apache-2.0 and its gpt-oss usage policy; this project does not redistribute weights. OpenRouter free hosting availability/rate limits and actual upstream provider terms remain separate and release-blocking until reviewed.",
+      "notes": "Current explicit M1 prototype model selected after the prior gpt-oss free endpoint became unavailable. OpenRouter listed the endpoint as free with text output and response_format JSON support at review time. Free endpoint availability, rate limits, upstream provider privacy/data terms and commercial/release suitability remain release-blocking until explicitly reviewed.",
       "evidence": [
-        "https://openrouter.ai/openai/gpt-oss-20b:free",
-        "https://developers.openai.com/api/docs/models/gpt-oss-20b",
-        "https://github.com/openai/gpt-oss/blob/main/LICENSE"
+        "https://openrouter.ai/minimax/minimax-m3:free",
+        "https://openrouter.ai/docs/guides/privacy/data-collection",
+        "https://openrouter.ai/terms"
       ],
       "lastReviewed": "2026-09-02"
     }

@@ -164,17 +164,17 @@
 - Used in: `src/ai/puter-inference-provider.ts`
 - Notes: Initial remote model identifier for M0 Experiment C. Puter documentation lists `gpt-5.6-luna` for puter.ai.chat(). Model weights are not distributed by this project; dialogue is transient runtime output. Exact upstream/provider output and commercial terms were not independently established here, so this model is prototype-only and not release-approved.
 
-### OpenAI gpt-oss-20b (free) via OpenRouter
+### MiniMax M3 (free) via OpenRouter
 
-- Creator/provider: OpenAI; hosted by providers routed through OpenRouter
-- Registry ID: `openai-gpt-oss-20b-free-via-openrouter-m1`
-- License/terms: Base model Apache License 2.0; hosted provider/service terms require release review
-- Source: https://openrouter.ai/openai/gpt-oss-20b:free
-- License/terms URL: https://github.com/openai/gpt-oss/blob/main/LICENSE
+- Creator/provider: MiniMax; hosted by providers routed through OpenRouter
+- Registry ID: `minimax-m3-free-via-openrouter-m1`
+- License/terms: Model/provider/service terms — release review pending
+- Source: https://openrouter.ai/minimax/minimax-m3:free
+- License/terms URL: https://openrouter.ai/minimax/minimax-m3:free
 - Review status: pending
 - Attribution required: no
 - Used in: `src/ai/openrouter-inference-provider.ts`
-- Notes: Explicit M1 prototype model to keep behavior comparable while avoiding per-turn prototype cost. OpenAI publishes gpt-oss-20b under Apache-2.0 and its gpt-oss usage policy; this project does not redistribute weights. OpenRouter free hosting availability/rate limits and actual upstream provider terms remain separate and release-blocking until reviewed.
+- Notes: Current explicit M1 prototype model selected after the prior gpt-oss free endpoint became unavailable. OpenRouter listed the endpoint as free with text output and response_format JSON support at review time. Free endpoint availability, rate limits, upstream provider privacy/data terms and commercial/release suitability remain release-blocking until explicitly reviewed.
 
 ### Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 

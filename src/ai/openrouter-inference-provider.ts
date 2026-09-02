@@ -4,7 +4,7 @@ import type {
   InferenceProviderResult
 } from './inference.ts';
 
-export const M1_OPENROUTER_MODEL_ID = 'openai/gpt-oss-20b:free';
+export const M1_OPENROUTER_MODEL_ID = 'minimax/minimax-m3:free';
 
 const apiKeyStorageKey = 'emergent-npc-sandbox.openrouter.api-key';
 const verifierStorageKey = 'emergent-npc-sandbox.openrouter.pkce-verifier';
@@ -138,6 +138,7 @@ export class OpenRouterInferenceProvider implements InferenceProvider {
         model: this.modelId,
         messages: request.messages,
         max_tokens: request.maxTokens,
+        response_format: { type: 'json_object' },
         stream: false
       })
     });
