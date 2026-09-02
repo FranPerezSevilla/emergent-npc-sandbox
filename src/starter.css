@@ -256,6 +256,34 @@ input {
   opacity: 0.55;
 }
 
+
+.dialogue-intents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 10px;
+}
+
+.dialogue-chip {
+  padding: 6px 9px;
+  border: 1px solid #ffffff24;
+  border-radius: 999px;
+  background: #191722;
+  color: #d9cfea;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.dialogue-chip:hover {
+  border-color: #b78cff77;
+  background: #262033;
+}
+
+.dialogue-chip:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
 @media (max-width: 620px) {
   .bootstrap-panel {
     width: calc(100vw - 36px);

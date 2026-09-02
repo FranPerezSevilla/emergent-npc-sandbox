@@ -13,6 +13,7 @@ import {
 } from 'playcanvas';
 
 import type { ConversationTrace } from './ai/conversation-trace.ts';
+import type { DialogueIntent, DialogueIntentRequest } from './ai/dialogue-metabehavior.ts';
 import type { InferenceProvider } from './ai/inference.ts';
 import { ivenProfile } from './ai/iven.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
@@ -146,6 +147,12 @@ document.body.insertAdjacentHTML(
       <div class="transcript" id="transcript" aria-live="polite"></div>
       <button class="load-model" id="m3-tell-mara" type="button" hidden>Tell Mara: I saw the red-cloaked traveler leave</button>
       <button class="load-model" id="m2-help-mara" type="button" hidden>Give Mara 3 silver for baker debt</button>
+      <div class="dialogue-intents" id="dialogue-intents" aria-label="Quick dialogue intents">
+        <button class="dialogue-chip" type="button" data-dialogue-intent="ask_observation">¿Qué viste?</button>
+        <button class="dialogue-chip" type="button" data-dialogue-intent="ask_rumor">¿Qué se rumorea?</button>
+        <button class="dialogue-chip" type="button" data-dialogue-intent="ask_source">¿Quién te lo contó?</button>
+        <button class="dialogue-chip" type="button" data-dialogue-intent="challenge">No te creo</button>
+      </div>
       <form class="dialogue-form" id="dialogue-form">
         <input id="dialogue-input" autocomplete="off" maxlength="500" placeholder="Say anything…" aria-label="Message to NPC" />
         <button id="dialogue-send" type="submit">Send</button>
@@ -265,6 +272,9 @@ const dialogueClose = document.getElementById('dialogue-close') as HTMLButtonEle
 const dialogueForm = document.getElementById('dialogue-form') as HTMLFormElement;
 const dialogueInput = document.getElementById('dialogue-input') as HTMLInputElement;
 const dialogueSend = document.getElementById('dialogue-send') as HTMLButtonElement;
+const dialogueIntentButtons = Array.from(
+  document.querySelectorAll<HTMLButtonElement>('[data-dialogue-intent]')
+);
 const transcript = document.getElementById('transcript') as HTMLDivElement;
 const providerBadge = document.getElementById('provider-badge') as HTMLSpanElement;
 const loadModel = document.getElementById('load-model') as HTMLButtonElement;
@@ -395,6 +405,7 @@ const renderTranscript = (runtime: RuntimeNpc): void => {
 const setConversationBusy = (busy: boolean): void => {
   dialogueInput.disabled = busy;
   dialogueSend.disabled = busy;
+  for (const button of dialogueIntentButtons) button.disabled = busy;
   loadModel.disabled = busy || providerReady;
   benchmarkButton.disabled = busy || !providerReady;
 };
@@ -599,9 +610,17 @@ document.addEventListener('mousemove', (event) => {
 
 dialogueClose.addEventListener('click', closeDialogue);
 
-dialogueForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const playerUtterance = dialogueInput.value.trim();
+const quickIntentUtterances: Record<Exclude<DialogueIntent, 'free_text'>, string> = {
+  ask_observation: '¿Qué viste exactamente sobre el viajero de la capa roja?',
+  ask_rumor: '¿Qué has oído decir sobre el viajero de la capa roja?',
+  ask_source: '¿Quién te contó eso sobre el viajero de la capa roja?',
+  challenge: 'No te creo. Creo que te equivocas sobre el viajero de la capa roja.'
+};
+
+const submitDialogueTurn = async (
+  playerUtterance: string,
+  dialogueIntent: DialogueIntentRequest
+): Promise<void> => {
   if (!playerUtterance || !activeNpc) return;
 
   if (!providerReady) {
@@ -612,7 +631,7 @@ dialogueForm.addEventListener('submit', async (event) => {
 
   const runtime = activeNpc;
   appendMessage('You', playerUtterance);
-  dialogueInput.value = '';
+  if (dialogueIntent.intent === 'free_text') dialogueInput.value = '';
   setConversationBusy(true);
 
   const socialContext = {
@@ -621,7 +640,12 @@ dialogueForm.addEventListener('submit', async (event) => {
   };
 
   try {
-    const result = await runtime.engine.respond(playerUtterance, runtime.turns, socialContext);
+    const result = await runtime.engine.respond(
+      playerUtterance,
+      runtime.turns,
+      socialContext,
+      dialogueIntent
+    );
     traces.push(result.trace);
     traceOutput.textContent = JSON.stringify(result.trace, null, 2);
     console.debug('M3 ConversationTrace', result.trace);
@@ -640,7 +664,8 @@ dialogueForm.addEventListener('submit', async (event) => {
       { speaker: 'player', text: playerUtterance },
       { speaker: 'npc', text: result.response.dialogue }
     );
-    modelStatus.textContent = `OpenRouter connected · last response ${result.trace.totalLatencyMs} ms.`;
+    const decision = result.trace.socialDialogueDecision;
+    modelStatus.textContent = `OpenRouter connected · ${decision.intent} · ${decision.focus}/${decision.stance} · ${result.trace.totalLatencyMs} ms.`;
   } catch (error) {
     console.error('M3 conversation orchestration failed before a validated response could be produced', error);
     const message = error instanceof Error ? error.message : String(error);
@@ -650,6 +675,24 @@ dialogueForm.addEventListener('submit', async (event) => {
     setConversationBusy(false);
     dialogueInput.focus();
   }
+};
+
+for (const button of dialogueIntentButtons) {
+  button.addEventListener('click', () => {
+    const intent = button.dataset.dialogueIntent as Exclude<DialogueIntent, 'free_text'> | undefined;
+    if (!intent || !(intent in quickIntentUtterances)) return;
+    void submitDialogueTurn(quickIntentUtterances[intent], {
+      intent,
+      topicFactId: redTravelerExitFact.id
+    });
+  });
+}
+
+dialogueForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const playerUtterance = dialogueInput.value.trim();
+  if (!playerUtterance) return;
+  void submitDialogueTurn(playerUtterance, { intent: 'free_text' });
 });
 
 app.on('update', (dt: number) => {
