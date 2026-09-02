@@ -2,14 +2,7 @@
 
 ## Purpose
 
-This is the **operational roadmap** for the Studio Director. It answers four questions:
-
-1. What are we proving **now**?
-2. What must be true before we move on?
-3. What comes next if the current milestone succeeds?
-4. What work is explicitly premature?
-
-The roadmap is gated. Later milestones are hypotheses, not a parallel implementation backlog.
+This is the operational roadmap for the Studio Director. It answers what we are proving now, what must be true before we move on, what comes next, and what is explicitly premature.
 
 > The goal is not to build the full game quickly. The goal is to remove the biggest uncertainty, one playable experiment at a time.
 
@@ -26,33 +19,31 @@ The Studio Director MUST:
 5. refuse speculative work from later milestones unless the human explicitly changes priority;
 6. after a gate passes, record evidence here before advancing.
 
-A milestone is complete only when its **exit gate has evidence**.
+A milestone is complete only when its exit gate has evidence.
 
 ## Current state
 
-**Current milestone:** `M2 — Memory & relationship`
+**Current milestone:** `M3 — Information propagation`
 
-**Current implementation issue:** `#19 — M2 — Memory & relationship`
+**Current implementation issue:** `#21 — M3 — Information propagation`
 
-**Previous milestone:** `M1 — Truth vs belief` — **DONE** via issue #14, provider blocker #16, PR #15, provider PR #17 and free-model correction PR #18.
+**Previous milestone:** `M2 — Memory & relationship` — **DONE** via issue #19 and PR #20.
 
-M1 evidence:
+M2 evidence:
 
-- authoritative `WorldFact` exists independently of generated dialogue;
-- NPC-owned `Belief` state carries provenance/confidence and remains separate from truth;
-- Mara and Iven receive isolated belief context and can hold contradictory beliefs about the same incident;
-- `ConversationTrace` records selected belief IDs;
-- deterministic tests prove truth immutability, per-NPC belief isolation, contradictory-belief coexistence and no implicit belief mutation by generated prose;
-- deployed browser build exposes truth vs beliefs for inspection;
-- Puter was rejected as the default prototype provider after `phone_verification_required` blocked human testing;
-- OpenRouter browser OAuth PKCE replaced Puter without embedding a developer API key in Pages;
-- the first OpenRouter free-model candidate was retired after a real 404 availability failure and replaced with the current MiniMax M3 free prototype endpoint;
-- provider/auth/quota/network failures are now surfaced as non-diegetic system state rather than NPC dialogue;
-- human truth-vs-belief gate: **PASS 2026-09-02** — Mara and Iven behaved coherently and as expected when questioned separately.
+- game-owned `NpcMemory` and one-dimensional `RelationshipState.trust` exist independently of generated prose;
+- one explicit Mara interaction deterministically creates the baker-debt memory and `trust +1`;
+- memory ownership is isolated per NPC;
+- relevance selection avoids blindly dumping memories into every prompt;
+- selected memory IDs and relationship snapshots are recorded in `ConversationTrace`;
+- structured memory/relationship state persists across reload while raw dialogue history does not;
+- deterministic tests cover creation, retrieval, isolation, prompt context, trace evidence and persistence boundaries;
+- deployed browser build exposes memory/relationship state and reset controls;
+- human memory/relationship gate: **PASS 2026-09-02** — Mara remembered the earlier interaction as expected after reload.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
 
-**Next milestone if M2 passes:** `M3 — Information propagation`.
+**Next milestone if M3 passes:** `M4 — Tavern mystery`.
 
 Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
@@ -60,12 +51,12 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
 | Stage | Status | Core question | Exit gate | Primary owner |
 |---|---|---|---|---|
-| **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent -> CI -> Pages -> human playtest | Gameplay Engineer |
-| **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human character judgment | AI & NPC Systems + QA |
+| **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent → CI → Pages → human playtest | Gameplay Engineer |
+| **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human judgment | AI & NPC Systems + QA |
 | **M1 — Truth vs belief** | **DONE** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
-| **M2 — Memory & relationship** | **NOW** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
-| **M3 — Information propagation** | **NEXT / BLOCKED** | Can information travel socially and cause an unscripted delayed consequence? | A tells B; B later reacts without a handcrafted branch | AI + Narrative/Social |
-| **M4 — Tavern mystery** | LATER | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
+| **M2 — Memory & relationship** | **DONE** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
+| **M3 — Information propagation** | **NOW** | Can information travel socially and cause a delayed consequence? | A tells B; B later reacts without a handcrafted dialogue branch | AI + Narrative/Social |
+| **M4 — Tavern mystery** | **NEXT / BLOCKED** | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
 | **M5 — Product decision** | LATER | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
 
 `NOW` is the only milestone that should normally receive implementation effort.
@@ -73,8 +64,6 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 ---
 
 # BOOTSTRAP — Cloud playable loop — DONE
-
-## Result
 
 The project can be developed agentically with PlayCanvas/TypeScript and delivered as a browser-playable build without requiring a desktop game editor for routine iteration.
 
@@ -84,31 +73,11 @@ Evidence: issue **#2**, PR **#4**, deployed Pages build, human playtest.
 
 # M0 — One living NPC — DONE
 
-## Result
-
 A tightly constrained real-AI NPC is compelling and robust enough to justify continuing the social-simulation architecture.
 
-Evidence:
+Evidence: parent issue **#1**, remote baseline **#8**, final QA **#13**, human character-quality PASS.
 
-- parent milestone **#1**;
-- remote baseline experiment **#8**;
-- final real-model QA **#13**;
-- human character-quality PASS.
-
-## Gate evidence
-
-- [x] one real NPC can be freely questioned in the deployed browser build;
-- [x] normal conversation stays recognizably in character;
-- [x] inaccessible world secrets remain absent/unextractable;
-- [x] meta/jailbreak prompts do not turn the NPC into a generic assistant;
-- [x] NPC competence constrains model expertise without blocking legitimate in-world competence;
-- [x] invalid/meta output is intercepted/retried/fallbacked rather than shown raw;
-- [x] failures can be explained from `ConversationTrace` rather than guessed;
-- [x] fixed real-model sweep records quality, latency and Spanish behavior;
-- [x] adopted model/runtime/service provenance is registered with explicit review state;
-- [x] human answer to **“does this feel like a character?”** is good enough to continue.
-
-M0 is closed. Do not reopen it because of future provider/product optimization unless the core single-NPC assumption itself regresses.
+Core result: the model can perform Mara while game code constrains knowledge, competence and diegetic behavior, with traceable validation/retry/fallback boundaries.
 
 ---
 
@@ -116,130 +85,100 @@ M0 is closed. Do not reopen it because of future provider/product optimization u
 
 Implementation issue: **#14**. Provider blocker: **#16**.
 
-## Result
-
-The simulation can maintain objective truth separately from character belief, allowing two NPCs to disagree coherently without generated dialogue rewriting authoritative state.
-
-## Core rule
-
 > The game owns truth. NPCs own beliefs. The LLM owns neither.
 
-Generated dialogue is testimony, not authority.
+Gate evidence:
 
-## Gate evidence
+- [x] authoritative world truth exists independently of dialogue;
+- [x] Mara and Iven can hold contradictory beliefs about the same subject;
+- [x] each NPC receives only its own relevant beliefs;
+- [x] conflicting testimony remains belief-consistent;
+- [x] generated answers do not mutate truth or silently synchronize beliefs;
+- [x] provenance/confidence and selected belief IDs are inspectable;
+- [x] deterministic tests and human browser playtest pass.
 
-- [x] one authoritative world fact exists independently of dialogue;
-- [x] NPC A and NPC B can hold contradictory beliefs about the same subject;
-- [x] each NPC receives only its own relevant beliefs/knowledge;
-- [x] asking both NPCs the same question produces conflicting but belief-consistent testimony;
-- [x] objective truth remains unchanged regardless of generated answers;
-- [x] repeated conversation does not silently synchronize beliefs;
-- [x] conversation cannot grant knowledge/belief that game code never supplied;
-- [x] debug view makes truth, belief, provenance and confidence inspectable;
-- [x] traces make each testimony explainable from selected belief IDs;
-- [x] deterministic fake/replay path covers the contradictory-testimony scenario;
-- [x] human browser playtest confirms the disagreement feels coherent rather than random.
-
-Evidence: issue **#14**, blocker **#16**, PRs **#15**, **#17**, **#18**, deployed Pages build and human PASS on 2026-09-02.
-
-M1 is closed. Provider optimization may continue later if needed, but it does not reopen the truth-vs-belief hypothesis unless the domain boundary itself regresses.
+Evidence: issue **#14**, blocker **#16**, PRs **#15**, **#17**, **#18**, human PASS 2026-09-02.
 
 ---
 
-# M2 — Memory & relationship — NOW
+# M2 — Memory & relationship — DONE
 
-Implementation issue: **#19**.
-
-## Hypothesis
-
-A character becomes substantially more believable when a later interaction changes because of a meaningful earlier interaction no longer present in the immediate transcript.
-
-## Core rules
+Implementation issue: **#19**. Main implementation: **PR #20**.
 
 > Memories are structured game state, not raw model-written autobiography.
 
 > Relationship state is authoritative game data. The LLM may express its consequences but may not silently create or mutate it.
 
-## Required outcome
+Gate evidence:
 
-- compact structured memories owned by one NPC;
-- minimal relationship state, beginning with at most 1–2 proven dimensions;
-- deterministic memory creation for one tiny authored scenario;
-- deterministic relationship mutation rules;
-- relevance selection for prior memories;
-- memory ownership/isolation between NPCs;
-- prompt context that distinguishes remembered experience from objective truth;
-- `ConversationTrace` records selected memory IDs and relevant relationship state;
-- persistence/reload only to the minimum degree required by the experiment;
-- debug visibility into stored/retrieved memories and relationship state.
+- [x] meaningful explicit player interaction creates a compact structured Mara memory through game code;
+- [x] generated dialogue alone cannot create arbitrary memories or relationship changes;
+- [x] memory ownership is isolated per NPC;
+- [x] the original interaction can disappear from the raw transcript;
+- [x] a later relevant turn retrieves the stored memory deterministically;
+- [x] Mara's later behavior changes because memory/relationship state is supplied;
+- [x] unrelated turns do not blindly receive the memory;
+- [x] relationship state changes only through explicit game rules and is inspectable;
+- [x] traces record selected memory IDs and relationship snapshot;
+- [x] structured state survives browser reload while dialogue history does not;
+- [x] deterministic tests cover creation, retrieval, isolation and persistence;
+- [x] human browser playtest confirms Mara appears to remember the earlier interaction.
 
-## Exit gate — PASS only if all are true
+Evidence: issue **#19**, PR **#20**, deployed Pages build and human PASS on 2026-09-02.
 
-- [ ] a meaningful prior interaction creates a compact structured memory through game code;
-- [ ] generated dialogue alone cannot create arbitrary memories or relationship changes;
-- [ ] memory ownership is isolated per NPC;
-- [ ] the original interaction can fall outside the immediate raw transcript window;
-- [ ] a later turn retrieves the relevant prior memory deterministically;
-- [ ] the later response changes meaningfully because that memory/relationship state was supplied;
-- [ ] unrelated memories are not blindly dumped into context;
-- [ ] relationship state changes only through explicit game rules and is inspectable;
-- [ ] traces record selected memory IDs + relationship state used for the turn;
-- [ ] persistence/reload works to the minimum degree required by the experiment;
-- [ ] deterministic fake/replay tests cover creation, retrieval, isolation and non-mutation by prose;
-- [ ] human browser playtest confirms the NPC appears to remember the earlier interaction rather than merely echoing recent transcript text.
-
-## Explicitly not now
-
-- NPC-to-NPC gossip / information propagation;
-- vector DB unless structured retrieval measurably fails;
-- embeddings by default;
-- sophisticated forgetting psychology;
-- dozens of relationship dimensions;
-- unrestricted LLM-authored memories;
-- full NPC schedules;
-- schedules/economy/factions;
-- full mystery content.
-
-## Gate unlocks
-
-`M3 — Information propagation`.
+M2 is closed. Do not reopen it for future memory sophistication unless the core structured-memory hypothesis itself regresses.
 
 ---
 
-# M3 — Information propagation — NEXT / BLOCKED
+# M3 — Information propagation — NOW
+
+Implementation issue: **#21**.
 
 ## Hypothesis
 
-The system becomes genuinely emergent when information can leave a player/NPC conversation, travel through another relationship and later create a consequence not encoded as a dialogue branch.
+The system becomes genuinely emergent when information can leave one conversation, travel through another character, preserve provenance, and later create a consequence not encoded as a handcrafted dialogue branch.
+
+## Core rules
+
+> Information transfer is a game-owned state transition. The LLM may phrase what characters say, but it may not directly grant another NPC knowledge.
+
+> Provenance survives transfer. Hearsay does not become eyewitness evidence merely because it is repeated.
 
 ## Required outcome
 
-- `ClaimedStatement`;
-- source/provenance tracking;
-- knowledge/belief transfer;
-- one NPC-to-NPC social event path;
-- delayed consequence/reaction;
-- deterministic scheduling/resolution where practical.
+- structured `ClaimedStatement` with source, recipient and provenance;
+- one explicit player→Mara claim creation rule;
+- one deterministic Mara→Iven social transfer event;
+- belief update that preserves hearsay provenance and does not mutate `WorldFact`;
+- duplicate/idempotency handling;
+- debug visibility into claim → transfer → resulting Iven belief;
+- traces that make Iven's later testimony explainable;
+- deterministic fake/replay coverage.
 
-## Exit gate
+## Exit gate — PASS only if all are true
 
-PASS when this chain works without a handcrafted branch encoding it:
-
-```text
-Player tells NPC A something
-        ->
-NPC A later transmits it to NPC B
-        ->
-NPC B updates belief/suspicion
-        ->
-NPC B later reacts to the player
-```
+- [ ] one structured claim is created through explicit game logic;
+- [ ] generated dialogue alone cannot create or transfer authoritative information;
+- [ ] original source and recipient are recorded;
+- [ ] a deterministic social event transfers the claim from Mara to Iven;
+- [ ] Iven's resulting belief preserves hearsay/provenance;
+- [ ] objective world truth remains unchanged;
+- [ ] transfer is idempotent and does not duplicate endlessly;
+- [ ] Iven's later free-form testimony changes because the transferred belief is supplied;
+- [ ] traces/debug expose the full causal chain;
+- [ ] deterministic tests cover creation, transfer, provenance, isolation and truth immutability;
+- [ ] human browser playtest confirms the delayed reaction feels causally connected rather than random.
 
 ## Explicitly not now
 
-- hundreds of background conversations;
-- full off-screen LLM simulation;
-- economy/factions/large-world simulation.
+- background LLM conversations between NPCs;
+- hundreds of autonomous gossip events;
+- generic rumor network / town-scale knowledge graph;
+- embeddings/vector DB;
+- schedules/economy/factions;
+- deception planner;
+- automatic extraction of every player utterance into claims;
+- full tavern mystery content.
 
 ## Gate unlocks
 
@@ -247,7 +186,7 @@ NPC B later reacts to the player
 
 ---
 
-# M4 — Tavern mystery vertical prototype
+# M4 — Tavern mystery — NEXT / BLOCKED
 
 ## Hypothesis
 
@@ -272,15 +211,7 @@ This is a **fun test**, not a content-production milestone.
 
 ## Exit gate
 
-Run a blind human playtest. PASS-worthy evidence includes:
-
-- roughly 30 minutes of meaningful goals/questions;
-- memorable unscripted interactions;
-- social consequences feel causal rather than random;
-- conversation is used to discover/manipulate information;
-- trolling does not trivially collapse characters into assistants;
-- latency/UX remains tolerable;
-- visual presentation supports social presence.
+Run a blind human playtest. PASS-worthy evidence includes roughly 30 minutes of meaningful goals/questions, memorable unscripted interactions, causal social consequences, tolerable latency/UX and presentation that supports social presence.
 
 The Studio Director cannot self-certify this gate. Human judgment is mandatory.
 
@@ -292,31 +223,13 @@ The Studio Director cannot self-certify this gate. Human judgment is mandatory.
 
 # M5 — Product decision
 
-## Question
+Possible decisions: investigation/mystery game, broader social RPG, social sandbox, substantial pivot, or stop.
 
-What product has the prototype earned the right to become?
-
-Possible decisions:
-
-- investigation/mystery game;
-- broader social RPG;
-- social sandbox;
-- substantial pivot;
-- stop the project.
-
-## Exit gate
-
-A written human decision exists, based on M4 evidence rather than theoretical feature appeal.
-
-Only if the decision is **continue** should the Studio Director create Roadmap v2 / Production Roadmap covering final genre/core loop, content scale, production NPC count, world scope, art pipeline scale, save/load, performance/hardware, packaging/distribution, AI compliance and marketing/release milestones.
-
-Do not define that production roadmap before M5.
+The exit gate is a written human decision based on M4 evidence. Only after a **continue** decision should Roadmap v2 / a production roadmap be created.
 
 ---
 
 # Cross-cutting tracks
-
-These are guardrails, not parallel product milestones.
 
 ## Licensing / attribution
 
@@ -328,7 +241,7 @@ Use `docs/09-asset-pipeline.md` only when the current milestone actually needs e
 
 ## Visual direction
 
-`docs/07-visual-direction.md` remains the north star. Tiny presentation work is allowed earlier only when it directly improves the current experiment; M4 is the first milestone requiring a representative art slice.
+`docs/07-visual-direction.md` remains the north star. M4 is the first milestone requiring a representative art slice.
 
 ## QA / adversarial testing
 
@@ -351,15 +264,11 @@ From M0 onward, probabilistic behavior must be traceable enough that failures ca
                        NO  -> create one bounded issue for it.
 
       YES -> record evidence + advance roadmap status.
-              |
-              +-> Does the next milestone require human approval first?
-                       YES -> request/record human decision.
-                       NO  -> activate the smallest existing issue or create one.
 ```
 
 Before creating any issue, ask:
 
-> If this issue succeeds, which unchecked condition in the **current milestone gate** becomes checked?
+> If this issue succeeds, which unchecked condition in the current milestone gate becomes checked?
 
 If the answer is “none”, the issue is premature.
 
@@ -368,7 +277,7 @@ If the answer is “none”, the issue is premature.
 Whenever a milestone advances:
 
 1. update `Current state`;
-2. update the roadmap table status (`NOW`, `NEXT / BLOCKED`, `LATER`, `DONE`, `STOPPED`);
+2. update roadmap status (`NOW`, `NEXT / BLOCKED`, `LATER`, `DONE`, `STOPPED`);
 3. link the evidence/issue/PR/playtest that passed the previous gate;
 4. identify exactly one next milestone;
 5. do not rewrite later milestone scope unless new evidence materially changes it.
