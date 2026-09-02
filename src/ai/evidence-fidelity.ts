@@ -1,7 +1,5 @@
-import {
-  validateAuthoredTestimonyFidelity,
-  type NpcTestimonyContext
-} from './authored-testimony.ts';
+import { validateAuthoredTestimonyFidelity } from './authored-testimony.ts';
+import type { NpcTestimonyContext } from './authored-testimony.ts';
 import type { SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { Belief, BeliefConfidence } from './world-state.ts';
 
