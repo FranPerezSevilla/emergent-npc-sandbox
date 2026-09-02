@@ -1,8 +1,5 @@
-import {
-  assertNpcTestimonyContext,
-  authoredTestimonyTraceSnapshot,
-  type NpcTestimonyContext
-} from './authored-testimony.ts';
+import { assertNpcTestimonyContext, authoredTestimonyTraceSnapshot } from './authored-testimony.ts';
+import type { NpcTestimonyContext } from './authored-testimony.ts';
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
 import { deriveSocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { DialogueIntentRequest, SocialDialogueDecision } from './dialogue-metabehavior.ts';
