@@ -1,0 +1,26 @@
+name: M3 dialogue metabehavior UI patch
+
+on:
+  push:
+    branches:
+      - m3/dialogue-metabehavior
+    paths:
+      - .github/workflows/m3-dialogue-ui-patch-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m3/dialogue-metabehavior
+      - run: python3 tools/patch_dialogue_metabehavior_ui.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.ts src/starter.css
+          git commit -m "m3: add contextual dialogue intent chips"
+          git push origin HEAD:m3/dialogue-metabehavior
