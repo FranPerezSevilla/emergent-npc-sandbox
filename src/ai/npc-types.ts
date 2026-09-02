@@ -25,6 +25,16 @@ export type NpcCompetenceProfile = {
   modernTechnology: CompetenceLevel;
 };
 
+export type HearsayStance = 'receptive' | 'neutral' | 'skeptical';
+export type ConflictStance = 'reconsider' | 'balanced' | 'defend_own_view';
+export type DisclosureStyle = 'open' | 'selective';
+
+export type NpcSocialPolicy = {
+  hearsayStance: HearsayStance;
+  conflictStance: ConflictStance;
+  disclosureStyle: DisclosureStyle;
+};
+
 export type NpcKnownFact = {
   id: string;
   statement: string;
@@ -42,6 +52,7 @@ export type NpcProfile = {
   speechStyle: string[];
   boundaries: string[];
   competence: NpcCompetenceProfile;
+  socialPolicy: NpcSocialPolicy;
   knownFacts: NpcKnownFact[];
 };
 

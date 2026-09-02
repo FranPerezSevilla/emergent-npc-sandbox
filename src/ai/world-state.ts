@@ -3,6 +3,7 @@ export type BeliefConfidence = 'low' | 'medium' | 'high';
 export type BeliefProvenance = {
   kind: 'first-hand' | 'inference' | 'hearsay';
   description: string;
+  immediateSourceId?: string;
 };
 
 export type WorldFact = {

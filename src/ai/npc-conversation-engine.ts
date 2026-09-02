@@ -1,4 +1,6 @@
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
+import { deriveSocialDialogueDecision } from './dialogue-metabehavior.ts';
+import type { DialogueIntentRequest, SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { InferenceLoadProgress, InferenceProvider } from './inference.ts';
 import type { NpcSocialContext } from './memory-state.ts';
 import type { ConversationTurn, NpcProfile, NpcResponseV1 } from './npc-types.ts';
@@ -95,7 +97,8 @@ export class NpcConversationEngine {
   async respond(
     playerUtterance: string,
     recentConversation: ConversationTurn[],
-    socialContext?: NpcSocialContext
+    socialContext?: NpcSocialContext,
+    dialogueIntent?: DialogueIntentRequest
   ): Promise<NpcConversationResult> {
     const foreignMemory = socialContext?.memories.find((memory) => memory.ownerNpcId !== this.profile.id);
     if (foreignMemory) {
@@ -107,6 +110,12 @@ export class NpcConversationEngine {
       );
     }
 
+    const socialDialogueDecision = deriveSocialDialogueDecision(
+      this.profile,
+      this.beliefs,
+      dialogueIntent,
+      socialContext?.relationship.trust ?? 0
+    );
     const startedAt = performance.now();
     const attempts: InferenceAttemptTrace[] = [];
     let retryReason: string | undefined;
@@ -120,7 +129,8 @@ export class NpcConversationEngine {
         retryReason,
         this.beliefs,
         socialContext?.memories ?? [],
-        socialContext?.relationship
+        socialContext?.relationship,
+        socialDialogueDecision
       );
 
       try {
@@ -142,6 +152,7 @@ export class NpcConversationEngine {
             playerUtterance,
             recentConversation,
             socialContext,
+            socialDialogueDecision,
             attempts,
             attempt === 1 ? 'model' : 'retry',
             validation.response,
@@ -168,6 +179,7 @@ export class NpcConversationEngine {
       playerUtterance,
       recentConversation,
       socialContext,
+      socialDialogueDecision,
       attempts,
       'fallback',
       response,
@@ -180,6 +192,7 @@ export class NpcConversationEngine {
     playerUtterance: string,
     recentConversation: ConversationTurn[],
     socialContext: NpcSocialContext | undefined,
+    socialDialogueDecision: SocialDialogueDecision,
     attempts: InferenceAttemptTrace[],
     finalSource: ConversationTrace['finalSource'],
     finalResponse: NpcResponseV1,
@@ -195,6 +208,7 @@ export class NpcConversationEngine {
       selectedBeliefIds: this.beliefs.map((belief) => belief.id),
       selectedMemoryIds: socialContext?.memories.map((memory) => memory.id) ?? [],
       relationshipSnapshot: socialContext ? { trust: socialContext.relationship.trust } : undefined,
+      socialDialogueDecision,
       recentTurnCount: recentConversation.length,
       providerId: this.provider.providerId,
       modelId: this.provider.modelId,

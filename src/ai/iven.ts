@@ -43,6 +43,11 @@ export const ivenProfile: NpcProfile = {
     programming: 'none',
     modernTechnology: 'none'
   },
+  socialPolicy: {
+    hearsayStance: 'skeptical',
+    conflictStance: 'defend_own_view',
+    disclosureStyle: 'selective'
+  },
   knownFacts: [
     {
       id: 'iven-patrol-route',
