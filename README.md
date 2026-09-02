@@ -36,11 +36,11 @@ M3 proved that structured information can travel player→NPC→NPC with provena
 
 **NOW:** `M4 — Tavern mystery` (`#30`)
 
-**CURRENT SLICE:** `#33 — The Ash Letter case design`
+**CURRENT SLICE:** `#35 — Authoritative case state & evidence`
 
 **NEXT / BLOCKED:** `M5 — Product decision`
 
-The first M4 reliability guardrail is already done: `#31` / PR `#32` prevents evidence-bearing dialogue from inventing extra sources, source time/place, direct conversations or unsupported certainty while leaving character performance free.
+M4 design is already fixed in disposable prototype form through `#33` / `docs/14-m4-ash-letter-case.md`. The first M4 reliability guardrail is also done: `#31` / PR `#32` prevents evidence-bearing dialogue from inventing extra sources, source time/place, direct conversations or unsupported certainty while leaving character performance free.
 
 Playable build:
 
@@ -143,7 +143,9 @@ The case deliberately contains:
 
 This is disposable prototype content, not a final story commitment.
 
-See `docs/14-m4-ash-letter-case.md` and issue `#33`.
+The current implementation slice turns that authored design into authoritative state: private truth plus a fixed E1–E5 evidence registry, with player-discovered evidence starting empty and mutating only through explicit game transitions.
+
+See `docs/14-m4-ash-letter-case.md` and issue `#35`.
 
 ## Prototype runtime
 
@@ -246,7 +248,7 @@ Default discipline:
 
 Current product owner: `studio-director` through **#30 — M4 Tavern mystery**.
 
-Current bounded work: **#33 — The Ash Letter case design**.
+Current bounded work: **#35 — Authoritative case state & evidence**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
