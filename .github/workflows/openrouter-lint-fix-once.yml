@@ -1,0 +1,38 @@
+name: One-shot OpenRouter lint fix
+
+on:
+  push:
+    branches:
+      - m1/provider-auth-blocker-ui
+    paths:
+      - .github/workflows/openrouter-lint-fix-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m1/provider-auth-blocker-ui
+      - name: Apply prefer-const fix
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('src/main.ts')
+          text = path.read_text()
+          old = "let providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;"
+          new = "const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;"
+          if old not in text:
+            raise SystemExit('expected providerReady declaration not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.ts
+          git commit -m "fix: satisfy OpenRouter main lint"
+          git push origin HEAD:m1/provider-auth-blocker-ui
