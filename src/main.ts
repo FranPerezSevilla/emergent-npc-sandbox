@@ -379,7 +379,7 @@ m2HelpMara.addEventListener('click', () => {
   m2State = applyMaraBakerDebtHelp(m2State, new Date().toISOString());
   if (m2State !== previousState) {
     saveM2State(localStorage, m2State);
-    appendMessage('You', '[You give Mara three silver coins to help cover the baker's overdue debt.]');
+    appendMessage('You', "[You give Mara three silver coins to help cover the baker's overdue debt.]");
     appendMessage('System', 'M2 memory recorded. Close the conversation or reload the page, then ask Mara whether she remembers what you did for her.');
     modelStatus.textContent = 'M2 structured memory recorded · Mara trust is now +1.';
   }
