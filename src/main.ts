@@ -15,8 +15,8 @@ import {
 import type { ConversationTrace } from './ai/conversation-trace.ts';
 import type { InferenceProvider } from './ai/inference.ts';
 import { ivenProfile } from './ai/iven.ts';
-import { M1FakeInferenceProvider } from './ai/m1-fake-inference-provider.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
+import { M1FakeInferenceProvider } from './ai/m1-fake-inference-provider.ts';
 import { maraProfile } from './ai/mara.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
