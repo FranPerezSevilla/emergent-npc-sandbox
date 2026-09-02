@@ -1,0 +1,26 @@
+name: Session export patch
+
+on:
+  push:
+    branches:
+      - m3/session-export
+    paths:
+      - .github/workflows/session-export-patch-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m3/session-export
+      - run: python3 tools/session_export_patch_main.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.ts
+          git commit -m "m3: add browser session JSON export"
+          git push origin HEAD:m3/session-export
