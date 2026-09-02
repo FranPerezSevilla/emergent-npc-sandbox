@@ -1,6 +1,7 @@
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
 import { deriveSocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { DialogueIntentRequest, SocialDialogueDecision } from './dialogue-metabehavior.ts';
+import { validateEvidenceFidelity } from './evidence-fidelity.ts';
 import type { InferenceLoadProgress, InferenceProvider } from './inference.ts';
 import type { NpcSocialContext } from './memory-state.ts';
 import type { ConversationTurn, NpcProfile, NpcResponseV1 } from './npc-types.ts';
@@ -139,15 +140,19 @@ export class NpcConversationEngine {
           maxTokens: 180,
           temperature: attempt === 1 ? 0.55 : 0.35
         });
-        const validation = validateNpcResponse(result.text);
+        const responseValidation = validateNpcResponse(result.text);
+        const evidenceErrors = responseValidation.ok
+          ? validateEvidenceFidelity(responseValidation.response.dialogue, this.beliefs, socialDialogueDecision)
+          : [];
+        const validationErrors = [...responseValidation.errors, ...evidenceErrors];
         attempts.push({
           attempt,
           latencyMs: result.latencyMs,
           rawText: result.text,
-          validationErrors: validation.errors
+          validationErrors
         });
 
-        if (validation.ok) {
+        if (responseValidation.ok && evidenceErrors.length === 0) {
           const trace = this.makeTrace(
             playerUtterance,
             recentConversation,
@@ -155,13 +160,13 @@ export class NpcConversationEngine {
             socialDialogueDecision,
             attempts,
             attempt === 1 ? 'model' : 'retry',
-            validation.response,
+            responseValidation.response,
             performance.now() - startedAt
           );
-          return { response: validation.response, trace };
+          return { response: responseValidation.response, trace };
         }
 
-        retryReason = validation.errors.join('; ').slice(0, 400);
+        retryReason = validationErrors.join('; ').slice(0, 400);
       } catch (error) {
         providerFailed = true;
         attempts.push({
