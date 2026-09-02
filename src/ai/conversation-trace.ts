@@ -1,3 +1,4 @@
+import type { AuthoredTestimonyTraceSnapshot } from './authored-testimony.ts';
 import type { SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { NpcResponseV1 } from './npc-types.ts';
 
@@ -24,6 +25,7 @@ export type ConversationTrace = {
   selectedMemoryIds: string[];
   relationshipSnapshot?: RelationshipTraceSnapshot;
   socialDialogueDecision: SocialDialogueDecision;
+  authoredTestimonyPolicy?: AuthoredTestimonyTraceSnapshot;
   recentTurnCount: number;
   providerId: string;
   modelId: string;
