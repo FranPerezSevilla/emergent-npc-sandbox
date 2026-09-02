@@ -3,11 +3,13 @@ export type BeliefConfidence = 'low' | 'medium' | 'high';
 export type BeliefProvenance = {
   kind: 'first-hand' | 'inference' | 'hearsay';
   description: string;
+  immediateSourceLabel?: string;
 };
 
 export type WorldFact = {
   readonly id: string;
   readonly statement: string;
+  readonly topicTerms?: readonly string[];
 };
 
 export type Belief = {
@@ -21,8 +23,23 @@ export type Belief = {
 
 export const redTravelerExitFact: WorldFact = Object.freeze({
   id: 'world-fact-red-traveler-exit',
-  statement: 'The traveler in the faded red cloak left the tavern through the back door after midnight and returned before dawn.'
+  statement: 'The traveler in the faded red cloak left the tavern through the back door after midnight and returned before dawn.',
+  topicTerms: Object.freeze([
+    'red traveler',
+    'red-cloaked traveler',
+    'red cloak',
+    'traveler',
+    'viajero',
+    'capa roja',
+    'de rojo',
+    'rojo'
+  ])
 });
+
+const worldFacts: readonly WorldFact[] = Object.freeze([redTravelerExitFact]);
+
+export const topicTermsForFactId = (factId: string): readonly string[] =>
+  worldFacts.find((fact) => fact.id === factId)?.topicTerms ?? [];
 
 export const m1Beliefs: readonly Belief[] = Object.freeze([
   Object.freeze({
