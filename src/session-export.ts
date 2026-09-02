@@ -3,6 +3,8 @@ import type { M2State, NpcMemory, RelationshipState } from './ai/memory-state.ts
 import type { ConversationTurn } from './ai/npc-types.ts';
 import type { M3State } from './ai/propagation-state.ts';
 import type { Belief, WorldFact } from './ai/world-state.ts';
+import type { M4CaseState } from './m4/ash-letter-case-state.ts';
+import type { AshLetterTestimonyPolicyState } from './m4/ash-letter-testimony.ts';
 
 export type SessionNpcConversation = {
   readonly npcId: string;
@@ -35,6 +37,10 @@ export type SessionExport = {
     };
     readonly m2: M2State;
     readonly m3: M3State;
+    readonly m4: {
+      readonly caseState: M4CaseState;
+      readonly testimonyPolicyState: AshLetterTestimonyPolicyState;
+    };
   };
   readonly privacy: {
     readonly credentialsIncluded: false;
