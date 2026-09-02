@@ -27,7 +27,7 @@ A milestone is complete only when its exit gate has evidence.
 
 **Current milestone issue:** `#30 — M4 — Tavern mystery`
 
-**Current bounded slice:** `#33 — M4 content slice — The Ash Letter case design`
+**Current bounded slice:** `#35 — M4 implementation slice — Authoritative case state & evidence`
 
 **Previous milestone:** `M3 — Information propagation` — **DONE** via issue #21.
 
@@ -170,7 +170,7 @@ M3 is closed. Future rumor sophistication belongs inside a concrete M4 need, not
 
 Milestone issue: **#30**.
 
-Current bounded slice: **#33 — The Ash Letter case design**.
+Current bounded slice: **#35 — Authoritative case state & evidence**.
 
 ## Hypothesis
 
@@ -194,7 +194,7 @@ M4 exists to discover the product direction rather than assume it. The mystery i
 - representative gothic-expressionist visual slice;
 - diegetic robustness and evidence fidelity retained.
 
-## Completed M4 slice
+## Completed M4 slices
 
 ### #31 — Evidence verbalization fidelity — DONE
 
@@ -204,15 +204,27 @@ The M3 final session showed that the model could preserve source identity but st
 
 The guardrail targets source count, source time/place, directness, inference→eyewitness upgrades and certainty upgrades while preserving the NPC's freedom to omit, discount, refuse or reinterpret available information.
 
+### #33 — The Ash Letter case design — DONE
+
+The disposable prototype case is authored in `docs/14-m4-ash-letter-case.md` before implementation. It fixes the objective timeline, four-NPC knowledge/belief/lie matrix, evidence E1–E5, relationship and propagation hooks, accusation states and plausible wrong paths.
+
+The case deliberately separates lying from guilt: Iven is sincerely wrong, Corren lies for an unrelated secret, and Nera lies because she is responsible for the missing warrant.
+
 ## Active slice
 
-### #33 — The Ash Letter case design — NOW
+### #35 — Authoritative case state & evidence — NOW
 
-Author the case truth, cast, knowledge/lie matrix, evidence atoms, memory hook, propagation hook and accusation state **before** implementing new gameplay infrastructure.
+Represent the case truth and E1–E5 as compact game-owned data before adding runtime mystery behavior.
 
-Case design artifact: `docs/14-m4-ash-letter-case.md`.
+The slice must prove that:
 
-The working case deliberately separates lying from guilt: one NPC is sincerely wrong, one lies for an unrelated secret, and another lies because they are responsible for the incident.
+- objective culprit/private truth remains outside ordinary NPC prompt context;
+- player-discovered evidence starts empty;
+- only explicit game transitions can discover evidence;
+- discovery is idempotent and persistent;
+- arbitrary generated prose cannot create clues or mutate case state.
+
+Do not add Corren/Nera runtime behavior, accusation UI or a generic mystery engine in this slice.
 
 ## Exit gate
 
