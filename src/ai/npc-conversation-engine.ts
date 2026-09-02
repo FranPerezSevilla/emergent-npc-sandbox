@@ -1,3 +1,5 @@
+import { assertNpcTestimonyContext, authoredTestimonyTraceSnapshot } from './authored-testimony.ts';
+import type { NpcTestimonyContext } from './authored-testimony.ts';
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
 import { deriveSocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { DialogueIntentRequest, SocialDialogueDecision } from './dialogue-metabehavior.ts';
@@ -12,6 +14,10 @@ import type { Belief } from './world-state.ts';
 export type NpcConversationResult = {
   response: NpcResponseV1;
   trace: ConversationTrace;
+};
+
+export type NpcConversationEngineOptions = {
+  readonly testimonyContext?: NpcTestimonyContext;
 };
 
 const likelySpanish = (text: string): boolean =>
@@ -79,16 +85,24 @@ export class NpcConversationEngine {
   readonly provider: InferenceProvider;
   readonly profile: NpcProfile;
   readonly beliefs: readonly Belief[];
+  readonly testimonyContext?: NpcTestimonyContext;
 
-  constructor(provider: InferenceProvider, profile: NpcProfile, beliefs: readonly Belief[] = []) {
+  constructor(
+    provider: InferenceProvider,
+    profile: NpcProfile,
+    beliefs: readonly Belief[] = [],
+    options: NpcConversationEngineOptions = {}
+  ) {
     const foreignBelief = beliefs.find((belief) => belief.ownerNpcId !== profile.id);
     if (foreignBelief) {
       throw new Error(`Belief ${foreignBelief.id} belongs to ${foreignBelief.ownerNpcId}, not ${profile.id}.`);
     }
+    if (options.testimonyContext) assertNpcTestimonyContext(options.testimonyContext, profile.id);
 
     this.provider = provider;
     this.profile = profile;
     this.beliefs = Object.freeze([...beliefs]);
+    this.testimonyContext = options.testimonyContext;
   }
 
   async initialize(onProgress?: (progress: InferenceLoadProgress) => void): Promise<void> {
@@ -131,7 +145,8 @@ export class NpcConversationEngine {
         this.beliefs,
         socialContext?.memories ?? [],
         socialContext?.relationship,
-        socialDialogueDecision
+        socialDialogueDecision,
+        this.testimonyContext
       );
 
       try {
@@ -142,7 +157,12 @@ export class NpcConversationEngine {
         });
         const responseValidation = validateNpcResponse(result.text);
         const evidenceErrors = responseValidation.ok
-          ? validateEvidenceFidelity(responseValidation.response.dialogue, this.beliefs, socialDialogueDecision)
+          ? validateEvidenceFidelity(
+              responseValidation.response.dialogue,
+              this.beliefs,
+              socialDialogueDecision,
+              this.testimonyContext
+            )
           : [];
         const validationErrors = [...responseValidation.errors, ...evidenceErrors];
         attempts.push({
@@ -214,6 +234,9 @@ export class NpcConversationEngine {
       selectedMemoryIds: socialContext?.memories.map((memory) => memory.id) ?? [],
       relationshipSnapshot: socialContext ? { trust: socialContext.relationship.trust } : undefined,
       socialDialogueDecision,
+      authoredTestimonyPolicy: this.testimonyContext
+        ? authoredTestimonyTraceSnapshot(this.testimonyContext)
+        : undefined,
       recentTurnCount: recentConversation.length,
       providerId: this.provider.providerId,
       modelId: this.provider.modelId,

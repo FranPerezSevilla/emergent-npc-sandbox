@@ -1,3 +1,5 @@
+import { validateAuthoredTestimonyFidelity } from './authored-testimony.ts';
+import type { NpcTestimonyContext } from './authored-testimony.ts';
 import type { SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { Belief, BeliefConfidence } from './world-state.ts';
 
@@ -75,14 +77,18 @@ const matchesAny = (dialogue: string, patterns: readonly RegExp[]): boolean =>
 export const validateEvidenceFidelity = (
   dialogue: string,
   beliefs: readonly Belief[],
-  decision: SocialDialogueDecision
+  decision: SocialDialogueDecision,
+  testimonyContext?: NpcTestimonyContext
 ): string[] => {
-  if (decision.focus === 'free' || decision.stance === 'none_available') return [];
+  const errors = testimonyContext
+    ? validateAuthoredTestimonyFidelity(dialogue, testimonyContext)
+    : [];
+
+  if (decision.focus === 'free' || decision.stance === 'none_available') return errors;
 
   const relevantBeliefs = relevantBeliefsForDecision(beliefs, decision);
-  if (relevantBeliefs.length === 0) return [];
+  if (relevantBeliefs.length === 0) return errors;
 
-  const errors: string[] = [];
   const hearsay = relevantBeliefs.filter((belief) => belief.provenance.kind === 'hearsay');
 
   if ((decision.focus === 'hearsay' || decision.focus === 'source') && hearsay.length > 0) {
