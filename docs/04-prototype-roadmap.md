@@ -1,325 +1,105 @@
-# Prototype Roadmap — Director Operating View
+# Prototype Roadmap — STOPPED
 
-## Purpose
+## Project status
 
-This is the operational roadmap for the Studio Director. It answers what we are proving now, what must be true before we move on, what comes next, and what is explicitly premature.
+**Emergent NPC Sandbox was abandoned by the human owner on 2026-09-02.**
 
-> The goal is not to build the full game quickly. The goal is to remove the biggest uncertainty, one playable experiment at a time.
+There is no current milestone, no active bounded slice and no next implementation task. This roadmap is retained only as a final record of the experiment.
 
-## Director rule
+Status vocabulary for this document:
 
-At any moment there is exactly **one current product milestone**.
+- **DONE** — the milestone's bounded hypothesis was validated before closure;
+- **STOPPED** — work ended before the milestone gate passed;
+- **CANCELLED** — the milestone will not be started.
 
-The Studio Director MUST:
+## Final decision
 
-1. identify `NOW` from this document;
-2. verify linked issue/PR/playtest evidence before planning new work;
-3. work only on unchecked conditions in the current gate;
-4. create blocker/fix issues only when necessary to pass that gate;
-5. refuse speculative work from later milestones unless the human explicitly changes priority;
-6. after a gate passes, record evidence here before advancing.
+The owner chose to **stop**, not pivot and not continue toward a production roadmap.
 
-A milestone is complete only when its exit gate has evidence.
+The decision followed the first human session with the four-person M4 testimony slice. The session confirmed that the deterministic state boundaries were useful, but also showed that unrestricted generated dialogue could semantically confirm protected information or player-invented premises without making a literal forbidden statement.
 
-## Current state
+Closing that gap through phrase-specific fixtures and validators would create an open-ended maintenance problem. A more principled solution would require a substantially more constrained system—such as structured player dialogue acts, game-owned semantic response plans and controlled claim realization. The owner decided that this complexity did not justify further investment or interest.
 
-**Current milestone:** `M4 — Tavern mystery`
+## Final roadmap
 
-**Current milestone issue:** `#30 — M4 — Tavern mystery`
+| Stage | Final status | Result |
+| --- | --- | --- |
+| **BOOTSTRAP — Cloud playable loop** | **DONE** | Agent changes could reach a browser-playable GitHub Pages build. |
+| **M0 — One living NPC** | **DONE** | One constrained real-AI NPC was sufficiently coherent to continue experimentation. |
+| **M1 — Truth vs belief** | **DONE** | NPC-specific contradictory beliefs coexisted with stable authoritative truth. |
+| **M2 — Memory & relationship** | **DONE** | Structured persistent memory and relationship state changed later behavior. |
+| **M3 — Information propagation** | **DONE** | Information transferred through game-owned state with provenance preserved. |
+| **M4 — Tavern mystery** | **STOPPED** | Several foundations and a four-NPC testimony scene were built, but the complete mystery and semantic-fidelity gate were not achieved. |
+| **M5 — Product decision** | **CANCELLED** | No production direction or Roadmap v2 will be created. |
 
-**Current bounded slice:** `#39 — M4 playable slice — Put Corren and Nera in the browser scene`
+## Completed evidence
 
-**Previous milestone:** `M3 — Information propagation` — **DONE** via issue #21.
+### Bootstrap
 
-M3 evidence:
+The repository established a PlayCanvas Engine + TypeScript + Vite, code-first, browser/cloud-first workflow with CI and GitHub Pages deployment.
 
-- game-owned `ClaimedStatement` and deterministic player→Mara→Iven propagation exist independently of generated prose;
-- provenance survives transfer and Iven receives hearsay rather than magically gaining eyewitness knowledge;
-- objective `WorldFact` remains unchanged;
-- transfer is idempotent and inspectable;
-- contextual dialogue intents and deterministic `SocialDialogueDecision` separate what the NPC knows from how they are inclined to handle it;
-- free-form dialogue is allowed to omit or discount hearsay rather than being forced to recite all beliefs;
-- source-focused dialogue preserves Mara as Iven's immediate source;
-- session export captures conversations, traces, social decisions, beliefs, memories, relationships and M3 state;
-- deterministic regression coverage passes;
-- final human/session gate: **PASS 2026-09-02** — Iven distinguished own observation, skeptical hearsay, source attribution and challenge behavior coherently.
+### M0
 
-Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+Mara demonstrated constrained in-character conversation, competence boundaries, prompt-injection resistance, structured output validation, retry behavior, diegetic fallback and traceability.
 
-Deterministic no-login URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
+### M1
 
-**Next milestone if M4 passes:** `M5 — Product decision`.
+Authoritative `WorldFact` data remained separate from NPC-owned `Belief` data. Mara and Iven could give contradictory testimony without dialogue mutating objective truth or synchronizing beliefs.
 
-Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
+### M2
 
-## Roadmap at a glance
+Compact game-owned `NpcMemory` and bounded relationship trust persisted independently of raw conversation history and could influence later responses for inspectable reasons.
 
-| Stage | Status | Core question | Exit gate | Primary owner |
-|---|---|---|---|---|
-| **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent → CI → Pages → human playtest | Gameplay Engineer |
-| **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human judgment | AI & NPC Systems + QA |
-| **M1 — Truth vs belief** | **DONE** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
-| **M2 — Memory & relationship** | **DONE** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
-| **M3 — Information propagation** | **DONE** | Can information travel socially and cause a delayed consequence? | A tells B; B later reacts without a handcrafted dialogue branch | AI + Narrative/Social |
-| **M4 — Tavern mystery** | **NOW** | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
-| **M5 — Product decision** | **NEXT / BLOCKED** | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
+### M3
 
-`NOW` is the only milestone that should normally receive implementation effort.
+A player claim could move through an explicit player → Mara → Iven chain. The resulting hearsay retained source provenance and did not become eyewitness knowledge or objective truth.
 
----
+## M4 state at closure
 
-# BOOTSTRAP — Cloud playable loop — DONE
+M4's disposable case, **The Ash Letter**, established:
 
-The project can be developed agentically with PlayCanvas/TypeScript and delivered as a browser-playable build without requiring a desktop game editor for routine iteration.
+- one stable private objective timeline;
+- an authored four-NPC knowledge/belief/lie matrix;
+- fixed evidence atoms E1–E5;
+- persistent discovered-evidence state controlled by game transitions;
+- Mara as an uncertain first-hand source;
+- Iven as a sincere but incorrect reasoner;
+- Corren and Nera as distinct NPCs with isolated private case knowledge;
+- game-owned testimony/cover policies;
+- deterministic evidence-fidelity checks;
+- a browser scene where Mara, Iven, Corren and Nera could be questioned;
+- deterministic fake mode, remote-AI mode, traces and session export;
+- 60 passing deterministic tests at the last playable integration merge.
 
-Evidence: issue **#2**, PR **#4**, deployed Pages build, human playtest.
+M4 did **not** complete:
 
----
+- robust semantic handling of arbitrary player allegations and invented sources;
+- safe control of implication, presupposition and over-broad generated claims;
+- Corren's lie-break and E5 path;
+- Nera's trust-sensitive motive disclosure and confession path;
+- physical E3/E4 inspection interactions;
+- accusation and authoritative resolution;
+- representative final visual/audio treatment;
+- a blind 20–30 minute mystery playtest;
+- the M4 fun/memorability gate.
 
-# M0 — One living NPC — DONE
+## Closure of active work
 
-A tightly constrained real-AI NPC is compelling and robust enough to justify continuing the social-simulation architecture.
+- Issue `#30 — M4 Tavern mystery`: closed as **not planned**.
+- Issue `#39 — Put Corren and Nera in the browser scene`: closed as **not planned** after recording that the deterministic implementation existed but the human semantic-quality gate was not accepted.
+- Open pull requests at closure: none.
+- M5 and all later work: cancelled.
+- Automated or autonomous continuation: prohibited by `AGENTS.md`.
 
-Evidence: parent issue **#1**, remote baseline **#8**, final QA **#13**, human character-quality PASS.
+## Preserved artifacts
 
-Core result: the model can perform Mara while game code constrains knowledge, competence and diegetic behavior, with traceable validation/retry/fallback boundaries.
+Historical browser snapshots remain available:
 
----
+- `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+- `https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
 
-# M1 — Truth vs belief — DONE
+The repository history preserves the earlier detailed roadmap, issues, pull requests, test evidence and implementation decisions.
 
-Implementation issue: **#14**. Provider blocker: **#16**.
+## Resumption rule
 
-> The game owns truth. NPCs own beliefs. The LLM owns neither.
-
-Gate evidence:
-
-- [x] authoritative world truth exists independently of dialogue;
-- [x] Mara and Iven can hold contradictory beliefs about the same subject;
-- [x] each NPC receives only its own relevant beliefs;
-- [x] conflicting testimony remains belief-consistent;
-- [x] generated answers do not mutate truth or silently synchronize beliefs;
-- [x] provenance/confidence and selected belief IDs are inspectable;
-- [x] deterministic tests and human browser playtest pass.
-
-Evidence: issue **#14**, blocker **#16**, PRs **#15**, **#17**, **#18**, human PASS 2026-09-02.
-
----
-
-# M2 — Memory & relationship — DONE
-
-Implementation issue: **#19**. Main implementation: **PR #20**.
-
-> Memories are structured game state, not raw model-written autobiography.
-
-> Relationship state is authoritative game data. The LLM may express its consequences but may not silently create or mutate it.
-
-Gate evidence:
-
-- [x] meaningful explicit player interaction creates a compact structured Mara memory through game code;
-- [x] generated dialogue alone cannot create arbitrary memories or relationship changes;
-- [x] memory ownership is isolated per NPC;
-- [x] the original interaction can disappear from the raw transcript;
-- [x] a later relevant turn retrieves the stored memory deterministically;
-- [x] Mara's later behavior changes because memory/relationship state is supplied;
-- [x] unrelated turns do not blindly receive the memory;
-- [x] relationship state changes only through explicit game rules and is inspectable;
-- [x] traces record selected memory IDs and relationship snapshot;
-- [x] structured state survives browser reload while dialogue history does not;
-- [x] deterministic tests cover creation, retrieval, isolation and persistence;
-- [x] human browser playtest confirms Mara appears to remember the earlier interaction.
-
-Evidence: issue **#19**, PR **#20**, deployed Pages build and human PASS on 2026-09-02.
-
-M2 is closed. Do not reopen it for future memory sophistication unless the core structured-memory hypothesis itself regresses.
-
----
-
-# M3 — Information propagation — DONE
-
-Implementation issue: **#21**.
-
-> Information transfer is a game-owned state transition. The LLM may phrase what characters say, but it may not directly grant another NPC knowledge.
-
-> Provenance survives transfer. Hearsay does not become eyewitness evidence merely because it is repeated.
-
-Gate evidence:
-
-- [x] one structured claim is created through explicit game logic;
-- [x] generated dialogue alone cannot create or transfer authoritative information;
-- [x] original source and recipient are recorded;
-- [x] deterministic Mara→Iven transfer works;
-- [x] Iven's resulting belief preserves hearsay/provenance;
-- [x] objective world truth remains unchanged;
-- [x] transfer is idempotent;
-- [x] later testimony can depend on transferred information;
-- [x] traces/debug/session export expose the causal chain;
-- [x] contextual intent chips reduce typing friction without replacing free text;
-- [x] deterministic social metabehavior distinguishes knowledge from disclosure/attitude;
-- [x] human browser/session playtest passes.
-
-Evidence: issue **#21**, PRs **#22**, **#24**, **#29**, final exported-session PASS on 2026-09-02.
-
-M3 is closed. Future rumor sophistication belongs inside a concrete M4 need, not as a standalone infrastructure project.
-
----
-
-# M4 — Tavern mystery — NOW
-
-Milestone issue: **#30**.
-
-Current bounded slice: **#39 — Put Corren and Nera in the browser scene**.
-
-## Hypothesis
-
-The combined systems create enough agency, surprise and social coherence to support an enjoyable ~20–30-minute experience.
-
-M4 exists to discover the product direction rather than assume it. The mystery is prototype content, not a final narrative commitment.
-
-## Scope
-
-- one tavern + minimal surrounding slice;
-- 3–5 meaningful NPCs;
-- one authored incident/mystery;
-- one objective hidden truth;
-- partial/contradictory knowledge;
-- at least one intentional liar and one sincere incorrect belief;
-- relationships/memories;
-- information propagation;
-- free-form interrogation plus contextual intent chips;
-- minimal physical evidence/inspection;
-- accusation/conclusion outcome derived from authoritative state;
-- representative gothic-expressionist visual slice;
-- diegetic robustness and evidence fidelity retained.
-
-## Completed M4 slices
-
-### #31 — Evidence verbalization fidelity — DONE
-
-PR #32 added a bounded deterministic guardrail:
-
-> Tone may be embellished. Evidence may not.
-
-The guardrail targets source count, source time/place, directness, inference→eyewitness upgrades and certainty upgrades while preserving the NPC's freedom to omit, discount, refuse or reinterpret available information.
-
-### #33 — The Ash Letter case design — DONE
-
-The disposable prototype case is authored in `docs/14-m4-ash-letter-case.md`. It fixes the objective timeline, four-NPC knowledge/belief/lie matrix, evidence E1–E5, relationship and propagation hooks, accusation states and plausible wrong paths.
-
-### #35 — Authoritative case state & evidence — DONE
-
-PR #36 established a private `m4-ash-letter` truth definition plus the fixed E1–E5 evidence registry. Player-discovered evidence starts empty, only explicit game code can discover it, discovery is idempotent/persistent, arbitrary model prose cannot create clues, and the culprit/private truth remains outside ordinary NPC prompts.
-
-### #37 — Corren/Nera testimony & lie policies — DONE
-
-PR #38 added distinct Corren and Nera profiles, isolated private case knowledge and deterministic authored cover-story selection. The model may perform an active cover but cannot activate, break or rewrite it. Evidence-fidelity validation constrains even authorized lies, and traces expose the active policy for QA without placing it in normal dialogue UI.
-
-## Active slice
-
-### #39 — Put Corren and Nera in the browser scene — NOW
-
-Make the four-person Ash Letter cast human-testable in the deployed browser build before adding more mystery transitions.
-
-The slice places Mara, Iven, Corren and Nera in the existing small PlayCanvas scene, wires only the owning testimony context into Corren/Nera, retains free text and the M0–M3 regression paths, provides a deterministic no-login fake mode, and exports four-NPC conversation/trace/M4 state evidence.
-
-This remains an early testimony test. It does not yet implement Corren's lie-break, Nera's trust-sensitive disclosure, E3/E4 physical inspection or accusation/resolution.
-
-## Exit gate
-
-- [ ] one coherent authored mystery has stable objective truth independent of model prose;
-- [ ] 3–5 NPCs have distinct motives, beliefs, knowledge and social policies;
-- [ ] at least one NPC lies intentionally and at least one is sincerely wrong;
-- [ ] no NPC receives secrets they should not know;
-- [ ] player can investigate via both intent chips and free text;
-- [ ] observation/hearsay/source distinctions remain causally inspectable;
-- [ ] evidence-bearing model prose cannot invent critical clue details;
-- [ ] memory/relationship produces at least one meaningful delayed consequence;
-- [ ] information propagation produces at least one meaningful delayed consequence;
-- [ ] player can inspect the minimum physical evidence required to cross-check testimony;
-- [ ] player can make a conclusion/accusation and receive an outcome derived from authoritative state;
-- [ ] deterministic regression coverage keeps M0–M3 invariants intact;
-- [ ] session export is sufficient to diagnose the blind playtest;
-- [ ] representative visual/audio presentation supports social presence without dominating scope;
-- [ ] human completes a blind playtest of roughly 20–30 minutes without needing developer explanation;
-- [ ] human reports at least one memorable unscripted interaction and finds the experience worth continuing.
-
-## Explicitly not now
-
-- second mystery;
-- procedural mystery generation;
-- generic deception planner;
-- town-scale rumor graph;
-- autonomous background LLM conversations at scale;
-- vector DB / embeddings by default;
-- schedules/economy/factions;
-- combat/inventory/loot;
-- full production art pass;
-- voice/lip sync;
-- monetization/store work.
-
-## Gate unlocks
-
-`M5 — Product decision`.
-
----
-
-# M5 — Product decision — NEXT / BLOCKED
-
-Possible decisions: investigation/mystery game, broader social RPG, social sandbox, substantial pivot, or stop.
-
-The exit gate is a written human decision based on M4 evidence. Only after a **continue** decision should Roadmap v2 / a production roadmap be created.
-
----
-
-# Cross-cutting tracks
-
-## Licensing / attribution
-
-Always active when a third-party resource is adopted. Follow `docs/10-licensing-attribution.md`.
-
-## Asset pipeline
-
-Use `docs/09-asset-pipeline.md` only when the current milestone actually needs external assets. Do not bulk-ingest in advance.
-
-## Visual direction
-
-`docs/07-visual-direction.md` remains the north star. M4 is the first milestone requiring a representative art slice.
-
-## QA / adversarial testing
-
-Validation is part of every milestone gate, not a separate late phase.
-
-## Observability
-
-From M0 onward, probabilistic behavior must be traceable enough that failures can be diagnosed from evidence.
-
----
-
-# How the Studio Director chooses the next issue
-
-```text
-1. Is the current milestone gate already passed?
-      NO -> identify the single biggest missing gate condition.
-              |
-              +-> Is there already an active issue addressing it?
-                       YES -> do not create competing work.
-                       NO  -> create one bounded issue for it.
-
-      YES -> record evidence + advance roadmap status.
-```
-
-Before creating any issue, ask:
-
-> If this issue succeeds, which unchecked condition in the current milestone gate becomes checked?
-
-If the answer is “none”, the issue is premature.
-
-# Status update discipline
-
-Whenever a milestone advances:
-
-1. update `Current state`;
-2. update roadmap status (`NOW`, `NEXT / BLOCKED`, `LATER`, `DONE`, `STOPPED`);
-3. link the evidence/issue/PR/playtest that passed the previous gate;
-4. identify exactly one next milestone;
-5. do not rewrite later milestone scope unless new evidence materially changes it.
+No agent should infer resumption from a question, code review, dependency alert or old roadmap text. Work may resume only after the human owner explicitly reverses the abandonment decision and updates both `README.md` and `AGENTS.md`.
