@@ -21,6 +21,8 @@ The project is **not** “ChatGPT inside an NPC”.
 
 **NOW:** `M0 — One living NPC with real AI` (`#1`)
 
+**ACTIVE M0 EXPERIMENT:** remote browser inference baseline (`#8`) after two local WebGPU candidates failed the human hardware/runtime gate.
+
 **NEXT / BLOCKED:** `M1 — Truth vs belief`
 
 Bootstrap proved the core development loop:
@@ -102,7 +104,7 @@ M0 builds on the deployed Bootstrap and adds only what is required to answer tha
 - repeatable quality/latency/Spanish benchmark;
 - legal/provenance registration for adopted AI resources.
 
-Browser-local/WebGPU inference is the preferred product hypothesis, but model/runtime selection is evidence-driven.
+Browser-local/WebGPU inference was the initial preferred product hypothesis, but two real playtests failed on load/shader/runtime stability. M0 now uses a remote browser provider as the comparison baseline while keeping the same NPC contract and tests. This is evidence-driven experimentation, not a permanent production-provider decision.
 
 ## AI architecture
 

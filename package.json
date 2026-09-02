@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@heyputer/puter.js": "2.6.2",
     "@mlc-ai/web-llm": "0.2.82",
     "playcanvas": "2.21.4"
   },

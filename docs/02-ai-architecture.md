@@ -8,7 +8,7 @@ The runtime decision for the prototype is defined by `docs/adr/001-playcanvas-cl
 
 ## Prototype stack
 
-### M-1 bootstrap
+### Bootstrap
 
 Prove the whole browser/game/CI loop **without real inference first**:
 
@@ -25,28 +25,37 @@ structured NPC response
 browser preview
 ```
 
+Bootstrap passed its human gate. The browser game loop is no longer the active technical uncertainty.
+
 ### M0 real inference experiment
 
-Keep inference behind an abstraction and compare practical providers/models rather than hard-coding one prematurely.
+Inference stays behind a provider abstraction. M0 chooses providers/models by evidence rather than treating local or cloud inference as doctrine.
 
-Preferred direction:
+The first two browser-local WebGPU experiments produced decisive evidence on the human target machine:
+
+1. `Qwen3-0.6B-q4f16_1-MLC` had unacceptable first-load friction and then failed in a WebGPU shader pipeline requiring `shader-f16`.
+2. `Qwen2.5-0.5B-Instruct-q4f32_1-MLC` loaded successfully, but the browser became unresponsive / crashed on the first real NPC generation.
+
+Therefore browser-local WebGPU inference is **not the default M0 path on the current target hardware**. This is an experimental conclusion, not a permanent ban on local inference for every future platform.
+
+Current M0 path:
 
 ```text
 Browser / PlayCanvas game
         |
         v
-IInferenceProvider
+InferenceProvider
         |
-        +--> browser-local WebGPU/model runtime (preferred hypothesis)
+        +--> FakeInferenceProvider (deterministic tests)
         |
-        +--> optional local sidecar/provider for development
+        +--> remote browser provider (current M0 baseline)
         |
-        +--> optional cloud provider for comparison only
+        +--> archived/optional WebGPU experiment (evidence only)
 ```
 
-Browser-local inference is attractive because it preserves offline/no-per-message-cost operation, but it must be validated for quality, latency, browser support, memory use and licensing before becoming a product requirement.
+Experiment C uses Puter.js as a keyless remote browser baseline so the human can finally evaluate character quality, robustness and latency without loading model weights into the game process. The provider may change later; the domain contract must not.
 
-Ollama is no longer mandatory. It may remain an adapter used for experiments.
+Ollama/local sidecars remain optional future experiments only when evidence requires them.
 
 ## Conversation pipeline
 
@@ -65,7 +74,7 @@ optional diegetic input classifier
 PromptContextBuilder
       |
       v
-NPC actor / IInferenceProvider
+NPC actor / InferenceProvider
       |
       v
 NpcResponseValidator + DialogueLeakageValidator
@@ -216,13 +225,15 @@ export interface InferenceProvider {
 }
 ```
 
-Initial adapters:
+Active M0 adapters:
 
-- `FakeInferenceProvider` — mandatory for deterministic M-1/M0 testing;
-- one real provider selected during M0 benchmarking;
-- additional real providers only when useful for comparison.
+- `FakeInferenceProvider` — mandatory deterministic test path;
+- `PuterInferenceProvider` — current remote browser experiment;
+- WebLLM adapter/source may remain only as archived or optional experiment evidence while it does not participate in the default Pages runtime.
 
-Potential experiments include browser-local/WebGPU inference, Ollama/local sidecar inference and a cloud API baseline. Domain/simulation code must not depend on provider-specific prompt, transport, moderation or output types.
+Provider-specific authentication, transport, billing, moderation and output shapes stay behind the adapter. Domain/simulation code must not know which provider is active.
+
+A remote provider passing M0 does **not** automatically make that service a production dependency. Commercial/service terms and release economics remain a later explicit decision.
 
 ## Conversation traces and replay
 
@@ -260,11 +271,11 @@ Requirements:
 
 This is intentionally lightweight. Do not add a telemetry platform/database before local JSON/in-memory traces prove insufficient.
 
-## Model benchmark
+## Model/provider benchmark
 
-Do not select the permanent local model by intuition.
+Do not select a permanent provider/model by intuition.
 
-M0 should define a small fixed probe set run against candidate provider/model configurations with the same NPC/context.
+M0 uses the same fixed probe set against candidate provider/model configurations with the same NPC/context and validators.
 
 Score at least:
 
@@ -275,7 +286,8 @@ Score at least:
 - structured-output validity;
 - Spanish dialogue quality;
 - latency/time-to-first-useful-output;
-- context following.
+- context following;
+- runtime stability on the actual human test machine.
 
 Use simple reproducible scores/notes first. Do not build a general model-evaluation platform.
 
@@ -312,4 +324,4 @@ Do not artificially add large delays simply to imitate humans.
 
 ## Safety / distribution note
 
-If the final game ships with live-generated AI content, distribution-platform requirements, local-model licensing and content safeguards must be reviewed before release. This is not part of the first technical prototype.
+If the final game ships with live-generated AI content, distribution-platform requirements, model/service licensing, commercial terms, privacy implications and content safeguards must be reviewed before release. Passing M0 is a prototype-quality decision, not release approval.

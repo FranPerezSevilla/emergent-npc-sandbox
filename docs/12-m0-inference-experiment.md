@@ -4,62 +4,109 @@
 
 Roadmap milestone: **M0 — One living NPC** (`#1`).
 
-This document records real-model experiments. It is evidence and an operating note, not a permanent model commitment.
+This document records real-provider experiments. It is evidence and an operating note, not a permanent provider/model commitment.
 
-## Runtime baseline
+The controlled variables stay constant across experiments:
 
-- Runtime: PlayCanvas + TypeScript browser build from Bootstrap.
-- Inference runtime: `@mlc-ai/web-llm` **0.2.82**, pinned exactly.
-- Execution: dedicated browser Web Worker.
-- Context window requested for M0: 2048 tokens.
-- Structured output strategy: prompt for one JSON object, then parse and validate in game code.
-- Real-model path is the default; `?provider=fake` retains a deterministic test/play path.
+- PlayCanvas + TypeScript browser game;
+- Mara Vey profile and competence;
+- five permitted facts and one intentionally absent secret fixture;
+- trusted/untrusted prompt boundary;
+- structured JSON response contract;
+- strict validation and meta-leakage interception;
+- one retry maximum then diegetic fallback;
+- `ConversationTrace`;
+- fixed M0 probe set.
 
-## Experiment A — Qwen3 q4f16_1
+Only the inference provider/model should change when comparing experiments.
+
+## Experiment A — local Qwen3 q4f16_1
+
+Runtime: `@mlc-ai/web-llm` 0.2.82 in a browser Web Worker.
 
 Model: `Qwen3-0.6B-q4f16_1-MLC`.
 
-Purpose: start with a small modern Qwen model and measure character quality, first-load cost, memory and latency.
-
 Human playtest evidence on 2026-09-01:
 
-- first download was approximately 15% complete after ~3 minutes, which is unacceptable playtest friction;
-- after adding automatic preload/cache timing, a subsequent attempt progressed much faster but failed after 25.3 seconds with a WebGPU `GPUPipelineError` while compiling `copy_single_page_kernel`;
-- the q4f16_1 model entry requires the WebGPU `shader-f16` feature, so this candidate is not sufficiently compatible with the human test machine/driver path for M0.
+- first download was only about 15% complete after roughly three minutes;
+- after adding preload/cache timing, a later load advanced much faster but failed after 25.3 seconds with a WebGPU `GPUPipelineError` compiling `copy_single_page_kernel`;
+- WebLLM's q4f16_1 catalogue entry requires `shader-f16`.
 
-Decision: **Experiment A failed the hardware/latency part of the M0 gate. Do not keep trying to make the human test machine run this q4f16 candidate.**
+Decision: **failed M0 latency/hardware gate**. Retire this candidate from active use.
 
-The failure is classified as `latency/hardware`, not as evidence about Mara's character quality.
+## Experiment B — local Qwen2.5 q4f32_1
 
-## Experiment B — Qwen2.5 q4f32_1
+Runtime: same WebLLM path.
 
-Current model candidate: `Qwen2.5-0.5B-Instruct-q4f32_1-MLC`.
+Model: `Qwen2.5-0.5B-Instruct-q4f32_1-MLC`.
 
-Why this candidate:
+Why it was tried:
 
-- it is already in WebLLM's supported prebuilt catalogue;
-- q4f32_1 does **not** require `shader-f16`;
-- the upstream MLC artifact is approximately 290 MB;
-- WebLLM lists roughly 945 MB VRAM for this model;
-- it keeps the experiment in the small Qwen family rather than switching architecture/model family at the same time;
-- base `Qwen/Qwen2.5-0.5B-Instruct` is Apache-2.0 and is suitable as a small multilingual instruction baseline.
+- no `shader-f16` requirement;
+- smaller 0.5B class;
+- WebLLM reports roughly 945 MB VRAM;
+- preserved the same general model family while changing the GPU compatibility path.
 
-Unlike Qwen3, Qwen2.5 has no thinking mode to disable, so M0 does not send the Qwen3-specific `enable_thinking` option.
+Human playtest evidence on 2026-09-02:
 
-Experiment B must answer, in order:
+- the model loaded successfully;
+- a cached load reached 100% in roughly 20 seconds;
+- on the first real Mara generation, the page became unresponsive and the human closed it because the browser was effectively crashing/freezing.
 
-1. Does it initialize successfully on the human test browser/GPU?
-2. Is first-load and warm-cache latency tolerable enough to iterate?
-3. Are free-form Spanish responses usable?
-4. Does Mara stay in character and survive the fixed robustness/competence probes?
+Decision: **failed M0 runtime-stability gate**. Loading successfully is not enough if generation destabilizes the browser.
 
-Do not move to a larger model until Experiment B is actually playable and the fixed probes show a model-capability limitation.
+### Local-inference conclusion for M0
 
-## Why WebLLM 0.2.82 instead of blindly tracking latest
+Experiments A and B are enough evidence to stop blindly cycling through progressively different local models on the target test machine.
 
-The current M0 experiment deliberately pins WebLLM rather than using a floating range. During implementation review, a reported regression beginning in 0.2.83 described WebGPU device hangs with Qwen3 on some integrated GPUs while 0.2.82 remained unaffected for the reported cases.
+Browser-local WebGPU inference remains an interesting future product option, but it is rejected as the **default M0 evaluation path on current target hardware**. M0 needs to measure whether Mara is a convincing character; GPU/driver survival is obscuring that question.
 
-This is not evidence that 0.2.82 is universally safe. It is a bounded experimental choice that should be revisited only when the current gate gives us a reason.
+## Experiment C — remote browser inference baseline
+
+Current provider candidate: **Puter.js / Puter AI Gateway**.
+
+Initial model identifier: `gpt-5.6-luna`.
+
+Why this experiment:
+
+- no language-model weights are loaded into the game process;
+- no developer API key is embedded in the public GitHub Pages bundle;
+- no game backend is required for the experiment;
+- Puter's User-Pays model authenticates usage to the human's Puter account;
+- the existing `InferenceProvider` boundary lets us change only transport/provider while preserving the entire Mara contract and benchmark.
+
+Expected browser flow:
+
+```text
+open Pages
+   ↓
+Connect remote AI
+   ↓
+Puter authentication (first use only)
+   ↓
+free-form Mara conversation
+   ↓
+validation / retry / fallback
+   ↓
+ConversationTrace + fixed probes
+```
+
+Experiment C is a **prototype baseline**, not a production-service decision. Puter service terms and the exact upstream hosted model/provider terms remain separate release/legal questions.
+
+### Experiment C gate
+
+It passes the technical part only when:
+
+1. Pages opens without allocating a local LLM;
+2. authentication works through an explicit user action;
+3. first and subsequent generations do not freeze/crash the browser;
+4. Spanish response latency is measurable and tolerable enough for playtesting;
+5. existing validation, secret omission, retry/fallback and traces still work;
+6. the fixed adversarial/competence probes can run.
+
+Then the human still has the real M0 gate:
+
+> Does Mara feel more like a character than a generic chatbot?
 
 ## Character under test: Mara Vey
 
@@ -70,7 +117,7 @@ Mara is a tavern keeper / local gossip broker with:
 - only five permitted world facts in M0;
 - no access to the authored hidden silver-reliquary test secret.
 
-The hidden secret exists in source solely so deterministic tests can prove that it is absent from the trusted prompt context.
+The hidden secret exists in source solely so deterministic tests can prove that it is absent from trusted prompt context.
 
 ## Trust boundary
 
@@ -87,7 +134,7 @@ NpcProfile + competence + permitted facts
               +
     untrusted player speech
               ↓
-          real provider
+        InferenceProvider
               ↓
           raw text
               ↓
@@ -108,7 +155,7 @@ NpcProfile + competence + permitted facts
  deterministic diegetic fallback
 ```
 
-Provider/parser errors are trace data, never character dialogue.
+Provider/parser/network errors are trace/debug data, never character dialogue.
 
 ## ConversationTrace
 
@@ -122,15 +169,13 @@ Each real turn records enough evidence to distinguish:
 - retry/fallback decisions;
 - permitted fact IDs supplied to Mara.
 
-The current prototype exposes traces through the in-game debug panel and `window.__npcTraces`.
-
-Load/cache timing is exposed through `window.__npcLoadMetrics`.
+The prototype exposes traces through the in-game debug panel and `window.__npcTraces`.
 
 ## Fixed probe set
 
-The browser includes a repeatable M0 benchmark covering:
+The repeatable M0 benchmark covers:
 
-- normal local conversation;
+- normal local/in-world conversation;
 - AI/ChatGPT identity attacks;
 - prompt injection;
 - runtime/model/token probing;
@@ -140,29 +185,26 @@ The browser includes a repeatable M0 benchmark covering:
 - profession/local knowledge;
 - direct and jailbreak-style extraction of an absent secret.
 
-The runner records full responses/traces and a few deterministic warning flags. It does **not** automatically decide whether the character is good; qualitative character judgment remains a human gate.
+The runner records responses/traces and deterministic warning flags. It does **not** automatically decide whether the character is good; qualitative character judgment remains a human gate.
 
 ## Legal/provenance state
 
-- WebLLM 0.2.82: exact source license verified as Apache-2.0 and registered as approved.
-- Experiment A base `Qwen/Qwen3-0.6B`: Apache-2.0 verified; its exact MLC q4f16_1 artifact remains preserved in the registry as an unsuccessful experiment rather than silently erased.
-- Experiment B base `Qwen/Qwen2.5-0.5B-Instruct`: Apache-2.0 verified.
-- The exact `mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC` artifact must be registered separately and conservatively if its artifact page does not expose explicit terms; do not inherit the base-model license by assumption.
-- The Pages build does not contain model weights; WebLLM fetches upstream model artifacts into browser cache at runtime.
-
-Any unresolved artifact-license uncertainty must be resolved before treating a model as a production/release dependency.
+- WebLLM 0.2.82 remains recorded as an adopted experimental runtime; it is no longer on the default M0 execution path.
+- Experiment A Qwen3 q4f16 is retained as removed historical provenance.
+- Experiment B Qwen2.5 q4f32 remains non-release-approved experimental provenance and is no longer the default provider.
+- Puter.js is tracked separately from the Puter hosted AI service.
+- Puter AI service terms and `gpt-5.6-luna` hosted-model provenance are recorded conservatively for Experiment C; prototype success must not be represented as commercial/release approval.
 
 ## M0 decision rule
 
-Do not upgrade model size because one response is awkward. Run the fixed probes and normal conversation first.
-
-Classify failures as:
+Classify failures before changing variables:
 
 1. authored character data;
 2. context/prompt boundary;
 3. validation/fallback;
 4. model capability;
-5. latency/hardware;
-6. presentation.
+5. provider/runtime/hardware;
+6. latency;
+7. presentation.
 
-Only model-capability evidence should drive a larger-model comparison.
+Only model-capability evidence should drive a larger/better-model comparison. Provider/runtime failure should change the provider/runtime, as Experiments A and B demonstrated.
