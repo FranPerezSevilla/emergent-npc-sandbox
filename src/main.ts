@@ -31,6 +31,10 @@ import {
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
 import {
+  M1_OPENROUTER_MODEL_ID,
+  OpenRouterInferenceProvider
+} from './ai/openrouter-inference-provider.ts';
+import {
   MARA_TO_IVEN_TRANSFER_ID,
   PLAYER_RED_TRAVELER_EXIT_CLAIM_ID,
   loadM3State,
@@ -40,10 +44,6 @@ import {
   saveM3State,
   transferPlayerClaimFromMaraToIven
 } from './ai/propagation-state.ts';
-import {
-  M1_OPENROUTER_MODEL_ID,
-  OpenRouterInferenceProvider
-} from './ai/openrouter-inference-provider.ts';
 import { beliefsForNpc, m1Beliefs, redTravelerExitFact } from './ai/world-state.ts';
 import './starter.css';
 
