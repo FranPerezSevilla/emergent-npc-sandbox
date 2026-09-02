@@ -30,30 +30,29 @@ A milestone is complete only when its **exit gate has evidence**.
 
 ## Current state
 
-**Current milestone:** `M1 — Truth vs belief`
+**Current milestone:** `M2 — Memory & relationship`
 
-**Current implementation issue:** `#14 — M1 — Truth vs belief`
+**Current implementation issue:** `#19 — M2 — Memory & relationship`
 
-**Previous milestone:** `M0 — One living NPC with real AI` — **DONE** via parent issue #1, remote experiment #8 and final QA #13.
+**Previous milestone:** `M1 — Truth vs belief` — **DONE** via issue #14, provider blocker #16, PR #15, provider PR #17 and free-model correction PR #18.
 
-M0 evidence:
+M1 evidence:
 
-- deployed browser conversation driven by a real provider;
-- responsive remote inference path after local WebGPU experiments failed the human hardware/runtime gate;
-- authored Mara profile, competence and permitted facts;
-- inaccessible facts omitted from model context;
-- structured validation, max-one-retry and diegetic fallback;
-- deterministic fake/recorded path and tests;
-- `ConversationTrace` diagnosed real provider failures;
-- real-model sweep passed normal conversation, meta/jailbreak, runtime probing, competence boundaries, legitimate arithmetic/local knowledge and secret extraction;
-- one first-attempt `ChatGPT` leakage was intercepted by validation and corrected by the single retry;
-- benchmark `answered-programming` flag was reviewed as a false positive because Mara refused coding and emitted no code;
-- human character-quality gate: **PASS 2026-09-02**;
-- adopted AI resources remain registered with explicit legal review state.
+- authoritative `WorldFact` exists independently of generated dialogue;
+- NPC-owned `Belief` state carries provenance/confidence and remains separate from truth;
+- Mara and Iven receive isolated belief context and can hold contradictory beliefs about the same incident;
+- `ConversationTrace` records selected belief IDs;
+- deterministic tests prove truth immutability, per-NPC belief isolation, contradictory-belief coexistence and no implicit belief mutation by generated prose;
+- deployed browser build exposes truth vs beliefs for inspection;
+- Puter was rejected as the default prototype provider after `phone_verification_required` blocked human testing;
+- OpenRouter browser OAuth PKCE replaced Puter without embedding a developer API key in Pages;
+- the first OpenRouter free-model candidate was retired after a real 404 availability failure and replaced with the current MiniMax M3 free prototype endpoint;
+- provider/auth/quota/network failures are now surfaced as non-diegetic system state rather than NPC dialogue;
+- human truth-vs-belief gate: **PASS 2026-09-02** — Mara and Iven behaved coherently and as expected when questioned separately.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
 
-**Next milestone if M1 passes:** `M2 — Memory & relationship`.
+**Next milestone if M2 passes:** `M3 — Information propagation`.
 
 Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
@@ -63,9 +62,9 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 |---|---|---|---|---|
 | **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent -> CI -> Pages -> human playtest | Gameplay Engineer |
 | **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human character judgment | AI & NPC Systems + QA |
-| **M1 — Truth vs belief** | **NOW** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
-| **M2 — Memory & relationship** | **NEXT / BLOCKED** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
-| **M3 — Information propagation** | LATER | Can information travel socially and cause an unscripted delayed consequence? | A tells B; B later reacts without a handcrafted branch | AI + Narrative/Social |
+| **M1 — Truth vs belief** | **DONE** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
+| **M2 — Memory & relationship** | **NOW** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
+| **M3 — Information propagation** | **NEXT / BLOCKED** | Can information travel socially and cause an unscripted delayed consequence? | A tells B; B later reacts without a handcrafted branch | AI + Narrative/Social |
 | **M4 — Tavern mystery** | LATER | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
 | **M5 — Product decision** | LATER | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
 
@@ -113,13 +112,13 @@ M0 is closed. Do not reopen it because of future provider/product optimization u
 
 ---
 
-# M1 — Truth vs belief — NOW
+# M1 — Truth vs belief — DONE
 
-Implementation issue: **#14**.
+Implementation issue: **#14**. Provider blocker: **#16**.
 
-## Hypothesis
+## Result
 
-The simulation can maintain objective truth separately from character belief, allowing believable disagreement, misinformation and testimony without generated dialogue rewriting reality.
+The simulation can maintain objective truth separately from character belief, allowing two NPCs to disagree coherently without generated dialogue rewriting authoritative state.
 
 ## Core rule
 
@@ -127,98 +126,79 @@ The simulation can maintain objective truth separately from character belief, al
 
 Generated dialogue is testimony, not authority.
 
-## Required outcome
+## Gate evidence
 
-Implement the smallest executable truth-vs-belief slice:
+- [x] one authoritative world fact exists independently of dialogue;
+- [x] NPC A and NPC B can hold contradictory beliefs about the same subject;
+- [x] each NPC receives only its own relevant beliefs/knowledge;
+- [x] asking both NPCs the same question produces conflicting but belief-consistent testimony;
+- [x] objective truth remains unchanged regardless of generated answers;
+- [x] repeated conversation does not silently synchronize beliefs;
+- [x] conversation cannot grant knowledge/belief that game code never supplied;
+- [x] debug view makes truth, belief, provenance and confidence inspectable;
+- [x] traces make each testimony explainable from selected belief IDs;
+- [x] deterministic fake/replay path covers the contradictory-testimony scenario;
+- [x] human browser playtest confirms the disagreement feels coherent rather than random.
 
-- authoritative `WorldFact`;
-- NPC-owned `Belief`;
-- belief confidence/provenance;
-- NPC-specific context filtering;
-- two NPCs with contradictory beliefs/testimony about one tiny incident;
-- debug visibility into objective truth vs each NPC belief;
-- `ConversationTrace` records selected belief IDs/context decisions;
-- deterministic tests proving truth cannot be mutated by generated testimony.
+Evidence: issue **#14**, blocker **#16**, PRs **#15**, **#17**, **#18**, deployed Pages build and human PASS on 2026-09-02.
 
-## Exit gate — PASS only if all are true
-
-- [ ] one authoritative world fact exists independently of dialogue;
-- [ ] NPC A and NPC B can hold contradictory beliefs about the same subject;
-- [ ] each NPC receives only its own relevant beliefs/knowledge;
-- [ ] asking both NPCs the same question produces conflicting but belief-consistent testimony;
-- [ ] objective truth remains unchanged regardless of generated answers;
-- [ ] repeated conversation does not silently synchronize beliefs;
-- [ ] conversation cannot grant knowledge/belief that game code never supplied;
-- [ ] debug view makes truth, belief, provenance and confidence inspectable;
-- [ ] traces make each testimony explainable from selected belief IDs;
-- [ ] deterministic fake/replay path covers the contradictory-testimony scenario;
-- [ ] human browser playtest confirms the disagreement feels coherent rather than random.
-
-## Smallest scenario
-
-Use one tiny authored incident, not a full mystery.
-
-Example shape:
-
-```text
-WorldFact F1
-Truth: the red-cloaked traveler left through the back door after midnight.
-
-Mara belief B1
-Believes she heard the back door after midnight.
-Confidence: medium.
-Source: first-hand sound; did not see the traveler.
-
-Second NPC belief B2
-Believes the traveler never left the upstairs room.
-Confidence: high.
-Source: visual evidence interpreted incorrectly.
-```
-
-The exact fiction may change. The proof is the data boundary, not the content.
-
-## Explicitly not now
-
-- long-term episodic memory;
-- relationship simulation beyond a tiny M1 need;
-- NPC-to-NPC gossip/information propagation;
-- automatic belief updating from every conversation;
-- vector DB / town-scale knowledge graph;
-- deception planner unless strictly required by the authored scenario;
-- schedules/economy/factions;
-- full tavern mystery content;
-- M2/M3 implementation.
-
-## Gate unlocks
-
-`M2 — Memory & relationship`.
+M1 is closed. Provider optimization may continue later if needed, but it does not reopen the truth-vs-belief hypothesis unless the domain boundary itself regresses.
 
 ---
 
-# M2 — Memory & relationship — NEXT / BLOCKED
+# M2 — Memory & relationship — NOW
+
+Implementation issue: **#19**.
 
 ## Hypothesis
 
 A character becomes substantially more believable when a later interaction changes because of a meaningful earlier interaction no longer present in the immediate transcript.
 
+## Core rules
+
+> Memories are structured game state, not raw model-written autobiography.
+
+> Relationship state is authoritative game data. The LLM may express its consequences but may not silently create or mutate it.
+
 ## Required outcome
 
-- compact structured memories;
-- minimal relationship state, starting only with proven dimensions;
+- compact structured memories owned by one NPC;
+- minimal relationship state, beginning with at most 1–2 proven dimensions;
+- deterministic memory creation for one tiny authored scenario;
+- deterministic relationship mutation rules;
 - relevance selection for prior memories;
-- persistence/reload if needed for the experiment;
-- debug visibility into retrieved memories.
+- memory ownership/isolation between NPCs;
+- prompt context that distinguishes remembered experience from objective truth;
+- `ConversationTrace` records selected memory IDs and relevant relationship state;
+- persistence/reload only to the minimum degree required by the experiment;
+- debug visibility into stored/retrieved memories and relationship state.
 
-## Exit gate
+## Exit gate — PASS only if all are true
 
-PASS when interaction A falls outside the raw dialogue window and a later interaction B changes meaningfully because stored memory A is retrieved and applied through deterministic rules.
+- [ ] a meaningful prior interaction creates a compact structured memory through game code;
+- [ ] generated dialogue alone cannot create arbitrary memories or relationship changes;
+- [ ] memory ownership is isolated per NPC;
+- [ ] the original interaction can fall outside the immediate raw transcript window;
+- [ ] a later turn retrieves the relevant prior memory deterministically;
+- [ ] the later response changes meaningfully because that memory/relationship state was supplied;
+- [ ] unrelated memories are not blindly dumped into context;
+- [ ] relationship state changes only through explicit game rules and is inspectable;
+- [ ] traces record selected memory IDs + relationship state used for the turn;
+- [ ] persistence/reload works to the minimum degree required by the experiment;
+- [ ] deterministic fake/replay tests cover creation, retrieval, isolation and non-mutation by prose;
+- [ ] human browser playtest confirms the NPC appears to remember the earlier interaction rather than merely echoing recent transcript text.
 
 ## Explicitly not now
 
+- NPC-to-NPC gossip / information propagation;
 - vector DB unless structured retrieval measurably fails;
+- embeddings by default;
 - sophisticated forgetting psychology;
+- dozens of relationship dimensions;
+- unrestricted LLM-authored memories;
 - full NPC schedules;
-- social propagation.
+- schedules/economy/factions;
+- full mystery content.
 
 ## Gate unlocks
 
@@ -226,7 +206,7 @@ PASS when interaction A falls outside the raw dialogue window and a later intera
 
 ---
 
-# M3 — Information propagation
+# M3 — Information propagation — NEXT / BLOCKED
 
 ## Hypothesis
 
