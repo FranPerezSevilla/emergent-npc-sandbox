@@ -45,7 +45,6 @@ export class PuterInferenceProvider implements InferenceProvider {
     const startedAt = performance.now();
     const response = await puter.ai.chat(request.messages, {
       model: this.modelId,
-      stream: false,
       max_tokens: request.maxTokens,
       temperature: request.temperature
     });
