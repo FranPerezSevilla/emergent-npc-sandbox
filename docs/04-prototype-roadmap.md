@@ -27,7 +27,7 @@ A milestone is complete only when its exit gate has evidence.
 
 **Current milestone issue:** `#30 — M4 — Tavern mystery`
 
-**Current bounded slice:** `#35 — M4 implementation slice — Authoritative case state & evidence`
+**Current bounded slice:** `#37 — M4 implementation slice — Corren/Nera testimony & lie policies`
 
 **Previous milestone:** `M3 — Information propagation` — **DONE** via issue #21.
 
@@ -43,10 +43,6 @@ M3 evidence:
 - session export captures conversations, traces, social decisions, beliefs, memories, relationships and M3 state;
 - deterministic regression coverage passes;
 - final human/session gate: **PASS 2026-09-02** — Iven distinguished own observation, skeptical hearsay, source attribution and challenge behavior coherently.
-
-First M4 reliability guardrail is also complete:
-
-- #31 / PR #32 adds deterministic evidence-verbalization fidelity so the model may embellish performance but not invent evidence-bearing source count, source time/place, directness or certainty.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
 
@@ -170,7 +166,7 @@ M3 is closed. Future rumor sophistication belongs inside a concrete M4 need, not
 
 Milestone issue: **#30**.
 
-Current bounded slice: **#35 — Authoritative case state & evidence**.
+Current bounded slice: **#37 — Corren/Nera testimony & lie policies**.
 
 ## Hypothesis
 
@@ -198,7 +194,7 @@ M4 exists to discover the product direction rather than assume it. The mystery i
 
 ### #31 — Evidence verbalization fidelity — DONE
 
-The M3 final session showed that the model could preserve source identity but still invent evidence-like details such as extra source context or social consensus. PR #32 added a bounded deterministic guardrail:
+PR #32 added a bounded deterministic guardrail:
 
 > Tone may be embellished. Evidence may not.
 
@@ -206,25 +202,21 @@ The guardrail targets source count, source time/place, directness, inference→e
 
 ### #33 — The Ash Letter case design — DONE
 
-The disposable prototype case is authored in `docs/14-m4-ash-letter-case.md` before implementation. It fixes the objective timeline, four-NPC knowledge/belief/lie matrix, evidence E1–E5, relationship and propagation hooks, accusation states and plausible wrong paths.
+The disposable prototype case is authored in `docs/14-m4-ash-letter-case.md`. It fixes the objective timeline, four-NPC knowledge/belief/lie matrix, evidence E1–E5, relationship and propagation hooks, accusation states and plausible wrong paths.
 
-The case deliberately separates lying from guilt: Iven is sincerely wrong, Corren lies for an unrelated secret, and Nera lies because she is responsible for the missing warrant.
+### #35 — Authoritative case state & evidence — DONE
+
+PR #36 established a private `m4-ash-letter` truth definition plus the fixed E1–E5 evidence registry. Player-discovered evidence starts empty, only explicit game code can discover it, discovery is idempotent/persistent, arbitrary model prose cannot create clues, and the culprit/private truth remains outside ordinary NPC prompts.
 
 ## Active slice
 
-### #35 — Authoritative case state & evidence — NOW
+### #37 — Corren/Nera testimony & lie policies — NOW
 
-Represent the case truth and E1–E5 as compact game-owned data before adding runtime mystery behavior.
+Add the two remaining case NPCs and prove that intentional lying can remain simulation-owned rather than being delegated to arbitrary model invention.
 
-The slice must prove that:
+The game will own each active cover story and each NPC's private case knowledge. The model will only perform the currently authorized testimony. Corren must not receive Nera's culprit facts; Nera's private guilt must not leak to other NPCs.
 
-- objective culprit/private truth remains outside ordinary NPC prompt context;
-- player-discovered evidence starts empty;
-- only explicit game transitions can discover evidence;
-- discovery is idempotent and persistent;
-- arbitrary generated prose cannot create clues or mutate case state.
-
-Do not add Corren/Nera runtime behavior, accusation UI or a generic mystery engine in this slice.
+This slice does not yet implement lie-breaking, accusation, physical inspection UI or the Nera trust hook.
 
 ## Exit gate
 
