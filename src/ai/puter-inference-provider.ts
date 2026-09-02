@@ -27,7 +27,7 @@ export class PuterInferenceProvider implements InferenceProvider {
     }
 
     const startedAt = performance.now();
-    const response = await puter.ai.chat(request.messages, false, {
+    const response = await puter.ai.chat(request.messages, {
       model: this.modelId,
       normalize: true,
       stream: false,
