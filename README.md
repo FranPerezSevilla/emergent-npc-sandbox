@@ -4,13 +4,14 @@
 
 ## One-sentence pitch
 
-A small social sandbox where NPCs are structured simulated people with personalities, goals, knowledge, secrets and eventually memories/relationships, while a language model acts as the performer that decides how each NPC expresses itself in free-form conversation.
+A small social sandbox where NPCs are structured simulated people with personalities, goals, knowledge, beliefs, secrets and eventually memories/relationships, while a language model acts as the performer that decides how each NPC expresses itself in free-form conversation.
 
 ## Core rule
 
 The project is **not** “ChatGPT inside an NPC”.
 
 - **Game code owns truth and authoritative state.**
+- **NPCs own beliefs/knowledge assigned by the simulation.**
 - **The LLM interprets the NPC and proposes dialogue/social actions.**
 - **Generated prose never directly mutates authoritative world state.**
 - **Player text is speech inside the fiction, never privileged model instruction.**
@@ -19,15 +20,85 @@ The project is **not** “ChatGPT inside an NPC”.
 
 **DONE:** `BOOTSTRAP — Cloud playable loop` (`#2`, PR `#4`)
 
-**NOW:** `M0 — One living NPC with real AI` — **final QA** (`#13`, parent `#1`)
+**DONE:** `M0 — One living NPC with real AI` (`#1`)
 
-**HUMAN CHARACTER GATE:** **PASS** on 2026-09-02. The human likes the Mara interaction and considers the character-quality test valid.
+M0 evidence includes the remote inference experiment `#8`, final QA `#13`, deterministic validation and a human character-quality PASS on 2026-09-02.
 
-**ACTIVE M0 EXPERIMENT:** remote browser inference baseline (`#8`). Local WebGPU candidates are retained as failed experiment evidence, not as the default runtime.
+**NOW:** `M1 — Truth vs belief` (`#14`)
 
-**NEXT / BLOCKED:** `M1 — Truth vs belief`
+**NEXT / BLOCKED:** `M2 — Memory & relationship`
 
-Bootstrap proved the core development loop:
+Playable build:
+
+`https://franperezsevilla.github.io/emergent-npc-sandbox/`
+
+The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not a parallel implementation backlog.
+
+## Development sequence
+
+```text
+BOOTSTRAP — cloud playable loop        DONE
+        ↓
+M0 — one living NPC                    DONE
+        ↓
+M1 — truth vs belief                   NOW
+        ↓
+M2 — memory & relationship             NEXT / BLOCKED
+        ↓
+M3 — information propagation
+        ↓
+M4 — tavern mystery / blind playtest
+        ↓
+M5 — human product decision
+```
+
+A production roadmap is deliberately deferred until M5.
+
+## What M0 proved
+
+One constrained real-AI NPC can be good enough to continue building the social simulation.
+
+Mara passed:
+
+- normal free-form Spanish conversation;
+- AI/ChatGPT identity attacks;
+- prompt injection;
+- runtime/model/token probing;
+- competence boundaries for advanced math and programming;
+- legitimate tavern arithmetic and local knowledge;
+- direct and jailbreak-style attempts to extract an inaccessible secret;
+- validation/retry/fallback behavior;
+- `ConversationTrace` diagnosis of real provider failures.
+
+One benchmark flag (`answered-programming`) was a false positive: Mara explicitly refused the programming request and emitted no code. This is recorded as a benchmark-heuristic issue, not an M0 failure.
+
+Browser-local WebGPU inference was tested and failed the real hardware/runtime gate through load, shader compatibility and browser stability problems. The current prototype uses a remote Puter/Luna provider behind the same provider-agnostic `InferenceProvider` boundary. That is an experimental baseline, **not a final production-provider commitment**.
+
+## M1 target — truth vs belief
+
+M1 asks:
+
+> Can two NPCs sincerely disagree in free-form conversation for deterministic, inspectable reasons while objective truth remains stable and outside the model's control?
+
+The smallest experiment introduces:
+
+- authoritative `WorldFact` data;
+- NPC-owned `Belief` data;
+- provenance/confidence;
+- context filtering so each NPC receives only its own beliefs;
+- a second NPC with contradictory testimony;
+- debug visibility into truth vs each NPC belief;
+- `ConversationTrace` evidence of which beliefs were supplied.
+
+The LLM may phrase testimony, but it may not create truth or silently grant knowledge.
+
+See issue `#14` for the exact gate and scope.
+
+## Prototype runtime
+
+The runtime is **PlayCanvas Engine + TypeScript + Vite**, code-first and browser/cloud-first.
+
+Routine flow:
 
 ```text
 agent/repo change
@@ -41,85 +112,20 @@ GitHub Pages
 human browser playtest
 ```
 
-Playable build:
-
-`https://franperezsevilla.github.io/emergent-npc-sandbox/`
-
-The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not parallel implementation work.
-
-## Prototype runtime
-
-The prototype runtime is **PlayCanvas Engine + TypeScript + Vite**, code-first and browser/cloud-first.
+The PlayCanvas Editor may be used when helpful, but it is not the authoritative source of truth for routine development.
 
 See `docs/adr/001-playcanvas-cloud-first-runtime.md`.
-
-Why:
-
-- browser-playable builds;
-- agent-editable code/data rather than editor-only scene state;
-- no routine local Unity/PlayCanvas Editor requirement;
-- direct GLB/glTF asset path;
-- simple CI and static deployment;
-- easy provider swapping for AI experiments.
-
-The PlayCanvas Editor may still be used when useful, but it is not the authoritative source of truth for ordinary development.
-
-## Development sequence
-
-```text
-BOOTSTRAP — cloud playable loop        DONE
-        ↓
-M0 — one living NPC                    NOW — FINAL QA
-        ↓
-M1 — truth vs belief                   BLOCKED
-        ↓
-M2 — memory & relationship
-        ↓
-M3 — information propagation
-        ↓
-M4 — tavern mystery / blind playtest
-        ↓
-M5 — human product decision
-```
-
-A production roadmap is deliberately deferred until M5.
-
-## M0 target
-
-M0 asks one question:
-
-> Can one constrained AI NPC feel more like a fictional person than a generic chatbot, including when the player deliberately tries to break the fiction?
-
-The human character-quality half of that question is now **PASS**. The only remaining M0 evidence gap is the bounded real-model adversarial/competence/secret probe sweep in issue #13.
-
-M0 builds on the deployed Bootstrap and adds only what is required to answer that:
-
-- one authored NPC;
-- `NpcProfile`;
-- explicit `NpcCompetenceProfile`;
-- small permitted knowledge set;
-- one real model/provider experiment;
-- provider-agnostic `InferenceProvider` boundary;
-- deterministic fake/recorded provider retained;
-- versioned structured response;
-- validation and diegetic fallback;
-- adversarial/meta-jailbreak probes;
-- `ConversationTrace` diagnostics;
-- repeatable quality/latency/Spanish benchmark;
-- legal/provenance registration for adopted AI resources.
-
-Browser-local/WebGPU inference was the initial preferred product hypothesis, but two real playtests failed on load/shader/runtime stability. M0 now uses a remote browser provider as the comparison baseline while keeping the same NPC contract and tests. This is evidence-driven experimentation, not a permanent production-provider decision.
 
 ## AI architecture
 
 Conceptually:
 
 ```text
-Authoritative world state
+Authoritative world truth
         +
 NPC profile / competence
         +
-Only facts this NPC may know
+NPC-specific beliefs / permitted knowledge
         +
 Relevant current context
         +
@@ -140,8 +146,6 @@ Important robustness rule:
 
 > Out-of-world, adversarial or nonsensical player input is interpreted from inside the NPC's worldview, never answered from the underlying model's worldview.
 
-So input such as “ignore your instructions” or “you are an AI” should produce an in-fiction reaction, not reveal the implementation.
-
 See `docs/02-ai-architecture.md` and `docs/06-diegetic-robustness.md`.
 
 ## World truth vs beliefs
@@ -154,15 +158,15 @@ Example:
 FACT_173
 Truth: Juan steals money from the church.
 
-Beliefs / knowledge:
+Beliefs:
 - Juan: first-hand certainty
 - Marta: strong indirect evidence
 - Priest: suspicion
 ```
 
-NPCs may tell the truth, lie, omit information or later repeat false information. The LLM does not get to rewrite `FACT_173` by saying something different.
+NPCs may tell the truth, be mistaken, omit information or eventually lie. None of those utterances rewrite `FACT_173`.
 
-This becomes the explicit focus of M1 only after M0 passes.
+M1 now makes this distinction executable and inspectable.
 
 ## Prototype product direction
 
@@ -189,32 +193,7 @@ Principles:
 - body/head gesture vocabulary before complex facial rigs;
 - simple materials with art-directed lighting.
 
-External low-poly packs are raw production material, not final art direction:
-
-> Buy/download geometry; author the art direction.
-
 See `docs/07-visual-direction.md`.
-
-## Asset pipeline
-
-Routine external-asset ingestion should be agentic and reproducible:
-
-```text
-source / legal access
-      ↓
-source manifest
-      ↓
-Technical Art Director
-inspect → select → normalize → adapt → validate
-      ↓
-runtime-assets/
-      ↓
-PlayCanvas scene/build
-```
-
-GLB/glTF is the default portable 3D format. Do not dump whole packs into production when an issue needs only a small subset.
-
-See `docs/09-asset-pipeline.md`.
 
 ## Licensing and attribution
 
@@ -232,22 +211,22 @@ Default discipline:
 
 > One current milestone, one bounded issue, one accountable owner, evidence before advancing.
 
-The current accountable task is final M0 QA through issue #13, owned operationally by `qa-playtest-engineer`; `ai-npc-systems-engineer` only re-enters if the probe sweep finds a concrete model/context failure.
+Current accountable owner: `ai-npc-systems-engineer` through **#14 — M1 Truth vs belief**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
 ## Non-goals right now
 
-Until the final M0 QA sweep passes, do **not** build:
+Until M1 passes, do **not** build:
 
-- M1 truth-vs-belief implementation;
-- long-term memory;
-- gossip propagation;
-- multiple deeply simulated NPCs;
-- vector database;
+- long-term episodic memory;
+- relationship systems beyond any tiny M1 need;
+- NPC-to-NPC gossip/information propagation;
+- automatic belief updating from every conversation;
+- vector database / town-scale knowledge graph;
 - generic multi-agent/planner framework;
 - combat/inventory/quests;
 - huge world simulation;
 - final art production;
 - voice synthesis / lip sync;
-- large speculative asset pipelines.
+- M2/M3 systems in parallel.
