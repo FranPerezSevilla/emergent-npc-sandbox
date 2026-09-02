@@ -199,20 +199,20 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - Release allowed: no
 - Evidence: https://docs.puter.com/AI/chat/, https://docs.puter.com/AI/, https://puter.com/terms
 
-## OpenAI gpt-oss-20b (free) via OpenRouter
+## MiniMax M3 (free) via OpenRouter
 
-- ID: `openai-gpt-oss-20b-free-via-openrouter-m1`
+- ID: `minimax-m3-free-via-openrouter-m1`
 - Type: `ai_model`
-- Creator/provider: OpenAI; hosted by providers routed through OpenRouter
-- License/terms: Base model Apache License 2.0; hosted provider/service terms require release review
-- License/terms URL: https://github.com/openai/gpt-oss/blob/main/LICENSE
-- Source URL: https://openrouter.ai/openai/gpt-oss-20b:free
+- Creator/provider: MiniMax; hosted by providers routed through OpenRouter
+- License/terms: Model/provider/service terms — release review pending
+- License/terms URL: https://openrouter.ai/minimax/minimax-m3:free
+- Source URL: https://openrouter.ai/minimax/minimax-m3:free
 - Commercial use: unclear
 - Modification: not_applicable
 - Redistribution: not_applicable
 - AI processing: not_applicable
 - Release allowed: no
-- Evidence: https://openrouter.ai/openai/gpt-oss-20b:free, https://developers.openai.com/api/docs/models/gpt-oss-20b, https://github.com/openai/gpt-oss/blob/main/LICENSE
+- Evidence: https://openrouter.ai/minimax/minimax-m3:free, https://openrouter.ai/docs/guides/privacy/data-collection, https://openrouter.ai/terms
 
 ## Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
