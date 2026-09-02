@@ -16,8 +16,18 @@ import type { ConversationTrace } from './ai/conversation-trace.ts';
 import type { InferenceProvider } from './ai/inference.ts';
 import { ivenProfile } from './ai/iven.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
-import { M1FakeInferenceProvider } from './ai/m1-fake-inference-provider.ts';
+import { M2FakeInferenceProvider } from './ai/m2-fake-inference-provider.ts';
 import { maraProfile } from './ai/mara.ts';
+import {
+  MARA_BAKER_DEBT_MEMORY_ID,
+  applyMaraBakerDebtHelp,
+  loadM2State,
+  memoriesForNpc,
+  relationshipForNpc,
+  resetM2State,
+  saveM2State,
+  selectRelevantMemories
+} from './ai/memory-state.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
 import {
@@ -53,13 +63,15 @@ if (openRouterProvider) {
   }
 }
 
-const provider: InferenceProvider = useFakeProvider ? new M1FakeInferenceProvider() : openRouterProvider!;
+const provider: InferenceProvider = useFakeProvider ? new M2FakeInferenceProvider() : openRouterProvider!;
 const maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForNpc('mara'));
 const ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForNpc('iven'));
 const traces: ConversationTrace[] = [];
 const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
+let m2State = loadM2State(localStorage);
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
+(window as unknown as { __m2State: unknown }).__m2State = m2State;
 (window as unknown as { __m1TruthBeliefs: unknown }).__m1TruthBeliefs = {
   objectiveTruth: redTravelerExitFact,
   beliefs: m1Beliefs
@@ -69,20 +81,26 @@ document.body.insertAdjacentHTML(
   'beforeend',
   `<div class="hud">
     <section class="bootstrap-panel">
-      <h1>Emergent NPC Sandbox — M1</h1>
+      <h1>Emergent NPC Sandbox — M2</h1>
       <p>Click the scene for mouse look. Move with WASD. Approach Mara or Iven and press E.</p>
-      <p>Ask both NPCs whether the red-cloaked traveler left after midnight. Game code owns objective truth; each NPC receives only their own belief.</p>
+      <p>M2 test: talk to Mara, use the explicit three-silver action, close or reload the page, then ask «¿Te acuerdas de lo que hice por ti antes?».</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
         <button class="load-model" id="load-model" type="button">Connect OpenRouter</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
-        <summary>Debug / M1 truth vs belief</summary>
-        <p>Objective truth is visible here for the human tester but is never supplied to either NPC prompt.</p>
-        <pre id="m1-state-output"></pre>
+        <summary>Debug / M2 memory &amp; relationship</summary>
+        <p>Only structured memory/relationship state persists. Raw dialogue turns are deliberately not saved.</p>
+        <pre id="m2-state-output"></pre>
+        <button class="load-model" id="m2-reset-state" type="button">Reset M2 memory + relationship</button>
         <p>Last trace below. All traces remain available as <code>window.__npcTraces</code>.</p>
         <pre id="trace-output">No inference trace yet.</pre>
+        <details>
+          <summary>M1 regression / truth vs belief</summary>
+          <p>Objective truth remains visible here for the tester and is never supplied as NPC truth.</p>
+          <pre id="m1-state-output"></pre>
+        </details>
         <details>
           <summary>M0 regression probes</summary>
           <button id="run-benchmark" type="button">Run fixed M0 probe set against Mara</button>
@@ -101,6 +119,7 @@ document.body.insertAdjacentHTML(
         <button class="dialogue-close" id="dialogue-close" type="button" aria-label="Close conversation">×</button>
       </div>
       <div class="transcript" id="transcript" aria-live="polite"></div>
+      <button class="load-model" id="m2-help-mara" type="button" hidden>Give Mara 3 silver for baker debt</button>
       <form class="dialogue-form" id="dialogue-form">
         <input id="dialogue-input" autocomplete="off" maxlength="500" placeholder="Say anything…" aria-label="Message to NPC" />
         <button id="dialogue-send" type="submit">Send</button>
@@ -226,16 +245,19 @@ const loadModel = document.getElementById('load-model') as HTMLButtonElement;
 const modelStatus = document.getElementById('model-status') as HTMLDivElement;
 const npcName = document.getElementById('npc-name') as HTMLElement;
 const npcState = document.getElementById('npc-state') as HTMLSpanElement;
+const m2StateOutput = document.getElementById('m2-state-output') as HTMLPreElement;
+const m2HelpMara = document.getElementById('m2-help-mara') as HTMLButtonElement;
+const m2ResetState = document.getElementById('m2-reset-state') as HTMLButtonElement;
 const m1StateOutput = document.getElementById('m1-state-output') as HTMLPreElement;
 const traceOutput = document.getElementById('trace-output') as HTMLPreElement;
 const benchmarkButton = document.getElementById('run-benchmark') as HTMLButtonElement;
 const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreElement;
 
 providerBadge.textContent = useFakeProvider
-  ? 'FAKE M1 — deterministic contradictory testimony'
+  ? 'FAKE M2 — deterministic memory + relationship fixture'
   : `REMOTE AI — OpenRouter / ${M1_OPENROUTER_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
-  ? 'Deterministic M1 fake mode enabled by ?provider=fake.'
+  ? 'Deterministic M2 fake mode enabled by ?provider=fake.'
   : authCallbackError
     ? `OpenRouter connection failed: ${authCallbackError}`
     : providerReady
@@ -251,6 +273,31 @@ m1StateOutput.textContent = JSON.stringify(
   null,
   2
 );
+
+const updateM2Action = (): void => {
+  const talkingToMara = activeNpc?.profile.id === 'mara';
+  const alreadyRecorded = m2State.memories.some((memory) => memory.id === MARA_BAKER_DEBT_MEMORY_ID);
+  m2HelpMara.hidden = !talkingToMara;
+  m2HelpMara.disabled = alreadyRecorded;
+  m2HelpMara.textContent = alreadyRecorded
+    ? 'M2 memory already recorded'
+    : 'Give Mara 3 silver for baker debt';
+};
+
+const renderM2State = (): void => {
+  m2StateOutput.textContent = JSON.stringify(
+    {
+      memories: m2State.memories,
+      relationships: m2State.relationships
+    },
+    null,
+    2
+  );
+  (window as unknown as { __m2State: unknown }).__m2State = m2State;
+  updateM2Action();
+};
+
+renderM2State();
 
 const appendMessage = (speaker: string, text: string): void => {
   const line = document.createElement('div');
@@ -318,11 +365,36 @@ const openDialogue = (): void => {
   interactPrompt.textContent = '';
   document.exitPointerLock();
   renderTranscript(activeNpc);
+  updateM2Action();
   dialogueInput.focus();
 };
 
 loadModel.addEventListener('click', () => {
   void connectRemoteProvider().catch(() => undefined);
+});
+
+m2HelpMara.addEventListener('click', () => {
+  if (activeNpc?.profile.id !== 'mara') return;
+  const previousState = m2State;
+  m2State = applyMaraBakerDebtHelp(m2State, new Date().toISOString());
+  if (m2State !== previousState) {
+    saveM2State(localStorage, m2State);
+    appendMessage('You', '[You give Mara three silver coins to help cover the baker's overdue debt.]');
+    appendMessage('System', 'M2 memory recorded. Close the conversation or reload the page, then ask Mara whether she remembers what you did for her.');
+    modelStatus.textContent = 'M2 structured memory recorded · Mara trust is now +1.';
+  }
+  renderM2State();
+  dialogueInput.focus();
+});
+
+m2ResetState.addEventListener('click', () => {
+  m2State = resetM2State(localStorage);
+  for (const runtime of runtimeNpcs) runtime.turns.length = 0;
+  traces.length = 0;
+  traceOutput.textContent = 'No inference trace yet.';
+  modelStatus.textContent = 'M2 structured memory and relationship state reset.';
+  if (activeNpc) renderTranscript(activeNpc);
+  renderM2State();
 });
 
 benchmarkButton.addEventListener('click', async () => {
@@ -391,11 +463,16 @@ dialogueForm.addEventListener('submit', async (event) => {
   dialogueInput.value = '';
   setConversationBusy(true);
 
+  const socialContext = {
+    memories: selectRelevantMemories(memoriesForNpc(m2State, runtime.profile.id), playerUtterance),
+    relationship: relationshipForNpc(m2State, runtime.profile.id)
+  };
+
   try {
-    const result = await runtime.engine.respond(playerUtterance, runtime.turns);
+    const result = await runtime.engine.respond(playerUtterance, runtime.turns, socialContext);
     traces.push(result.trace);
     traceOutput.textContent = JSON.stringify(result.trace, null, 2);
-    console.debug('M1 ConversationTrace', result.trace);
+    console.debug('M2 ConversationTrace', result.trace);
 
     const providerFailure = result.trace.attempts.find((attempt) => attempt.providerError !== undefined);
     if (providerFailure?.providerError) {
@@ -413,7 +490,7 @@ dialogueForm.addEventListener('submit', async (event) => {
     );
     modelStatus.textContent = `OpenRouter connected · last response ${result.trace.totalLatencyMs} ms.`;
   } catch (error) {
-    console.error('M1 conversation orchestration failed before a validated response could be produced', error);
+    console.error('M2 conversation orchestration failed before a validated response could be produced', error);
     const message = error instanceof Error ? error.message : String(error);
     modelStatus.textContent = `Conversation system error: ${message}`;
     appendMessage('System', 'Conversation failed before a validated NPC response could be produced.');
