@@ -13,8 +13,11 @@ The project is **not** “ChatGPT inside an NPC”.
 - **Game code owns truth and authoritative state.**
 - **NPCs own beliefs/knowledge assigned by the simulation.**
 - **Memories and relationships are structured game state.**
-- **The LLM interprets the NPC and proposes dialogue/social actions.**
+- **Information transfer is a game-owned state transition.**
+- **Social metabehavior decides how an NPC is inclined to handle available information.**
+- **The LLM performs wording, attitude and presentation.**
 - **Generated prose never directly mutates authoritative world state.**
+- **Evidence-bearing prose may not invent provenance, source count, source time/place, directness or certainty.**
 - **Player text is speech inside the fiction, never privileged model instruction.**
 
 ## Current roadmap focus
@@ -27,11 +30,17 @@ The project is **not** “ChatGPT inside an NPC”.
 
 **DONE:** `M2 — Memory & relationship` (`#19`, PR `#20`)
 
-M2 evidence includes structured `NpcMemory`, `RelationshipState.trust`, relevance selection, per-NPC isolation, trace evidence, reload persistence without transcript persistence, deterministic tests and a human browser PASS on 2026-09-02.
+**DONE:** `M3 — Information propagation` (`#21`, PRs `#22`, `#24`, `#29`)
 
-**NOW:** `M3 — Information propagation` (`#21`)
+M3 proved that structured information can travel player→NPC→NPC with provenance preserved, affect later conversations, and coexist with NPC-specific social policy rather than forcing every known belief to be spoken. Final human/session validation passed on 2026-09-02.
 
-**NEXT / BLOCKED:** `M4 — Tavern mystery`
+**NOW:** `M4 — Tavern mystery` (`#30`)
+
+**CURRENT SLICE:** `#33 — The Ash Letter case design`
+
+**NEXT / BLOCKED:** `M5 — Product decision`
+
+The first M4 reliability guardrail is already done: `#31` / PR `#32` prevents evidence-bearing dialogue from inventing extra sources, source time/place, direct conversations or unsupported certainty while leaving character performance free.
 
 Playable build:
 
@@ -50,11 +59,11 @@ M1 — truth vs belief                   DONE
         ↓
 M2 — memory & relationship             DONE
         ↓
-M3 — information propagation           NOW
+M3 — information propagation           DONE
         ↓
-M4 — tavern mystery / blind playtest   NEXT / BLOCKED
+M4 — tavern mystery / blind playtest   NOW
         ↓
-M5 — human product decision
+M5 — human product decision            NEXT / BLOCKED
 ```
 
 A production roadmap is deliberately deferred until M5.
@@ -87,48 +96,54 @@ M2 answered:
 
 **Yes.**
 
-The M2 slice now includes:
-
-- compact structured `NpcMemory` state;
-- one-dimensional `RelationshipState.trust`;
-- deterministic memory creation and trust mutation for one authored Mara interaction;
-- relevance selection instead of dumping all memories into context;
-- per-NPC ownership/isolation;
-- persistence of structured state across browser reload;
-- deliberate non-persistence of raw dialogue history;
-- debug visibility into stored/retrieved memories and relationship state;
-- `ConversationTrace.selectedMemoryIds` + relationship snapshot;
-- deterministic tests covering creation, retrieval, isolation and persistence.
+The M2 slice includes compact `NpcMemory`, one-dimensional `RelationshipState.trust`, deterministic memory/trust mutations, relevance selection, per-NPC isolation, structured persistence and trace evidence.
 
 Human browser validation confirmed Mara remembered the earlier interaction as expected after reload.
 
-The LLM may express remembered experience, but generated prose alone may not author arbitrary memories or relationship changes.
+## What M3 proved — social information propagation
 
-## M3 target — information propagation
-
-M3 asks:
+M3 answered:
 
 > Can information move from one character to another through deterministic, inspectable simulation rules and later change behavior without a handcrafted dialogue branch?
 
-The smallest experiment uses Mara and Iven only:
+**Yes.**
 
-```text
-Player gives one explicit claim to Mara
-        ↓
-Game records ClaimedStatement + provenance
-        ↓
-Deterministic social event transfers it to Iven
-        ↓
-Iven gains a hearsay belief with provenance preserved
-        ↓
-Player later questions Iven
-        ↓
-Iven's free-form answer changes because that belief is now in context
-```
+The M3 slice includes:
 
-M3 deliberately does **not** add background LLM conversations, a town-scale rumor graph, embeddings, autonomous gossip at scale or automatic extraction of every player sentence into state.
+- structured `ClaimedStatement` state;
+- explicit source/recipient/provenance;
+- deterministic Mara→Iven transfer;
+- hearsay beliefs that never become objective truth;
+- idempotent propagation;
+- contextual dialogue intents;
+- deterministic `SocialDialogueDecision` for observation, rumor, source and challenge handling;
+- free text retained alongside intent chips;
+- full-session JSON export for causal QA.
 
-See issue `#21` for the exact gate and scope.
+The final session showed Iven correctly separate what he personally observed from hearsay relayed by Mara, identify Mara as his immediate source, and defend his own view when challenged.
+
+## M4 target — one actual mystery
+
+M4 asks a different question:
+
+> When the proven social systems are combined around one concrete mystery, is the result actually fun and memorable enough to justify choosing a real product direction?
+
+The working prototype case is **The Ash Letter**. A sealed magistrate warrant disappears from a red-cloaked courier's upstairs tavern room before dawn.
+
+The case deliberately contains:
+
+- Mara: uncertain but useful observation;
+- Iven: sincere incorrect belief;
+- Corren Vale: an intentional lie about an unrelated secret;
+- Nera Pell: an intentional lie because she is responsible for the missing warrant;
+- physical evidence that cross-checks testimony;
+- one relationship-sensitive disclosure;
+- one information-propagation consequence;
+- a plausible wrong accusation path.
+
+This is disposable prototype content, not a final story commitment.
+
+See `docs/14-m4-ash-letter-case.md` and issue `#33`.
 
 ## Prototype runtime
 
@@ -165,7 +180,9 @@ NPC-specific beliefs / permitted knowledge
         +
 Relevant memories / relationship state
         +
-Transferred claims / provenance when applicable
+Transferred claims / provenance
+        +
+Dialogue intent + social metabehavior
         +
 Relevant current context
         +
@@ -175,7 +192,7 @@ Player utterance (untrusted speech)
               ↓
      Structured proposal
               ↓
- Validation / leakage checks
+Schema + leakage + evidence-fidelity validation
               ↓
 Allowed game effects + dialogue
 ```
@@ -186,21 +203,30 @@ Important robustness rule:
 
 > Out-of-world, adversarial or nonsensical player input is interpreted from inside the NPC's worldview, never answered from the underlying model's worldview.
 
-See `docs/02-ai-architecture.md` and `docs/06-diegetic-robustness.md`.
+Important investigation rule:
+
+> Tone may be embellished. Evidence may not.
+
+See `docs/02-ai-architecture.md`, `docs/06-diegetic-robustness.md` and issue `#31`.
 
 ## Prototype product direction
 
-The project has not committed to the final game yet. Promising outcomes include:
+The project has **not** committed to the final game yet. That is intentional.
+
+Promising outcomes still include:
 
 1. investigation / mystery;
 2. broader social RPG;
-3. pure social sandbox.
+3. pure social sandbox;
+4. substantial pivot or stop if M4 is not fun.
 
-Investigation remains the strongest prototype framing because free-form conversation itself becomes gameplay.
+M4 is intended to produce evidence for that decision. M5 is where the human owner chooses the direction.
 
 ## Visual direction
 
 Preferred target: **first-person gothic-expressionist low-poly** — melancholic, theatrical and slightly uncanny rather than generic bright medieval low-poly.
+
+M4 is the first milestone expected to build one representative tavern-centered visual slice rather than placeholder cubes.
 
 See `docs/07-visual-direction.md`.
 
@@ -218,22 +244,26 @@ Default discipline:
 
 > One current milestone, one bounded issue, one accountable owner, evidence before advancing.
 
-Current accountable owner: `ai-npc-systems-engineer` through **#21 — M3 Information propagation**.
+Current product owner: `studio-director` through **#30 — M4 Tavern mystery**.
+
+Current bounded work: **#33 — The Ash Letter case design**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
 ## Non-goals right now
 
-Until M3 passes, do **not** build:
+Until M4 passes, do **not** build:
 
-- background LLM conversations between NPCs;
+- a second mystery;
+- procedural mystery generation;
+- a generic deception planner;
+- background LLM conversations at scale;
 - hundreds of autonomous gossip events;
-- generic rumor network / town-scale knowledge graph;
+- generic town-scale rumor graph;
 - vector database / embeddings by default;
-- sophisticated deception planner;
 - schedules/economy/factions;
-- combat/inventory/quests;
+- combat/inventory/loot;
 - huge world simulation;
-- final art production;
+- full production art pass;
 - voice synthesis / lip sync;
-- M4 content in parallel.
+- monetization/store work.

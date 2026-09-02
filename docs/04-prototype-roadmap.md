@@ -23,27 +23,34 @@ A milestone is complete only when its exit gate has evidence.
 
 ## Current state
 
-**Current milestone:** `M3 — Information propagation`
+**Current milestone:** `M4 — Tavern mystery`
 
-**Current implementation issue:** `#21 — M3 — Information propagation`
+**Current milestone issue:** `#30 — M4 — Tavern mystery`
 
-**Previous milestone:** `M2 — Memory & relationship` — **DONE** via issue #19 and PR #20.
+**Current bounded slice:** `#33 — M4 content slice — The Ash Letter case design`
 
-M2 evidence:
+**Previous milestone:** `M3 — Information propagation` — **DONE** via issue #21.
 
-- game-owned `NpcMemory` and one-dimensional `RelationshipState.trust` exist independently of generated prose;
-- one explicit Mara interaction deterministically creates the baker-debt memory and `trust +1`;
-- memory ownership is isolated per NPC;
-- relevance selection avoids blindly dumping memories into every prompt;
-- selected memory IDs and relationship snapshots are recorded in `ConversationTrace`;
-- structured memory/relationship state persists across reload while raw dialogue history does not;
-- deterministic tests cover creation, retrieval, isolation, prompt context, trace evidence and persistence boundaries;
-- deployed browser build exposes memory/relationship state and reset controls;
-- human memory/relationship gate: **PASS 2026-09-02** — Mara remembered the earlier interaction as expected after reload.
+M3 evidence:
+
+- game-owned `ClaimedStatement` and deterministic player→Mara→Iven propagation exist independently of generated prose;
+- provenance survives transfer and Iven receives hearsay rather than magically gaining eyewitness knowledge;
+- objective `WorldFact` remains unchanged;
+- transfer is idempotent and inspectable;
+- contextual dialogue intents and deterministic `SocialDialogueDecision` separate what the NPC knows from how they are inclined to handle it;
+- free-form dialogue is allowed to omit or discount hearsay rather than being forced to recite all beliefs;
+- source-focused dialogue preserves Mara as Iven's immediate source;
+- session export captures conversations, traces, social decisions, beliefs, memories, relationships and M3 state;
+- deterministic regression coverage passes;
+- final human/session gate: **PASS 2026-09-02** — Iven distinguished own observation, skeptical hearsay, source attribution and challenge behavior coherently.
+
+First M4 reliability guardrail is also complete:
+
+- #31 / PR #32 adds deterministic evidence-verbalization fidelity so the model may embellish performance but not invent evidence-bearing source count, source time/place, directness or certainty.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
 
-**Next milestone if M3 passes:** `M4 — Tavern mystery`.
+**Next milestone if M4 passes:** `M5 — Product decision`.
 
 Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
@@ -55,9 +62,9 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 | **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human judgment | AI & NPC Systems + QA |
 | **M1 — Truth vs belief** | **DONE** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
 | **M2 — Memory & relationship** | **DONE** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
-| **M3 — Information propagation** | **NOW** | Can information travel socially and cause a delayed consequence? | A tells B; B later reacts without a handcrafted dialogue branch | AI + Narrative/Social |
-| **M4 — Tavern mystery** | **NEXT / BLOCKED** | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
-| **M5 — Product decision** | LATER | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
+| **M3 — Information propagation** | **DONE** | Can information travel socially and cause a delayed consequence? | A tells B; B later reacts without a handcrafted dialogue branch | AI + Narrative/Social |
+| **M4 — Tavern mystery** | **NOW** | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
+| **M5 — Product decision** | **NEXT / BLOCKED** | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
 
 `NOW` is the only milestone that should normally receive implementation effort.
 
@@ -130,67 +137,46 @@ M2 is closed. Do not reopen it for future memory sophistication unless the core 
 
 ---
 
-# M3 — Information propagation — NOW
+# M3 — Information propagation — DONE
 
 Implementation issue: **#21**.
-
-## Hypothesis
-
-The system becomes genuinely emergent when information can leave one conversation, travel through another character, preserve provenance, and later create a consequence not encoded as a handcrafted dialogue branch.
-
-## Core rules
 
 > Information transfer is a game-owned state transition. The LLM may phrase what characters say, but it may not directly grant another NPC knowledge.
 
 > Provenance survives transfer. Hearsay does not become eyewitness evidence merely because it is repeated.
 
-## Required outcome
+Gate evidence:
 
-- structured `ClaimedStatement` with source, recipient and provenance;
-- one explicit player→Mara claim creation rule;
-- one deterministic Mara→Iven social transfer event;
-- belief update that preserves hearsay provenance and does not mutate `WorldFact`;
-- duplicate/idempotency handling;
-- debug visibility into claim → transfer → resulting Iven belief;
-- traces that make Iven's later testimony explainable;
-- deterministic fake/replay coverage.
+- [x] one structured claim is created through explicit game logic;
+- [x] generated dialogue alone cannot create or transfer authoritative information;
+- [x] original source and recipient are recorded;
+- [x] deterministic Mara→Iven transfer works;
+- [x] Iven's resulting belief preserves hearsay/provenance;
+- [x] objective world truth remains unchanged;
+- [x] transfer is idempotent;
+- [x] later testimony can depend on transferred information;
+- [x] traces/debug/session export expose the causal chain;
+- [x] contextual intent chips reduce typing friction without replacing free text;
+- [x] deterministic social metabehavior distinguishes knowledge from disclosure/attitude;
+- [x] human browser/session playtest passes.
 
-## Exit gate — PASS only if all are true
+Evidence: issue **#21**, PRs **#22**, **#24**, **#29**, final exported-session PASS on 2026-09-02.
 
-- [ ] one structured claim is created through explicit game logic;
-- [ ] generated dialogue alone cannot create or transfer authoritative information;
-- [ ] original source and recipient are recorded;
-- [ ] a deterministic social event transfers the claim from Mara to Iven;
-- [ ] Iven's resulting belief preserves hearsay/provenance;
-- [ ] objective world truth remains unchanged;
-- [ ] transfer is idempotent and does not duplicate endlessly;
-- [ ] Iven's later free-form testimony changes because the transferred belief is supplied;
-- [ ] traces/debug expose the full causal chain;
-- [ ] deterministic tests cover creation, transfer, provenance, isolation and truth immutability;
-- [ ] human browser playtest confirms the delayed reaction feels causally connected rather than random.
-
-## Explicitly not now
-
-- background LLM conversations between NPCs;
-- hundreds of autonomous gossip events;
-- generic rumor network / town-scale knowledge graph;
-- embeddings/vector DB;
-- schedules/economy/factions;
-- deception planner;
-- automatic extraction of every player utterance into claims;
-- full tavern mystery content.
-
-## Gate unlocks
-
-`M4 — Tavern mystery`.
+M3 is closed. Future rumor sophistication belongs inside a concrete M4 need, not as a standalone infrastructure project.
 
 ---
 
-# M4 — Tavern mystery — NEXT / BLOCKED
+# M4 — Tavern mystery — NOW
+
+Milestone issue: **#30**.
+
+Current bounded slice: **#33 — The Ash Letter case design**.
 
 ## Hypothesis
 
-The combined systems create enough agency, surprise and social coherence to support an enjoyable ~30-minute experience.
+The combined systems create enough agency, surprise and social coherence to support an enjoyable ~20–30-minute experience.
+
+M4 exists to discover the product direction rather than assume it. The mystery is prototype content, not a final narrative commitment.
 
 ## Scope
 
@@ -199,21 +185,67 @@ The combined systems create enough agency, surprise and social coherence to supp
 - one authored incident/mystery;
 - one objective hidden truth;
 - partial/contradictory knowledge;
-- at least one liar and one incorrect belief;
+- at least one intentional liar and one sincere incorrect belief;
 - relationships/memories;
 - information propagation;
-- free-form interrogation/manipulation;
-- minimal gesture/emotion presentation;
-- first representative gothic-expressionist visual slice;
-- diegetic robustness retained.
+- free-form interrogation plus contextual intent chips;
+- minimal physical evidence/inspection;
+- accusation/conclusion outcome derived from authoritative state;
+- representative gothic-expressionist visual slice;
+- diegetic robustness and evidence fidelity retained.
 
-This is a **fun test**, not a content-production milestone.
+## Completed M4 slice
+
+### #31 — Evidence verbalization fidelity — DONE
+
+The M3 final session showed that the model could preserve source identity but still invent evidence-like details such as extra source context or social consensus. PR #32 added a bounded deterministic guardrail:
+
+> Tone may be embellished. Evidence may not.
+
+The guardrail targets source count, source time/place, directness, inference→eyewitness upgrades and certainty upgrades while preserving the NPC's freedom to omit, discount, refuse or reinterpret available information.
+
+## Active slice
+
+### #33 — The Ash Letter case design — NOW
+
+Author the case truth, cast, knowledge/lie matrix, evidence atoms, memory hook, propagation hook and accusation state **before** implementing new gameplay infrastructure.
+
+Case design artifact: `docs/14-m4-ash-letter-case.md`.
+
+The working case deliberately separates lying from guilt: one NPC is sincerely wrong, one lies for an unrelated secret, and another lies because they are responsible for the incident.
 
 ## Exit gate
 
-Run a blind human playtest. PASS-worthy evidence includes roughly 30 minutes of meaningful goals/questions, memorable unscripted interactions, causal social consequences, tolerable latency/UX and presentation that supports social presence.
+- [ ] one coherent authored mystery has stable objective truth independent of model prose;
+- [ ] 3–5 NPCs have distinct motives, beliefs, knowledge and social policies;
+- [ ] at least one NPC lies intentionally and at least one is sincerely wrong;
+- [ ] no NPC receives secrets they should not know;
+- [ ] player can investigate via both intent chips and free text;
+- [ ] observation/hearsay/source distinctions remain causally inspectable;
+- [ ] evidence-bearing model prose cannot invent critical clue details;
+- [ ] memory/relationship produces at least one meaningful delayed consequence;
+- [ ] information propagation produces at least one meaningful delayed consequence;
+- [ ] player can inspect the minimum physical evidence required to cross-check testimony;
+- [ ] player can make a conclusion/accusation and receive an outcome derived from authoritative state;
+- [ ] deterministic regression coverage keeps M0–M3 invariants intact;
+- [ ] session export is sufficient to diagnose the blind playtest;
+- [ ] representative visual/audio presentation supports social presence without dominating scope;
+- [ ] human completes a blind playtest of roughly 20–30 minutes without needing developer explanation;
+- [ ] human reports at least one memorable unscripted interaction and finds the experience worth continuing.
 
-The Studio Director cannot self-certify this gate. Human judgment is mandatory.
+## Explicitly not now
+
+- second mystery;
+- procedural mystery generation;
+- generic deception planner;
+- town-scale rumor graph;
+- autonomous background LLM conversations at scale;
+- vector DB / embeddings by default;
+- schedules/economy/factions;
+- combat/inventory/loot;
+- full production art pass;
+- voice/lip sync;
+- monetization/store work.
 
 ## Gate unlocks
 
@@ -221,7 +253,7 @@ The Studio Director cannot self-certify this gate. Human judgment is mandatory.
 
 ---
 
-# M5 — Product decision
+# M5 — Product decision — NEXT / BLOCKED
 
 Possible decisions: investigation/mystery game, broader social RPG, social sandbox, substantial pivot, or stop.
 
