@@ -37,15 +37,19 @@ M3 proved that structured information can travel player→NPC→NPC with provena
 
 **NOW:** `M4 — Tavern mystery` (`#30`)
 
-**CURRENT SLICE:** `#37 — Corren/Nera testimony & lie policies`
+**CURRENT SLICE:** `#39 — Put Corren and Nera in the browser scene`
 
 **NEXT / BLOCKED:** `M5 — Product decision`
 
-M4 already has three completed foundations: `#31` / PR `#32` evidence-fidelity guardrail, `#33` case design, and `#35` / PR `#36` authoritative private truth + E1–E5 evidence state.
+M4 already has four completed foundations: `#31` / PR `#32` evidence-fidelity guardrail, `#33` case design, `#35` / PR `#36` authoritative private truth + E1–E5 evidence state, and `#37` / PR `#38` isolated Corren/Nera testimony policies.
 
 Playable build:
 
 `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+
+Deterministic no-login test mode:
+
+`https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
 
 The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not a parallel implementation backlog.
 
@@ -144,9 +148,9 @@ The case deliberately contains:
 
 This is disposable prototype content, not a final story commitment.
 
-The case now has authoritative private truth plus a fixed E1–E5 evidence registry. Player-discovered evidence starts empty and can only change through explicit game transitions. The active slice adds Corren and Nera as case-aware NPCs with game-owned cover stories, proving that lying can be simulated without handing deception authority to the model.
+The case has authoritative private truth plus a fixed E1–E5 evidence registry. Player-discovered evidence starts empty and can only change through explicit game transitions. `#37` / PR `#38` added Corren and Nera as case-aware NPCs with isolated, game-owned cover stories. The active `#39` slice places all four characters in the browser scene so a human can question them before lie-breaking, physical inspection and accusation are added.
 
-See `docs/14-m4-ash-letter-case.md` and issue `#37`.
+See `docs/14-m4-ash-letter-case.md` and issue `#39`.
 
 ## Prototype runtime
 
@@ -253,7 +257,7 @@ Default discipline:
 
 Current product owner: `studio-director` through **#30 — M4 Tavern mystery**.
 
-Current bounded work: **#37 — Corren/Nera testimony & lie policies**.
+Current bounded work: **#39 — Put Corren and Nera in the browser scene**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
