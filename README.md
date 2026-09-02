@@ -24,9 +24,13 @@ The project is **not** “ChatGPT inside an NPC”.
 
 M0 evidence includes the remote inference experiment `#8`, final QA `#13`, deterministic validation and a human character-quality PASS on 2026-09-02.
 
-**NOW:** `M1 — Truth vs belief` (`#14`)
+**DONE:** `M1 — Truth vs belief` (`#14`)
 
-**NEXT / BLOCKED:** `M2 — Memory & relationship`
+M1 evidence includes the two-NPC truth/belief slice in PR `#15`, provider blocker `#16`, OpenRouter replacement PR `#17`, free-model correction PR `#18`, deterministic truth/belief tests and a human browser PASS on 2026-09-02.
+
+**NOW:** `M2 — Memory & relationship` (`#19`)
+
+**NEXT / BLOCKED:** `M3 — Information propagation`
 
 Playable build:
 
@@ -41,11 +45,11 @@ BOOTSTRAP — cloud playable loop        DONE
         ↓
 M0 — one living NPC                    DONE
         ↓
-M1 — truth vs belief                   NOW
+M1 — truth vs belief                   DONE
         ↓
-M2 — memory & relationship             NEXT / BLOCKED
+M2 — memory & relationship             NOW
         ↓
-M3 — information propagation
+M3 — information propagation           NEXT / BLOCKED
         ↓
 M4 — tavern mystery / blind playtest
         ↓
@@ -72,27 +76,57 @@ Mara passed:
 
 One benchmark flag (`answered-programming`) was a false positive: Mara explicitly refused the programming request and emitted no code. This is recorded as a benchmark-heuristic issue, not an M0 failure.
 
-Browser-local WebGPU inference was tested and failed the real hardware/runtime gate through load, shader compatibility and browser stability problems. The current prototype uses a remote Puter/Luna provider behind the same provider-agnostic `InferenceProvider` boundary. That is an experimental baseline, **not a final production-provider commitment**.
+Browser-local WebGPU inference was tested and failed the real hardware/runtime gate through load, shader compatibility and browser stability problems.
 
-## M1 target — truth vs belief
+The current prototype remote path is **OpenRouter OAuth PKCE + `minimax/minimax-m3:free`** behind the same provider-agnostic `InferenceProvider` boundary. No developer API key is embedded in the public Pages build; the user-controlled OpenRouter key is stored only in browser session storage. This remains a **prototype inference path, not a final production-provider commitment**.
 
-M1 asks:
+Puter was previously tested and rejected as the default prototype delivery path after it required phone verification. Provider/auth/quota/network failures are now surfaced as non-diegetic system state rather than NPC dialogue.
+
+## What M1 proved — truth vs belief
+
+M1 answered:
 
 > Can two NPCs sincerely disagree in free-form conversation for deterministic, inspectable reasons while objective truth remains stable and outside the model's control?
 
-The smallest experiment introduces:
+**Yes.**
+
+The executable M1 slice now includes:
 
 - authoritative `WorldFact` data;
 - NPC-owned `Belief` data;
 - provenance/confidence;
 - context filtering so each NPC receives only its own beliefs;
-- a second NPC with contradictory testimony;
+- Mara and Iven with contradictory testimony;
 - debug visibility into truth vs each NPC belief;
-- `ConversationTrace` evidence of which beliefs were supplied.
+- `ConversationTrace` evidence of which belief IDs were supplied;
+- deterministic tests proving truth immutability and belief isolation.
+
+Human browser validation confirmed Mara and Iven behaved coherently and as expected when questioned separately.
 
 The LLM may phrase testimony, but it may not create truth or silently grant knowledge.
 
-See issue `#14` for the exact gate and scope.
+See issue `#14` for the completed gate and evidence.
+
+## M2 target — memory & relationship
+
+M2 asks:
+
+> Can an NPC later behave differently for a deterministic, inspectable reason rooted in a meaningful earlier interaction that is no longer in the immediate transcript?
+
+The smallest experiment introduces:
+
+- compact structured `NpcMemory` state;
+- a minimal `RelationshipState` with only 1–2 proven dimensions;
+- deterministic memory creation and relationship mutation for one authored scenario;
+- relevance selection instead of dumping all memories into context;
+- NPC ownership/isolation;
+- persistence/reload only as needed for the experiment;
+- debug visibility into stored/retrieved memories and relationship state;
+- `ConversationTrace` evidence of selected memory IDs and relationship context.
+
+The LLM may express remembered experience, but generated prose alone may not author arbitrary memories or relationship changes.
+
+See issue `#19` for the exact gate and scope.
 
 ## Prototype runtime
 
@@ -126,6 +160,8 @@ Authoritative world truth
 NPC profile / competence
         +
 NPC-specific beliefs / permitted knowledge
+        +
+Relevant memories / relationship state
         +
 Relevant current context
         +
@@ -166,7 +202,7 @@ Beliefs:
 
 NPCs may tell the truth, be mistaken, omit information or eventually lie. None of those utterances rewrite `FACT_173`.
 
-M1 now makes this distinction executable and inspectable.
+M1 makes this distinction executable and inspectable.
 
 ## Prototype product direction
 
@@ -211,22 +247,24 @@ Default discipline:
 
 > One current milestone, one bounded issue, one accountable owner, evidence before advancing.
 
-Current accountable owner: `ai-npc-systems-engineer` through **#14 — M1 Truth vs belief**.
+Current accountable owner: `ai-npc-systems-engineer` through **#19 — M2 Memory & relationship**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
 ## Non-goals right now
 
-Until M1 passes, do **not** build:
+Until M2 passes, do **not** build:
 
-- long-term episodic memory;
-- relationship systems beyond any tiny M1 need;
 - NPC-to-NPC gossip/information propagation;
-- automatic belief updating from every conversation;
-- vector database / town-scale knowledge graph;
+- vector database unless structured memory retrieval measurably fails;
+- embeddings by default;
+- sophisticated forgetting/decay psychology;
+- dozens of relationship axes;
+- unrestricted LLM-authored memories;
 - generic multi-agent/planner framework;
+- schedules/economy/factions;
 - combat/inventory/quests;
 - huge world simulation;
 - final art production;
 - voice synthesis / lip sync;
-- M2/M3 systems in parallel.
+- M3/M4 systems in parallel.
