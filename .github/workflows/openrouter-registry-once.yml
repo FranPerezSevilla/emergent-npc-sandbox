@@ -1,0 +1,92 @@
+name: One-shot OpenRouter registry patch
+
+on:
+  push:
+    branches:
+      - m1/provider-auth-blocker-ui
+    paths:
+      - .github/workflows/openrouter-registry-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m1/provider-auth-blocker-ui
+      - name: Patch registry
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('legal/third-party.json')
+          data = json.loads(path.read_text())
+          ids = {'openrouter-ai-service-m1', 'openai-gpt-oss-20b-free-via-openrouter-m1'}
+          data['entries'] = [e for e in data['entries'] if e.get('id') not in ids]
+          data['entries'].extend([
+            {
+              'id': 'openrouter-ai-service-m1',
+              'type': 'ai_service',
+              'name': 'OpenRouter',
+              'creator': 'OpenRouter, Inc.',
+              'version': 'service reviewed 2026-09-02',
+              'sourceUrl': 'https://openrouter.ai/docs/guides/overview/auth/oauth',
+              'licenseName': 'OpenRouter Terms of Service — release review pending',
+              'licenseUrl': 'https://openrouter.ai/terms',
+              'reviewStatus': 'pending',
+              'releaseAllowed': False,
+              'attributionRequired': False,
+              'requiredCreditText': '',
+              'commercialUse': 'unclear',
+              'modification': 'not_applicable',
+              'redistribution': 'not_applicable',
+              'aiProcessing': 'not_applicable',
+              'usedIn': ['src/ai/openrouter-inference-provider.ts'],
+              'notes': 'M1 browser OAuth PKCE provider experiment. OpenRouter documents user-facing PKCE and user-controlled API keys, avoiding a developer key in the public Pages bundle. Prompt/output logging is opt-in at OpenRouter, while upstream model providers have their own retention/data terms. Prototype use only until service, end-user distribution, privacy and model-provider terms receive explicit release review.',
+              'evidence': [
+                'https://openrouter.ai/docs/guides/overview/auth/oauth',
+                'https://openrouter.ai/docs/guides/privacy/data-collection',
+                'https://openrouter.ai/terms'
+              ],
+              'lastReviewed': '2026-09-02'
+            },
+            {
+              'id': 'openai-gpt-oss-20b-free-via-openrouter-m1',
+              'type': 'ai_model',
+              'name': 'OpenAI gpt-oss-20b (free) via OpenRouter',
+              'creator': 'OpenAI; hosted by providers routed through OpenRouter',
+              'version': 'openai/gpt-oss-20b:free',
+              'sourceUrl': 'https://openrouter.ai/openai/gpt-oss-20b:free',
+              'licenseName': 'Base model Apache License 2.0; hosted provider/service terms require release review',
+              'licenseUrl': 'https://github.com/openai/gpt-oss/blob/main/LICENSE',
+              'reviewStatus': 'pending',
+              'releaseAllowed': False,
+              'attributionRequired': False,
+              'requiredCreditText': '',
+              'commercialUse': 'unclear',
+              'modification': 'not_applicable',
+              'redistribution': 'not_applicable',
+              'aiProcessing': 'not_applicable',
+              'usedIn': ['src/ai/openrouter-inference-provider.ts'],
+              'notes': 'Explicit M1 prototype model to keep behavior comparable while avoiding per-turn prototype cost. OpenAI publishes gpt-oss-20b under Apache-2.0 and its gpt-oss usage policy; this project does not redistribute weights. OpenRouter free hosting availability/rate limits and actual upstream provider terms remain separate and release-blocking until reviewed.',
+              'evidence': [
+                'https://openrouter.ai/openai/gpt-oss-20b:free',
+                'https://developers.openai.com/api/docs/models/gpt-oss-20b',
+                'https://github.com/openai/gpt-oss/blob/main/LICENSE'
+              ],
+              'lastReviewed': '2026-09-02'
+            }
+          ])
+          path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n')
+          PY
+      - name: Commit registry patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add legal/third-party.json
+          git commit -m "legal: register OpenRouter M1 experiment"
+          git push origin HEAD:m1/provider-auth-blocker-ui
