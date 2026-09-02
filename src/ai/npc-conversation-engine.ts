@@ -1,9 +1,6 @@
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
-import {
-  deriveSocialDialogueDecision,
-  type DialogueIntentRequest,
-  type SocialDialogueDecision
-} from './dialogue-metabehavior.ts';
+import { deriveSocialDialogueDecision } from './dialogue-metabehavior.ts';
+import type { DialogueIntentRequest, SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { InferenceLoadProgress, InferenceProvider } from './inference.ts';
 import type { NpcSocialContext } from './memory-state.ts';
 import type { ConversationTurn, NpcProfile, NpcResponseV1 } from './npc-types.ts';
