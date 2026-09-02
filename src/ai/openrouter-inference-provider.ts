@@ -148,7 +148,7 @@ export class OpenRouterInferenceProvider implements InferenceProvider {
 
     const body = (await response.json()) as {
       model?: unknown;
-      choices?: Array<{ message?: { content?: unknown } }>;
+      choices?: { message?: { content?: unknown } }[];
     };
     const content = body.choices?.[0]?.message?.content;
     if (typeof content !== 'string' || content.trim().length === 0) {
