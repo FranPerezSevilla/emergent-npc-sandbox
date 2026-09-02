@@ -15,6 +15,7 @@ The project is **not** “ChatGPT inside an NPC”.
 - **Memories and relationships are structured game state.**
 - **Information transfer is a game-owned state transition.**
 - **Social metabehavior decides how an NPC is inclined to handle available information.**
+- **Authored testimony policy owns intentional cover stories.**
 - **The LLM performs wording, attitude and presentation.**
 - **Generated prose never directly mutates authoritative world state.**
 - **Evidence-bearing prose may not invent provenance, source count, source time/place, directness or certainty.**
@@ -36,11 +37,11 @@ M3 proved that structured information can travel player→NPC→NPC with provena
 
 **NOW:** `M4 — Tavern mystery` (`#30`)
 
-**CURRENT SLICE:** `#35 — Authoritative case state & evidence`
+**CURRENT SLICE:** `#37 — Corren/Nera testimony & lie policies`
 
 **NEXT / BLOCKED:** `M5 — Product decision`
 
-M4 design is already fixed in disposable prototype form through `#33` / `docs/14-m4-ash-letter-case.md`. The first M4 reliability guardrail is also done: `#31` / PR `#32` prevents evidence-bearing dialogue from inventing extra sources, source time/place, direct conversations or unsupported certainty while leaving character performance free.
+M4 already has three completed foundations: `#31` / PR `#32` evidence-fidelity guardrail, `#33` case design, and `#35` / PR `#36` authoritative private truth + E1–E5 evidence state.
 
 Playable build:
 
@@ -143,9 +144,9 @@ The case deliberately contains:
 
 This is disposable prototype content, not a final story commitment.
 
-The current implementation slice turns that authored design into authoritative state: private truth plus a fixed E1–E5 evidence registry, with player-discovered evidence starting empty and mutating only through explicit game transitions.
+The case now has authoritative private truth plus a fixed E1–E5 evidence registry. Player-discovered evidence starts empty and can only change through explicit game transitions. The active slice adds Corren and Nera as case-aware NPCs with game-owned cover stories, proving that lying can be simulated without handing deception authority to the model.
 
-See `docs/14-m4-ash-letter-case.md` and issue `#35`.
+See `docs/14-m4-ash-letter-case.md` and issue `#37`.
 
 ## Prototype runtime
 
@@ -174,11 +175,15 @@ See `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 Conceptually:
 
 ```text
-Authoritative world truth
+Authoritative world / case truth
         +
 NPC profile / competence
         +
 NPC-specific beliefs / permitted knowledge
+        +
+NPC-private case knowledge when applicable
+        +
+Authored testimony / cover-story policy
         +
 Relevant memories / relationship state
         +
@@ -248,7 +253,7 @@ Default discipline:
 
 Current product owner: `studio-director` through **#30 — M4 Tavern mystery**.
 
-Current bounded work: **#35 — Authoritative case state & evidence**.
+Current bounded work: **#37 — Corren/Nera testimony & lie policies**.
 
 See `docs/08-agent-studio-operating-model.md`.
 
