@@ -20,7 +20,10 @@ import { M1FakeInferenceProvider } from './ai/m1-fake-inference-provider.ts';
 import { maraProfile } from './ai/mara.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
-import { M0_PUTER_MODEL_ID, PuterInferenceProvider } from './ai/puter-inference-provider.ts';
+import {
+  M1_OPENROUTER_MODEL_ID,
+  OpenRouterInferenceProvider
+} from './ai/openrouter-inference-provider.ts';
 import { beliefsForNpc, m1Beliefs, redTravelerExitFact } from './ai/world-state.ts';
 import './starter.css';
 
@@ -39,12 +42,22 @@ app.scene.ambientLight = new Color(0.12, 0.11, 0.15);
 
 const providerMode = new URLSearchParams(window.location.search).get('provider') ?? 'remote';
 const useFakeProvider = providerMode === 'fake';
-const puterProvider = useFakeProvider ? undefined : new PuterInferenceProvider();
-const provider: InferenceProvider = useFakeProvider ? new M1FakeInferenceProvider() : puterProvider!;
+const openRouterProvider = useFakeProvider ? undefined : new OpenRouterInferenceProvider();
+let authCallbackError: string | undefined;
+
+if (openRouterProvider) {
+  try {
+    await openRouterProvider.completeAuthCallback();
+  } catch (error) {
+    authCallbackError = error instanceof Error ? error.message : String(error);
+  }
+}
+
+const provider: InferenceProvider = useFakeProvider ? new M1FakeInferenceProvider() : openRouterProvider!;
 const maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForNpc('mara'));
 const ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForNpc('iven'));
 const traces: ConversationTrace[] = [];
-let providerReady = useFakeProvider || puterProvider?.isSignedIn() === true;
+let providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
 (window as unknown as { __m1TruthBeliefs: unknown }).__m1TruthBeliefs = {
@@ -61,7 +74,7 @@ document.body.insertAdjacentHTML(
       <p>Ask both NPCs whether the red-cloaked traveler left after midnight. Game code owns objective truth; each NPC receives only their own belief.</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
-        <button class="load-model" id="load-model" type="button">Connect remote AI</button>
+        <button class="load-model" id="load-model" type="button">Connect OpenRouter</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
@@ -220,14 +233,16 @@ const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreEl
 
 providerBadge.textContent = useFakeProvider
   ? 'FAKE M1 — deterministic contradictory testimony'
-  : `REMOTE AI — Puter / ${M0_PUTER_MODEL_ID}`;
+  : `REMOTE AI — OpenRouter / ${M1_OPENROUTER_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
   ? 'Deterministic M1 fake mode enabled by ?provider=fake.'
-  : providerReady
-    ? 'Remote AI connected. No local model is loaded into this browser.'
-    : 'Connect remote AI once. Puter handles authentication and usage without an API key in this app.';
+  : authCallbackError
+    ? `OpenRouter connection failed: ${authCallbackError}`
+    : providerReady
+      ? 'OpenRouter connected for this browser session.'
+      : 'Connect OpenRouter. Authorization uses browser OAuth PKCE; no API key is embedded in this app.';
 loadModel.hidden = useFakeProvider;
-loadModel.textContent = providerReady ? 'Remote AI connected' : 'Connect remote AI';
+loadModel.textContent = providerReady ? 'OpenRouter connected' : 'Connect OpenRouter';
 m1StateOutput.textContent = JSON.stringify(
   {
     objectiveTruth: redTravelerExitFact,
@@ -265,18 +280,15 @@ const setConversationBusy = (busy: boolean): void => {
 };
 
 const connectRemoteProvider = async (): Promise<void> => {
-  if (providerReady || !puterProvider) return;
+  if (providerReady || !openRouterProvider) return;
 
   setConversationBusy(true);
-  modelStatus.textContent = 'Opening Puter authentication…';
+  modelStatus.textContent = 'Redirecting to OpenRouter authorization…';
   try {
-    await puterProvider.signIn();
-    providerReady = true;
-    loadModel.textContent = 'Remote AI connected';
-    modelStatus.textContent = 'Remote AI connected. No local model is loaded into this browser.';
+    await openRouterProvider.signIn();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    modelStatus.textContent = `Remote AI connection failed: ${message}`;
+    modelStatus.textContent = `OpenRouter connection failed: ${message}`;
     throw error;
   } finally {
     setConversationBusy(false);
@@ -317,7 +329,7 @@ benchmarkButton.addEventListener('click', async () => {
   benchmarkOutput.textContent = '';
   try {
     if (!providerReady) {
-      modelStatus.textContent = 'Connect remote AI before running the M0 regression probes.';
+      modelStatus.textContent = 'Connect OpenRouter before running the M0 regression probes.';
       return;
     }
     setConversationBusy(true);
@@ -369,7 +381,7 @@ dialogueForm.addEventListener('submit', async (event) => {
   if (!playerUtterance || !activeNpc) return;
 
   if (!providerReady) {
-    modelStatus.textContent = `Connect remote AI before talking to ${activeNpc.profile.name}.`;
+    modelStatus.textContent = `Connect OpenRouter before talking to ${activeNpc.profile.name}.`;
     loadModel.focus();
     return;
   }
@@ -381,18 +393,30 @@ dialogueForm.addEventListener('submit', async (event) => {
 
   try {
     const result = await runtime.engine.respond(playerUtterance, runtime.turns);
+    traces.push(result.trace);
+    traceOutput.textContent = JSON.stringify(result.trace, null, 2);
+    console.debug('M1 ConversationTrace', result.trace);
+
+    const providerFailure = result.trace.attempts.find((attempt) => attempt.providerError !== undefined);
+    if (providerFailure?.providerError) {
+      const message = `Remote AI unavailable: ${providerFailure.providerError}`;
+      modelStatus.textContent = message;
+      appendMessage('System', message);
+      return;
+    }
+
     appendMessage(runtime.profile.name, result.response.dialogue);
     npcState.textContent = `${result.response.emotion} · ${result.response.gesture}`;
     runtime.turns.push(
       { speaker: 'player', text: playerUtterance },
       { speaker: 'npc', text: result.response.dialogue }
     );
-    traces.push(result.trace);
-    traceOutput.textContent = JSON.stringify(result.trace, null, 2);
-    console.debug('M1 ConversationTrace', result.trace);
+    modelStatus.textContent = `OpenRouter connected · last response ${result.trace.totalLatencyMs} ms.`;
   } catch (error) {
-    console.error('M1 conversation orchestration failed before a diegetic response could be produced', error);
-    appendMessage(runtime.profile.name, `${runtime.profile.name} shakes their head. “Not now. Ask me again in a moment.”`);
+    console.error('M1 conversation orchestration failed before a validated response could be produced', error);
+    const message = error instanceof Error ? error.message : String(error);
+    modelStatus.textContent = `Conversation system error: ${message}`;
+    appendMessage('System', 'Conversation failed before a validated NPC response could be produced.');
   } finally {
     setConversationBusy(false);
     dialogueInput.focus();
