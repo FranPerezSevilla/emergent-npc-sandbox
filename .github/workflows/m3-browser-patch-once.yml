@@ -1,0 +1,26 @@
+name: M3 browser patch
+
+on:
+  push:
+    branches:
+      - m3/information-propagation
+    paths:
+      - .github/workflows/m3-browser-patch-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m3/information-propagation
+      - run: python3 tools/m3_patch_main.py
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.ts
+          git commit -m "m3: make information propagation browser-playable"
+          git push origin HEAD:m3/information-propagation
