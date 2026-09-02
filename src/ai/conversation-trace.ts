@@ -8,6 +8,10 @@ export type InferenceAttemptTrace = {
   validationErrors: string[];
 };
 
+export type RelationshipTraceSnapshot = {
+  trust: number;
+};
+
 export type ConversationTrace = {
   traceId: string;
   timestamp: string;
@@ -16,6 +20,8 @@ export type ConversationTrace = {
   playerUtterance: string;
   permittedFactIds: string[];
   selectedBeliefIds: string[];
+  selectedMemoryIds: string[];
+  relationshipSnapshot?: RelationshipTraceSnapshot;
   recentTurnCount: number;
   providerId: string;
   modelId: string;

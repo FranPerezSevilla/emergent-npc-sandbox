@@ -1,5 +1,6 @@
 import type { ConversationTrace, InferenceAttemptTrace } from './conversation-trace.ts';
 import type { InferenceLoadProgress, InferenceProvider } from './inference.ts';
+import type { NpcSocialContext } from './memory-state.ts';
 import type { ConversationTurn, NpcProfile, NpcResponseV1 } from './npc-types.ts';
 import { buildNpcMessages } from './prompt.ts';
 import { validateNpcResponse } from './response-validation.ts';
@@ -91,7 +92,21 @@ export class NpcConversationEngine {
     if (this.provider.initialize) await this.provider.initialize(onProgress);
   }
 
-  async respond(playerUtterance: string, recentConversation: ConversationTurn[]): Promise<NpcConversationResult> {
+  async respond(
+    playerUtterance: string,
+    recentConversation: ConversationTurn[],
+    socialContext?: NpcSocialContext
+  ): Promise<NpcConversationResult> {
+    const foreignMemory = socialContext?.memories.find((memory) => memory.ownerNpcId !== this.profile.id);
+    if (foreignMemory) {
+      throw new Error(`Memory ${foreignMemory.id} belongs to ${foreignMemory.ownerNpcId}, not ${this.profile.id}.`);
+    }
+    if (socialContext && socialContext.relationship.npcId !== this.profile.id) {
+      throw new Error(
+        `Relationship state belongs to ${socialContext.relationship.npcId}, not ${this.profile.id}.`
+      );
+    }
+
     const startedAt = performance.now();
     const attempts: InferenceAttemptTrace[] = [];
     let retryReason: string | undefined;
@@ -103,7 +118,9 @@ export class NpcConversationEngine {
         playerUtterance,
         recentConversation,
         retryReason,
-        this.beliefs
+        this.beliefs,
+        socialContext?.memories ?? [],
+        socialContext?.relationship
       );
 
       try {
@@ -124,6 +141,7 @@ export class NpcConversationEngine {
           const trace = this.makeTrace(
             playerUtterance,
             recentConversation,
+            socialContext,
             attempts,
             attempt === 1 ? 'model' : 'retry',
             validation.response,
@@ -149,6 +167,7 @@ export class NpcConversationEngine {
     const trace = this.makeTrace(
       playerUtterance,
       recentConversation,
+      socialContext,
       attempts,
       'fallback',
       response,
@@ -160,6 +179,7 @@ export class NpcConversationEngine {
   private makeTrace(
     playerUtterance: string,
     recentConversation: ConversationTurn[],
+    socialContext: NpcSocialContext | undefined,
     attempts: InferenceAttemptTrace[],
     finalSource: ConversationTrace['finalSource'],
     finalResponse: NpcResponseV1,
@@ -173,6 +193,8 @@ export class NpcConversationEngine {
       playerUtterance,
       permittedFactIds: this.profile.knownFacts.map((fact) => fact.id),
       selectedBeliefIds: this.beliefs.map((belief) => belief.id),
+      selectedMemoryIds: socialContext?.memories.map((memory) => memory.id) ?? [],
+      relationshipSnapshot: socialContext ? { trust: socialContext.relationship.trust } : undefined,
       recentTurnCount: recentConversation.length,
       providerId: this.provider.providerId,
       modelId: this.provider.modelId,
