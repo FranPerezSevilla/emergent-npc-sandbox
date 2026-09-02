@@ -57,7 +57,7 @@ const provider: InferenceProvider = useFakeProvider ? new M1FakeInferenceProvide
 const maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForNpc('mara'));
 const ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForNpc('iven'));
 const traces: ConversationTrace[] = [];
-let providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
+const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
 (window as unknown as { __m1TruthBeliefs: unknown }).__m1TruthBeliefs = {
