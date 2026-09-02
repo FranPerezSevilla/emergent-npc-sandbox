@@ -164,6 +164,18 @@
 - Used in: `src/ai/puter-inference-provider.ts`
 - Notes: Initial remote model identifier for M0 Experiment C. Puter documentation lists `gpt-5.6-luna` for puter.ai.chat(). Model weights are not distributed by this project; dialogue is transient runtime output. Exact upstream/provider output and commercial terms were not independently established here, so this model is prototype-only and not release-approved.
 
+### OpenAI gpt-oss-20b (free) via OpenRouter
+
+- Creator/provider: OpenAI; hosted by providers routed through OpenRouter
+- Registry ID: `openai-gpt-oss-20b-free-via-openrouter-m1`
+- License/terms: Base model Apache License 2.0; hosted provider/service terms require release review
+- Source: https://openrouter.ai/openai/gpt-oss-20b:free
+- License/terms URL: https://github.com/openai/gpt-oss/blob/main/LICENSE
+- Review status: pending
+- Attribution required: no
+- Used in: `src/ai/openrouter-inference-provider.ts`
+- Notes: Explicit M1 prototype model to keep behavior comparable while avoiding per-turn prototype cost. OpenAI publishes gpt-oss-20b under Apache-2.0 and its gpt-oss usage policy; this project does not redistribute weights. OpenRouter free hosting availability/rate limits and actual upstream provider terms remain separate and release-blocking until reviewed.
+
 ### Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
 - Creator/provider: Qwen Team / MLC community
@@ -177,6 +189,18 @@
 - Notes: Experiment B compatibility candidate. It loaded successfully on the human test machine, but the browser became unresponsive / effectively crashed on the first real NPC generation. It is no longer the default M0 path. The optional WebLLM adapter remains in source only as experimental evidence. Exact quantized-artifact terms remain unresolved, so release is not allowed.
 
 ## AI services
+
+### OpenRouter
+
+- Creator/provider: OpenRouter, Inc.
+- Registry ID: `openrouter-ai-service-m1`
+- License/terms: OpenRouter Terms of Service — release review pending
+- Source: https://openrouter.ai/docs/guides/overview/auth/oauth
+- License/terms URL: https://openrouter.ai/terms
+- Review status: pending
+- Attribution required: no
+- Used in: `src/ai/openrouter-inference-provider.ts`
+- Notes: M1 browser OAuth PKCE provider experiment. OpenRouter documents user-facing PKCE and user-controlled API keys, avoiding a developer key in the public Pages bundle. Prompt/output logging is opt-in at OpenRouter, while upstream model providers have their own retention/data terms. Prototype use only until service, end-user distribution, privacy and model-provider terms receive explicit release review.
 
 ### Puter AI Gateway
 
