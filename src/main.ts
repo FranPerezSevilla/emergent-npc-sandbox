@@ -14,10 +14,10 @@ import {
 
 import type { ConversationTrace } from './ai/conversation-trace.ts';
 import { FakeInferenceProvider } from './ai/fake-inference-provider.ts';
+import type { InferenceProvider } from './ai/inference.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
 import { maraProfile } from './ai/mara.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
-import type { InferenceProvider } from './ai/inference.ts';
 import type { ConversationTurn } from './ai/npc-types.ts';
 import { M0_PUTER_MODEL_ID, PuterInferenceProvider } from './ai/puter-inference-provider.ts';
 import './starter.css';
