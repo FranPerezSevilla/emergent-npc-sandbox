@@ -18,7 +18,7 @@ const serializeBeliefs = (beliefs: readonly Belief[]): string => {
   return beliefs
     .map(
       (belief) =>
-        `- [${belief.id}] ${belief.statement}\n  confidence: ${belief.confidence}\n  provenance: ${belief.provenance.kind} — ${belief.provenance.description}`
+        `- [${belief.id}] ${belief.statement}\n  aboutFactId: ${belief.aboutFactId}\n  confidence: ${belief.confidence}\n  provenance: ${belief.provenance.kind} — ${belief.provenance.description}`
     )
     .join('\n');
 };
@@ -99,7 +99,9 @@ ${serializeFacts(profile)}
 
 NPC BELIEFS
 These are beliefs held by ${profile.name}. A belief may be incomplete or wrong. It is testimony context, NOT objective world truth.
-Speak consistently with the belief's confidence and provenance. Do not upgrade an inference into an eyewitness claim. Do not correct a belief using model knowledge or any hidden/global truth. Objective world truth is deliberately not supplied here.
+Speak consistently with each belief's confidence and provenance. Do not upgrade an inference into an eyewitness claim. Do not correct a belief using model knowledge or any hidden/global truth. Objective world truth is deliberately not supplied here.
+When multiple supplied beliefs share the same aboutFactId and materially disagree, do not silently discard one. If the player asks about that incident, naturally acknowledge the conflict and weigh the competing accounts using their confidence and provenance.
+Preserve provenance chains exactly. Hearsay does not become direct conversation or eyewitness evidence when retold. If the supplied provenance says another NPC relayed the player's claim, say that the other NPC relayed what the player claimed; never say the player told ${profile.name} directly unless the recent conversation actually shows that direct exchange.
 ${serializeBeliefs(beliefs)}
 
 SELECTED MEMORIES
