@@ -63,6 +63,7 @@ test('Mara to Iven transfer is deterministic idempotent hearsay with preserved p
   assert.equal(ivenBeliefs[0]?.id, IVEN_PROPAGATED_CLAIM_BELIEF_ID);
   assert.equal(ivenBeliefs[0]?.ownerNpcId, 'iven');
   assert.equal(ivenBeliefs[0]?.provenance.kind, 'hearsay');
+  assert.equal(ivenBeliefs[0]?.provenance.immediateSourceId, 'mara');
   assert.match(ivenBeliefs[0]?.provenance.description ?? '', /Mara relayed the player's claim/i);
 });
 
@@ -92,7 +93,7 @@ test('Iven later changes testimony because the transferred belief is supplied', 
   ]);
 });
 
-test('M3 prompt requires conflict integration and exact hearsay attribution', () => {
+test('M3 prompt keeps belief surfacing optional while enforcing exact hearsay provenance', () => {
   let state = recordPlayerRedTravelerClaimToMara(emptyM3State(), '2026-09-02T06:30:00.000Z');
   state = transferPlayerClaimFromMaraToIven(state, '2026-09-02T06:31:00.000Z');
   const ivenBeliefs = [...beliefsForNpc('iven'), ...propagatedBeliefsForNpc(state, 'iven')];
@@ -100,9 +101,10 @@ test('M3 prompt requires conflict integration and exact hearsay attribution', ()
   const system = messages.find((message) => message.role === 'system')?.content ?? '';
 
   assert.match(system, /aboutFactId: world-fact-red-traveler-exit/);
-  assert.match(system, /do not silently discard one/i);
-  assert.match(system, /Preserve provenance chains exactly/i);
-  assert.match(system, /never say the player told Iven Holt directly/i);
+  assert.match(system, /not a checklist that must always be recited/i);
+  assert.match(system, /Provenance is a hard constraint/i);
+  assert.match(system, /preserve that immediate source rather than saying the player told Iven Holt directly/i);
+  assert.match(system, /immediateSourceId: mara/);
   assert.match(system, /Mara relayed the player's claim to Iven/i);
 });
 
