@@ -45,6 +45,7 @@ import {
   transferPlayerClaimFromMaraToIven
 } from './ai/propagation-state.ts';
 import { beliefsForNpc, m1Beliefs, redTravelerExitFact } from './ai/world-state.ts';
+import { buildSessionExport } from './session-export.ts';
 import './starter.css';
 
 const canvas = document.getElementById('application-canvas') as HTMLCanvasElement;
@@ -111,6 +112,7 @@ document.body.insertAdjacentHTML(
         <pre id="m3-state-output"></pre>
         <button class="load-model" id="m3-transfer" type="button">Resolve Mara → Iven social event</button>
         <button class="load-model" id="m3-reset-state" type="button">Reset M3 claim + transfer</button>
+        <button class="load-model" id="export-session" type="button">Export session JSON</button>
         <p>Last trace below. All traces remain available as <code>window.__npcTraces</code>.</p>
         <pre id="trace-output">No inference trace yet.</pre>
         <details>
@@ -273,6 +275,7 @@ const m3StateOutput = document.getElementById('m3-state-output') as HTMLPreEleme
 const m3TellMara = document.getElementById('m3-tell-mara') as HTMLButtonElement;
 const m3Transfer = document.getElementById('m3-transfer') as HTMLButtonElement;
 const m3ResetState = document.getElementById('m3-reset-state') as HTMLButtonElement;
+const exportSessionButton = document.getElementById('export-session') as HTMLButtonElement;
 const m2StateOutput = document.getElementById('m2-state-output') as HTMLPreElement;
 const m2HelpMara = document.getElementById('m2-help-mara') as HTMLButtonElement;
 const m2ResetState = document.getElementById('m2-reset-state') as HTMLButtonElement;
@@ -477,6 +480,49 @@ m3ResetState.addEventListener('click', () => {
   traceOutput.textContent = 'No inference trace yet.';
   modelStatus.textContent = 'M3 claim and transfer state reset.';
   renderM3State();
+});
+
+exportSessionButton.addEventListener('click', () => {
+  const exportedAt = new Date().toISOString();
+  const payload = buildSessionExport({
+    exportedAt,
+    provider: {
+      providerId: provider.providerId,
+      modelId: provider.modelId
+    },
+    conversations: runtimeNpcs.map((runtime) => ({
+      npcId: runtime.profile.id,
+      npcName: runtime.profile.name,
+      role: runtime.profile.role,
+      turns: runtime.turns
+    })),
+    traces,
+    npcContextSnapshots: runtimeNpcs.map((runtime) => ({
+      npcId: runtime.profile.id,
+      beliefs: beliefsForRuntimeNpc(runtime.profile.id),
+      memories: memoriesForNpc(m2State, runtime.profile.id),
+      relationship: relationshipForNpc(m2State, runtime.profile.id)
+    })),
+    state: {
+      m1: {
+        objectiveTruth: redTravelerExitFact,
+        authoredBeliefs: m1Beliefs
+      },
+      m2: m2State,
+      m3: m3State
+    }
+  });
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `emergent-npc-session-${exportedAt.replace(/[:.]/g, '-')}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+  modelStatus.textContent = 'Session JSON exported. Upload that file to ChatGPT for full-session validation.';
 });
 
 m2HelpMara.addEventListener('click', () => {
