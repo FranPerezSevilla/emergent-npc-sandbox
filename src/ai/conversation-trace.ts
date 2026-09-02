@@ -1,3 +1,4 @@
+import type { SocialDialogueDecision } from './dialogue-metabehavior.ts';
 import type { NpcResponseV1 } from './npc-types.ts';
 
 export type InferenceAttemptTrace = {
@@ -22,6 +23,7 @@ export type ConversationTrace = {
   selectedBeliefIds: string[];
   selectedMemoryIds: string[];
   relationshipSnapshot?: RelationshipTraceSnapshot;
+  socialDialogueDecision: SocialDialogueDecision;
   recentTurnCount: number;
   providerId: string;
   modelId: string;
