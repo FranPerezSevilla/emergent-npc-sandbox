@@ -26,8 +26,47 @@ const fallbackResponse = (playerUtterance: string, providerFailed: boolean): Npc
   intent: 'continue'
 });
 
+const sensitiveErrorKey = /(authorization|cookie|token|api[-_]?key|secret|credential)/i;
+
+const summarizeErrorValue = (value: unknown, depth = 0): unknown => {
+  if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message
+    };
+  }
+
+  if (depth >= 2) return '[nested]';
+
+  if (Array.isArray(value)) {
+    return value.slice(0, 6).map((item) => summarizeErrorValue(item, depth + 1));
+  }
+
+  if (typeof value === 'object') {
+    const entries = Object.entries(value)
+      .filter(([key]) => !sensitiveErrorKey.test(key))
+      .slice(0, 12)
+      .map(([key, item]) => [key, summarizeErrorValue(item, depth + 1)] as const);
+    return Object.fromEntries(entries);
+  }
+
+  return String(value);
+};
+
 const safeErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return `${error.name}: ${error.message}`.slice(0, 500);
+
+  try {
+    const serialized = JSON.stringify(summarizeErrorValue(error));
+    if (serialized && serialized !== '{}') return serialized.slice(0, 500);
+  } catch {
+    // Fall through to the string representation if a provider throws an unserializable object.
+  }
+
   return String(error).slice(0, 500);
 };
 
