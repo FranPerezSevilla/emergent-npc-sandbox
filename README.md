@@ -19,9 +19,11 @@ The project is **not** “ChatGPT inside an NPC”.
 
 **DONE:** `BOOTSTRAP — Cloud playable loop` (`#2`, PR `#4`)
 
-**NOW:** `M0 — One living NPC with real AI` (`#1`)
+**NOW:** `M0 — One living NPC with real AI` — **final QA** (`#13`, parent `#1`)
 
-**ACTIVE M0 EXPERIMENT:** remote browser inference baseline (`#8`) after two local WebGPU candidates failed the human hardware/runtime gate.
+**HUMAN CHARACTER GATE:** **PASS** on 2026-09-02. The human likes the Mara interaction and considers the character-quality test valid.
+
+**ACTIVE M0 EXPERIMENT:** remote browser inference baseline (`#8`). Local WebGPU candidates are retained as failed experiment evidence, not as the default runtime.
 
 **NEXT / BLOCKED:** `M1 — Truth vs belief`
 
@@ -67,9 +69,9 @@ The PlayCanvas Editor may still be used when useful, but it is not the authorita
 ```text
 BOOTSTRAP — cloud playable loop        DONE
         ↓
-M0 — one living NPC                    NOW
+M0 — one living NPC                    NOW — FINAL QA
         ↓
-M1 — truth vs belief
+M1 — truth vs belief                   BLOCKED
         ↓
 M2 — memory & relationship
         ↓
@@ -87,6 +89,8 @@ A production roadmap is deliberately deferred until M5.
 M0 asks one question:
 
 > Can one constrained AI NPC feel more like a fictional person than a generic chatbot, including when the player deliberately tries to break the fiction?
+
+The human character-quality half of that question is now **PASS**. The only remaining M0 evidence gap is the bounded real-model adversarial/competence/secret probe sweep in issue #13.
 
 M0 builds on the deployed Bootstrap and adds only what is required to answer that:
 
@@ -228,14 +232,15 @@ Default discipline:
 
 > One current milestone, one bounded issue, one accountable owner, evidence before advancing.
 
-The current accountable owner is `ai-npc-systems-engineer` through issue #1, with gameplay, QA and licensing support where required.
+The current accountable task is final M0 QA through issue #13, owned operationally by `qa-playtest-engineer`; `ai-npc-systems-engineer` only re-enters if the probe sweep finds a concrete model/context failure.
 
 See `docs/08-agent-studio-operating-model.md`.
 
 ## Non-goals right now
 
-Until M0 proves the single-NPC interaction, do **not** build:
+Until the final M0 QA sweep passes, do **not** build:
 
+- M1 truth-vs-belief implementation;
 - long-term memory;
 - gossip propagation;
 - multiple deeply simulated NPCs;
