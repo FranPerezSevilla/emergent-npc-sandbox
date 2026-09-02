@@ -27,7 +27,7 @@ A milestone is complete only when its exit gate has evidence.
 
 **Current milestone issue:** `#30 — M4 — Tavern mystery`
 
-**Current bounded slice:** `#37 — M4 implementation slice — Corren/Nera testimony & lie policies`
+**Current bounded slice:** `#39 — M4 playable slice — Put Corren and Nera in the browser scene`
 
 **Previous milestone:** `M3 — Information propagation` — **DONE** via issue #21.
 
@@ -45,6 +45,8 @@ M3 evidence:
 - final human/session gate: **PASS 2026-09-02** — Iven distinguished own observation, skeptical hearsay, source attribution and challenge behavior coherently.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+
+Deterministic no-login URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
 
 **Next milestone if M4 passes:** `M5 — Product decision`.
 
@@ -166,7 +168,7 @@ M3 is closed. Future rumor sophistication belongs inside a concrete M4 need, not
 
 Milestone issue: **#30**.
 
-Current bounded slice: **#37 — Corren/Nera testimony & lie policies**.
+Current bounded slice: **#39 — Put Corren and Nera in the browser scene**.
 
 ## Hypothesis
 
@@ -208,15 +210,19 @@ The disposable prototype case is authored in `docs/14-m4-ash-letter-case.md`. It
 
 PR #36 established a private `m4-ash-letter` truth definition plus the fixed E1–E5 evidence registry. Player-discovered evidence starts empty, only explicit game code can discover it, discovery is idempotent/persistent, arbitrary model prose cannot create clues, and the culprit/private truth remains outside ordinary NPC prompts.
 
+### #37 — Corren/Nera testimony & lie policies — DONE
+
+PR #38 added distinct Corren and Nera profiles, isolated private case knowledge and deterministic authored cover-story selection. The model may perform an active cover but cannot activate, break or rewrite it. Evidence-fidelity validation constrains even authorized lies, and traces expose the active policy for QA without placing it in normal dialogue UI.
+
 ## Active slice
 
-### #37 — Corren/Nera testimony & lie policies — NOW
+### #39 — Put Corren and Nera in the browser scene — NOW
 
-Add the two remaining case NPCs and prove that intentional lying can remain simulation-owned rather than being delegated to arbitrary model invention.
+Make the four-person Ash Letter cast human-testable in the deployed browser build before adding more mystery transitions.
 
-The game will own each active cover story and each NPC's private case knowledge. The model will only perform the currently authorized testimony. Corren must not receive Nera's culprit facts; Nera's private guilt must not leak to other NPCs.
+The slice places Mara, Iven, Corren and Nera in the existing small PlayCanvas scene, wires only the owning testimony context into Corren/Nera, retains free text and the M0–M3 regression paths, provides a deterministic no-login fake mode, and exports four-NPC conversation/trace/M4 state evidence.
 
-This slice does not yet implement lie-breaking, accusation, physical inspection UI or the Nera trust hook.
+This remains an early testimony test. It does not yet implement Corren's lie-break, Nera's trust-sensitive disclosure, E3/E4 physical inspection or accusation/resolution.
 
 ## Exit gate
 
