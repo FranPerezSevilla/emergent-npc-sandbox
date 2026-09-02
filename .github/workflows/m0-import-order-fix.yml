@@ -1,0 +1,39 @@
+name: M0 import order fix
+
+on:
+  push:
+    branches:
+      - m0/remote-puter-provider
+    paths:
+      - '.github/workflows/m0-import-order-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: m0/remote-puter-provider
+      - name: Fix import order
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/main.ts')
+          s = p.read_text(encoding='utf-8')
+          old = "import { FakeInferenceProvider } from './ai/fake-inference-provider.ts';\nimport { runM0Benchmark } from './ai/m0-benchmark.ts';\nimport { maraProfile } from './ai/mara.ts';\nimport { NpcConversationEngine } from './ai/npc-conversation-engine.ts';\nimport type { InferenceProvider } from './ai/inference.ts';"
+          new = "import { FakeInferenceProvider } from './ai/fake-inference-provider.ts';\nimport type { InferenceProvider } from './ai/inference.ts';\nimport { runM0Benchmark } from './ai/m0-benchmark.ts';\nimport { maraProfile } from './ai/mara.ts';\nimport { NpcConversationEngine } from './ai/npc-conversation-engine.ts';"
+          if old not in s:
+              raise SystemExit('Expected import block not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/main.ts
+          git commit -m "fix: satisfy PlayCanvas import order"
+          git pull --rebase origin m0/remote-puter-provider
+          git push origin HEAD:m0/remote-puter-provider
