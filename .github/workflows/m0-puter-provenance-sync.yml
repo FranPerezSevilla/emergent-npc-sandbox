@@ -1,0 +1,163 @@
+name: M0 Puter provenance sync
+
+on:
+  push:
+    branches:
+      - m0/remote-puter-provider
+    paths:
+      - '.github/workflows/m0-puter-provenance-sync.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: m0/remote-puter-provider
+
+      - name: Update Experiment C provenance
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('legal/third-party.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          entries = {entry['id']: entry for entry in data['entries']}
+          order = [entry['id'] for entry in data['entries']]
+
+          qwen2 = entries.get('qwen2-5-0-5b-instruct-q4f32-1-mlc')
+          if qwen2:
+              qwen2['notes'] = (
+                  'Experiment B compatibility candidate. It loaded successfully on the human test machine, '
+                  'but the browser became unresponsive / effectively crashed on the first real NPC generation. '
+                  'It is no longer the default M0 path. The optional WebLLM adapter remains in source only as '
+                  'experimental evidence. Exact quantized-artifact terms remain unresolved, so release is not allowed.'
+              )
+              qwen2['lastReviewed'] = '2026-09-02'
+
+          new_entries = [
+              {
+                  'id': 'puter-js-2-6-2',
+                  'type': 'software',
+                  'name': 'Puter.js',
+                  'creator': 'Puter Technologies Inc.',
+                  'version': '2.6.2',
+                  'sourceUrl': 'https://github.com/HeyPuter/puter/tree/main/src/puter-js',
+                  'licenseName': 'Apache License 2.0',
+                  'licenseUrl': 'https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license',
+                  'reviewStatus': 'approved',
+                  'releaseAllowed': True,
+                  'attributionRequired': False,
+                  'requiredCreditText': '',
+                  'commercialUse': 'allowed',
+                  'modification': 'allowed',
+                  'redistribution': 'allowed',
+                  'aiProcessing': 'not_applicable',
+                  'usedIn': ['package.json', 'src/ai/puter-inference-provider.ts'],
+                  'notes': (
+                      'Frontend SDK adopted for M0 Experiment C. The Puter.js subproject and published package '
+                      'identify version 2.6.2 as Apache-2.0. This approval applies to the SDK software only and '
+                      'does not approve the hosted Puter service or any model accessed through it.'
+                  ),
+                  'evidence': [
+                      'https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license',
+                      'https://github.com/HeyPuter/puter/blob/main/src/puter-js/package.json'
+                  ],
+                  'lastReviewed': '2026-09-02'
+              },
+              {
+                  'id': 'puter-ai-gateway-experiment-c',
+                  'type': 'ai_service',
+                  'name': 'Puter AI Gateway',
+                  'creator': 'Puter Technologies Inc.',
+                  'version': 'service reviewed 2026-09-02',
+                  'sourceUrl': 'https://developer.puter.com/ai/',
+                  'licenseName': 'Puter hosted-service terms — commercial/release review pending',
+                  'licenseUrl': 'https://puter.com/terms',
+                  'reviewStatus': 'pending',
+                  'releaseAllowed': False,
+                  'attributionRequired': False,
+                  'requiredCreditText': '',
+                  'commercialUse': 'unclear',
+                  'modification': 'not_applicable',
+                  'redistribution': 'not_applicable',
+                  'aiProcessing': 'not_applicable',
+                  'usedIn': ['src/ai/puter-inference-provider.ts'],
+                  'notes': (
+                      'Isolated M0 Experiment C service. Puter developer documentation explicitly supports frontend '
+                      'AI calls with no developer API key and a User-Pays model, but the public Terms of Service '
+                      'contain personal/non-commercial language and reference a separate developer agreement. '
+                      'Do not treat prototype success as commercial or release approval without human/legal review. '
+                      'Users authenticate with Puter and their Puter account is charged/allowanced for AI usage.'
+                  ),
+                  'evidence': [
+                      'https://developer.puter.com/ai/',
+                      'https://docs.puter.com/user-pays-model/',
+                      'https://puter.com/terms'
+                  ],
+                  'lastReviewed': '2026-09-02'
+              },
+              {
+                  'id': 'gpt-5-6-luna-via-puter-m0',
+                  'type': 'ai_model',
+                  'name': 'GPT-5.6 Luna via Puter AI Gateway',
+                  'creator': 'OpenAI; access mediated by Puter AI Gateway',
+                  'version': 'gpt-5.6-luna',
+                  'sourceUrl': 'https://docs.puter.com/AI/chat/',
+                  'licenseName': 'Hosted model/service terms — release review pending',
+                  'licenseUrl': 'https://puter.com/terms',
+                  'reviewStatus': 'pending',
+                  'releaseAllowed': False,
+                  'attributionRequired': False,
+                  'requiredCreditText': '',
+                  'commercialUse': 'unclear',
+                  'modification': 'not_applicable',
+                  'redistribution': 'not_applicable',
+                  'aiProcessing': 'not_applicable',
+                  'usedIn': ['src/ai/puter-inference-provider.ts'],
+                  'notes': (
+                      'Initial remote model identifier for M0 Experiment C. Puter documentation lists '
+                      '`gpt-5.6-luna` for puter.ai.chat(). Model weights are not distributed by this project; '
+                      'dialogue is transient runtime output. Exact upstream/provider output and commercial terms '
+                      'were not independently established here, so this model is prototype-only and not release-approved.'
+                  ),
+                  'evidence': [
+                      'https://docs.puter.com/AI/chat/',
+                      'https://docs.puter.com/AI/',
+                      'https://puter.com/terms'
+                  ],
+                  'lastReviewed': '2026-09-02'
+              }
+          ]
+
+          for entry in new_entries:
+              entries[entry['id']] = entry
+              if entry['id'] not in order:
+                  order.append(entry['id'])
+
+          data['entries'] = [entries[entry_id] for entry_id in order]
+          path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+          PY
+
+      - name: Validate and regenerate notices
+        run: |
+          python3 tools/legal/validate_third_party.py
+          python3 tools/legal/generate_notices.py
+
+      - name: Commit provenance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add legal/
+          if git diff --cached --quiet; then
+            echo "Provenance already synchronized"
+            exit 0
+          fi
+          git commit -m "m0: register Puter Experiment C provenance"
+          git pull --rebase origin m0/remote-puter-provider
+          git push origin HEAD:m0/remote-puter-provider
