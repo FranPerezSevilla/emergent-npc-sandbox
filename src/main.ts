@@ -31,7 +31,6 @@ import {
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
 import {
-  IVEN_PROPAGATED_CLAIM_BELIEF_ID,
   MARA_TO_IVEN_TRANSFER_ID,
   PLAYER_RED_TRAVELER_EXIT_CLAIM_ID,
   loadM3State,
