@@ -2,11 +2,11 @@
 
 ## Purpose
 
-This is the **operational roadmap** for the Studio Director. It exists to answer four questions only:
+This is the **operational roadmap** for the Studio Director. It answers four questions:
 
 1. What are we proving **now**?
 2. What must be true before we move on?
-3. What is next if the current milestone succeeds?
+3. What comes next if the current milestone succeeds?
 4. What work is explicitly premature?
 
 The roadmap is gated. Later milestones are hypotheses, not a parallel implementation backlog.
@@ -30,42 +30,30 @@ A milestone is complete only when its **exit gate has evidence**.
 
 ## Current state
 
-**Current milestone:** `M0 — One living NPC with real AI` — **FINAL QA**
+**Current milestone:** `M1 — Truth vs belief`
 
-**Current implementation/validation issue:** `#13 — M0 final QA — remote adversarial probe sweep`
+**Current implementation issue:** `#14 — M1 — Truth vs belief`
 
-**Parent milestone issue:** `#1 — M0 — One living NPC with real AI`
+**Previous milestone:** `M0 — One living NPC with real AI` — **DONE** via parent issue #1, remote experiment #8 and final QA #13.
 
-**Current real-provider experiment:** `#8 — M0 experiment C — remote browser inference baseline`
+M0 evidence:
 
-**Human character-quality gate:** **PASS on 2026-09-02.** The human explicitly liked the Mara interaction and considers the character-quality test valid.
-
-**Previous milestone:** `BOOTSTRAP — Cloud playable loop` — **DONE** via issue #2 and PR #4.
-
-Bootstrap evidence:
-
-- reproducible PlayCanvas + TypeScript + Vite build;
-- deterministic CI/typecheck/lint/test/build;
-- GitHub Pages deployment from `main`;
-- browser first-person interaction with Mara + free-text fake response;
-- third-party registry checks green;
-- human confirmed the URL-based playtest loop is usable.
-
-M0 evidence already established:
-
-- deployed real-provider browser conversation;
-- responsive browser path through remote inference;
+- deployed browser conversation driven by a real provider;
+- responsive remote inference path after local WebGPU experiments failed the human hardware/runtime gate;
 - authored Mara profile, competence and permitted facts;
-- deterministic secret omission/schema/state/leakage/retry/fallback/provider-error tests;
-- `ConversationTrace` proved sufficient to diagnose real provider failures, including the unsupported Luna `temperature` parameter;
-- adopted AI resources are registered with explicit legal review state;
-- human character-quality judgment is positive.
+- inaccessible facts omitted from model context;
+- structured validation, max-one-retry and diegetic fallback;
+- deterministic fake/recorded path and tests;
+- `ConversationTrace` diagnosed real provider failures;
+- real-model sweep passed normal conversation, meta/jailbreak, runtime probing, competence boundaries, legitimate arithmetic/local knowledge and secret extraction;
+- one first-attempt `ChatGPT` leakage was intercepted by validation and corrected by the single retry;
+- benchmark `answered-programming` flag was reviewed as a false positive because Mara refused coding and emitted no code;
+- human character-quality gate: **PASS 2026-09-02**;
+- adopted AI resources remain registered with explicit legal review state.
 
 Playable URL: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
 
-**Only remaining M0 evidence:** run/review the real remote adversarial/competence/secret probe sweep in #13.
-
-**Next milestone if #13 passes:** `M1 — Truth vs belief`.
+**Next milestone if M1 passes:** `M2 — Memory & relationship`.
 
 Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
@@ -74,9 +62,9 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 | Stage | Status | Core question | Exit gate | Primary owner |
 |---|---|---|---|---|
 | **BOOTSTRAP** | **DONE** | Can agents hand the human a browser-playable result without a local engine/editor? | Agent -> CI -> Pages -> human playtest | Gameplay Engineer |
-| **M0 — One living NPC** | **NOW — FINAL QA** | Can one constrained AI NPC feel like a character rather than a chatbot? | Human character gate passed; final real-model adversarial/competence/secret sweep remains | QA Playtest Engineer |
-| **M1 — Truth vs belief** | **NEXT / BLOCKED** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative world state | AI & NPC Systems Engineer |
-| **M2 — Memory & relationship** | LATER | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
+| **M0 — One living NPC** | **DONE** | Can one constrained AI NPC feel like a character rather than a chatbot? | Real conversation + adversarial/competence/secret QA + human character judgment | AI & NPC Systems + QA |
+| **M1 — Truth vs belief** | **NOW** | Can two NPCs disagree without the model rewriting objective truth? | Conflicting testimony with stable authoritative truth and inspectable beliefs | AI & NPC Systems Engineer |
+| **M2 — Memory & relationship** | **NEXT / BLOCKED** | Can a later conversation meaningfully depend on an earlier one? | Persisted prior interaction changes later behavior | AI & NPC Systems Engineer |
 | **M3 — Information propagation** | LATER | Can information travel socially and cause an unscripted delayed consequence? | A tells B; B later reacts without a handcrafted branch | AI + Narrative/Social |
 | **M4 — Tavern mystery** | LATER | Is the combined social system actually fun for ~30 minutes? | Blind human playtest produces memorable unscripted moments | Studio Director + Human |
 | **M5 — Product decision** | LATER | What game, if any, has the prototype earned the right to become? | Human chooses investigation/social RPG/sandbox/pivot/stop | Human owner |
@@ -91,130 +79,115 @@ Accepted runtime decision: `docs/adr/001-playcanvas-cloud-first-runtime.md`.
 
 The project can be developed agentically with PlayCanvas/TypeScript and delivered as a browser-playable build without requiring a desktop game editor for routine iteration.
 
-Implementation evidence: issue **#2**, PR **#4**, deployed Pages build, human playtest.
+Evidence: issue **#2**, PR **#4**, deployed Pages build, human playtest.
+
+---
+
+# M0 — One living NPC — DONE
+
+## Result
+
+A tightly constrained real-AI NPC is compelling and robust enough to justify continuing the social-simulation architecture.
+
+Evidence:
+
+- parent milestone **#1**;
+- remote baseline experiment **#8**;
+- final real-model QA **#13**;
+- human character-quality PASS.
 
 ## Gate evidence
 
-- [x] clean/cloud build is reproducible;
-- [x] human can open a URL and move/look in first person;
-- [x] human can interact with Mara and send text;
-- [x] deterministic fake structured response is shown;
-- [x] routine gameplay/code changes require no undocumented editor step;
-- [x] CI validates the deterministic path;
-- [x] adopted third-party dependencies are registered;
-- [x] human confirmed the browser-playtest loop is usable.
-
-Bootstrap is closed. Do not reopen it unless the delivery loop itself regresses.
-
----
-
-# M0 — One living NPC — NOW — FINAL QA
-
-## Hypothesis
-
-A real language model can perform one tightly constrained NPC well enough that free-form interaction feels like talking to a fictional person rather than a generic assistant.
-
-Parent milestone issue: **#1**.
-
-Current final QA issue: **#13**.
-
-Remote inference experiment: **#8**.
-
-## Required outcome
-
-Build on the existing Bootstrap application:
-
-- one authored NPC;
-- `NpcProfile`;
-- minimal `NpcCompetenceProfile`;
-- small permitted knowledge/fact set;
-- provider-agnostic inference boundary;
-- one real provider/model experiment;
-- fake/recorded provider retained;
-- versioned structured response;
-- deterministic response/action validation;
-- diegetic robustness + leakage fallback;
-- `ConversationTrace` / replayable diagnostics;
-- fixed adversarial/model benchmark probe set;
-- provenance/license registration for adopted model/runtime/service.
-
-Browser-local/WebGPU was tested during M0 and failed on the human test machine through unacceptable first-load friction, shader compatibility failure and browser instability during generation. The current M0 baseline therefore uses a remote provider behind the same `InferenceProvider` boundary. Local inference remains an optional future product hypothesis, not a requirement for this milestone.
-
-## Exit gate — PASS only if all are true
-
 - [x] one real NPC can be freely questioned in the deployed browser build;
 - [x] normal conversation stays recognizably in character;
-- [ ] inaccessible world secrets are absent/unextractable under the real-model probe sweep;
-- [ ] meta/jailbreak prompts do not turn the real remote NPC into a generic assistant;
-- [ ] NPC competence constrains real-model expertise without blocking legitimate in-world competence;
-- [x] invalid/meta output is intercepted and falls back diegetically in deterministic validation;
+- [x] inaccessible world secrets remain absent/unextractable;
+- [x] meta/jailbreak prompts do not turn the NPC into a generic assistant;
+- [x] NPC competence constrains model expertise without blocking legitimate in-world competence;
+- [x] invalid/meta output is intercepted/retried/fallbacked rather than shown raw;
 - [x] failures can be explained from `ConversationTrace` rather than guessed;
-- [ ] fixed remote benchmark/probe sweep records quality + latency + Spanish behavior;
+- [x] fixed real-model sweep records quality, latency and Spanish behavior;
 - [x] adopted model/runtime/service provenance is registered with explicit review state;
-- [x] human playtest answer to **“does this feel like a character?”** is good enough to continue — **PASS 2026-09-02**.
+- [x] human answer to **“does this feel like a character?”** is good enough to continue.
 
-The four unchecked real-model QA conditions are the complete scope of **#13**. Do not create unrelated M0 work while #13 is active.
-
-## If the gate fails
-
-Classify the failure before changing architecture:
-
-1. authored NPC data;
-2. context selection;
-3. schema/validation;
-4. model capability/latency;
-5. presentation;
-6. fundamental interaction not compelling.
-
-Run the smallest experiment against the diagnosed failure. Do not hide repeated failures by endlessly growing the prompt.
-
-## Explicitly not now
-
-- M1 truth-vs-belief implementation;
-- long-term memory;
-- gossip propagation;
-- multiple deeply simulated NPCs;
-- vector DB;
-- generic agent/planner framework;
-- complex final visuals;
-- combat/inventory/quests.
-
-## Gate unlocks
-
-`M1 — Truth vs belief`.
+M0 is closed. Do not reopen it because of future provider/product optimization unless the core single-NPC assumption itself regresses.
 
 ---
 
-# M1 — Truth vs belief — NEXT / BLOCKED
+# M1 — Truth vs belief — NOW
+
+Implementation issue: **#14**.
 
 ## Hypothesis
 
 The simulation can maintain objective truth separately from character belief, allowing believable disagreement, misinformation and testimony without generated dialogue rewriting reality.
 
+## Core rule
+
+> The game owns truth. NPCs own beliefs. The LLM owns neither.
+
+Generated dialogue is testimony, not authority.
+
 ## Required outcome
 
-- `WorldFact`;
-- `Belief`;
+Implement the smallest executable truth-vs-belief slice:
+
+- authoritative `WorldFact`;
+- NPC-owned `Belief`;
+- belief confidence/provenance;
 - NPC-specific context filtering;
-- two NPCs with contradictory beliefs/testimony;
-- provenance/confidence sufficient for the experiment;
-- debug visibility into objective truth vs each NPC belief.
+- two NPCs with contradictory beliefs/testimony about one tiny incident;
+- debug visibility into objective truth vs each NPC belief;
+- `ConversationTrace` records selected belief IDs/context decisions;
+- deterministic tests proving truth cannot be mutated by generated testimony.
 
-## Exit gate
+## Exit gate — PASS only if all are true
 
-PASS when:
+- [ ] one authoritative world fact exists independently of dialogue;
+- [ ] NPC A and NPC B can hold contradictory beliefs about the same subject;
+- [ ] each NPC receives only its own relevant beliefs/knowledge;
+- [ ] asking both NPCs the same question produces conflicting but belief-consistent testimony;
+- [ ] objective truth remains unchanged regardless of generated answers;
+- [ ] repeated conversation does not silently synchronize beliefs;
+- [ ] conversation cannot grant knowledge/belief that game code never supplied;
+- [ ] debug view makes truth, belief, provenance and confidence inspectable;
+- [ ] traces make each testimony explainable from selected belief IDs;
+- [ ] deterministic fake/replay path covers the contradictory-testimony scenario;
+- [ ] human browser playtest confirms the disagreement feels coherent rather than random.
 
-- NPC A and B can give conflicting answers;
-- both answers are explainable from their supplied beliefs;
-- objective truth remains unchanged;
-- conversation cannot grant knowledge that was never supplied;
-- the human can inspect why each NPC believes what it believes.
+## Smallest scenario
+
+Use one tiny authored incident, not a full mystery.
+
+Example shape:
+
+```text
+WorldFact F1
+Truth: the red-cloaked traveler left through the back door after midnight.
+
+Mara belief B1
+Believes she heard the back door after midnight.
+Confidence: medium.
+Source: first-hand sound; did not see the traveler.
+
+Second NPC belief B2
+Believes the traveler never left the upstairs room.
+Confidence: high.
+Source: visual evidence interpreted incorrectly.
+```
+
+The exact fiction may change. The proof is the data boundary, not the content.
 
 ## Explicitly not now
 
-- persistent episodic memory beyond M1 needs;
-- NPC-to-NPC gossip;
-- town-scale simulation.
+- long-term episodic memory;
+- relationship simulation beyond a tiny M1 need;
+- NPC-to-NPC gossip/information propagation;
+- automatic belief updating from every conversation;
+- vector DB / town-scale knowledge graph;
+- deception planner unless strictly required by the authored scenario;
+- schedules/economy/factions;
+- full tavern mystery content;
+- M2/M3 implementation.
 
 ## Gate unlocks
 
@@ -222,7 +195,7 @@ PASS when:
 
 ---
 
-# M2 — Memory & relationship
+# M2 — Memory & relationship — NEXT / BLOCKED
 
 ## Hypothesis
 
