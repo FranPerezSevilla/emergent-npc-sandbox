@@ -17,8 +17,9 @@ import { FakeInferenceProvider } from './ai/fake-inference-provider.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
 import { maraProfile } from './ai/mara.ts';
 import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
+import type { InferenceProvider } from './ai/inference.ts';
 import type { ConversationTurn } from './ai/npc-types.ts';
-import { M0_WEBLLM_MODEL_ID, WebLlmInferenceProvider } from './ai/webllm-inference-provider.ts';
+import { M0_PUTER_MODEL_ID, PuterInferenceProvider } from './ai/puter-inference-provider.ts';
 import './starter.css';
 
 const canvas = document.getElementById('application-canvas') as HTMLCanvasElement;
@@ -34,27 +35,16 @@ app.setCanvasFillMode(FILLMODE_FILL_WINDOW);
 app.setCanvasResolution(RESOLUTION_AUTO);
 app.scene.ambientLight = new Color(0.12, 0.11, 0.15);
 
-const useFakeProvider = new URLSearchParams(window.location.search).get('provider') === 'fake';
-const webLlmProvider = useFakeProvider ? undefined : new WebLlmInferenceProvider();
-const provider = useFakeProvider ? new FakeInferenceProvider() : webLlmProvider!;
+const providerMode = new URLSearchParams(window.location.search).get('provider') ?? 'remote';
+const useFakeProvider = providerMode === 'fake';
+const puterProvider = useFakeProvider ? undefined : new PuterInferenceProvider();
+const provider: InferenceProvider = useFakeProvider ? new FakeInferenceProvider() : puterProvider!;
 const conversationEngine = new NpcConversationEngine(provider, maraProfile);
 const conversationTurns: ConversationTurn[] = [];
 const traces: ConversationTrace[] = [];
-let modelReady = useFakeProvider;
-let modelLoading: Promise<void> | undefined;
-let modelLoadStartedAt: number | undefined;
-let modelLoadWasCached: boolean | undefined;
-
-const loadMetrics: {
-  cached?: boolean;
-  durationMs?: number;
-  modelId: string;
-} = {
-  modelId: provider.modelId
-};
+let providerReady = useFakeProvider || puterProvider?.isSignedIn() === true;
 
 (window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
-(window as unknown as { __npcLoadMetrics: typeof loadMetrics }).__npcLoadMetrics = loadMetrics;
 
 document.body.insertAdjacentHTML(
   'beforeend',
@@ -62,16 +52,16 @@ document.body.insertAdjacentHTML(
     <section class="bootstrap-panel">
       <h1>Emergent NPC Sandbox — M0</h1>
       <p>Click the scene for mouse look. Move with WASD. Approach Mara and press E.</p>
-      <p>Mara now runs through a constrained NPC contract. The local model is an actor; game code validates every visible response.</p>
+      <p>Mara runs through a constrained NPC contract. The language model is an actor; game code validates every visible response.</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
-        <button class="load-model" id="load-model" type="button">Retry AI load</button>
+        <button class="load-model" id="load-model" type="button">Connect remote AI</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
         <summary>Debug / M0 traces</summary>
         <p>Full traces are also exposed as <code>window.__npcTraces</code>.</p>
-        <p>Load timing is exposed as <code>window.__npcLoadMetrics</code>.</p>
+        <p>The default provider is remote: no LLM weights are loaded into this page.</p>
         <button id="run-benchmark" type="button">Run fixed M0 probe set</button>
         <pre id="trace-output">No inference trace yet.</pre>
         <pre id="benchmark-output"></pre>
@@ -181,11 +171,14 @@ const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreEl
 
 providerBadge.textContent = useFakeProvider
   ? 'FAKE — deterministic test double'
-  : `LOCAL AI — ${M0_WEBLLM_MODEL_ID}`;
+  : `REMOTE AI — Puter / ${M0_PUTER_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
   ? 'Deterministic fake mode enabled by ?provider=fake.'
-  : 'Checking whether the local model is already cached…';
+  : providerReady
+    ? 'Remote AI connected. No local model is loaded into this browser.'
+    : 'Connect remote AI once. Puter handles authentication and usage without an API key in this app.';
 loadModel.hidden = useFakeProvider;
+loadModel.textContent = providerReady ? 'Remote AI connected' : 'Connect remote AI';
 
 const appendMessage = (speaker: string, text: string): void => {
   const line = document.createElement('div');
@@ -202,61 +195,26 @@ const appendMessage = (speaker: string, text: string): void => {
 const setConversationBusy = (busy: boolean): void => {
   dialogueInput.disabled = busy;
   dialogueSend.disabled = busy;
-  loadModel.disabled = busy || modelReady;
-  benchmarkButton.disabled = busy;
+  loadModel.disabled = busy || providerReady;
+  benchmarkButton.disabled = busy || !providerReady;
 };
 
-const elapsedLoadSeconds = (): string => {
-  if (modelLoadStartedAt === undefined) return '0.0';
-  return ((performance.now() - modelLoadStartedAt) / 1000).toFixed(1);
-};
-
-const ensureModelReady = async (): Promise<void> => {
-  if (modelReady) return;
-  if (modelLoading) return modelLoading;
+const connectRemoteProvider = async (): Promise<void> => {
+  if (providerReady || !puterProvider) return;
 
   setConversationBusy(true);
-  modelLoadStartedAt = performance.now();
-  const loadKind = modelLoadWasCached ? 'cached load' : 'first download';
-  modelStatus.textContent = `Starting local AI in background (${loadKind})…`;
-  modelLoading = conversationEngine
-    .initialize((progress) => {
-      const percent =
-        typeof progress.progress === 'number' ? ` ${Math.round(progress.progress * 100)}%` : '';
-      modelStatus.textContent = `${progress.text}${percent} · ${elapsedLoadSeconds()}s · ${loadKind}`;
-    })
-    .then(() => {
-      modelReady = true;
-      loadMetrics.cached = modelLoadWasCached;
-      loadMetrics.durationMs = Math.round(performance.now() - modelLoadStartedAt!);
-      modelStatus.textContent = `Local AI ready in ${(loadMetrics.durationMs / 1000).toFixed(1)}s (${loadKind}).`;
-    })
-    .catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error);
-      modelStatus.textContent = `Local AI could not load after ${elapsedLoadSeconds()}s: ${message}`;
-      throw error;
-    })
-    .finally(() => {
-      modelLoading = undefined;
-      setConversationBusy(false);
-    });
-
-  return modelLoading;
-};
-
-const startBackgroundModelLoad = async (): Promise<void> => {
-  if (!webLlmProvider) return;
-
-  modelLoadWasCached = await webLlmProvider.isModelCached();
-  loadMetrics.cached = modelLoadWasCached;
-  modelStatus.textContent = modelLoadWasCached
-    ? 'Cached model found. Warming local AI in the background…'
-    : 'First load needs roughly 335 MB of model weights. Downloading in the background…';
-
+  modelStatus.textContent = 'Opening Puter authentication…';
   try {
-    await ensureModelReady();
-  } catch {
-    // The status line already contains the actionable load error. Manual retry stays available.
+    await puterProvider.signIn();
+    providerReady = true;
+    loadModel.textContent = 'Remote AI connected';
+    modelStatus.textContent = 'Remote AI connected. No local model is loaded into this browser.';
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    modelStatus.textContent = `Remote AI connection failed: ${message}`;
+    throw error;
+  } finally {
+    setConversationBusy(false);
   }
 };
 
@@ -281,13 +239,16 @@ const openDialogue = (): void => {
 };
 
 loadModel.addEventListener('click', () => {
-  void ensureModelReady().catch(() => undefined);
+  void connectRemoteProvider().catch(() => undefined);
 });
 
 benchmarkButton.addEventListener('click', async () => {
   benchmarkOutput.textContent = '';
   try {
-    await ensureModelReady();
+    if (!providerReady) {
+      modelStatus.textContent = 'Connect remote AI before running the M0 probes.';
+      return;
+    }
     setConversationBusy(true);
     const records = await runM0Benchmark(conversationEngine, (completed, total, probe) => {
       modelStatus.textContent = `M0 benchmark ${completed}/${total}: ${probe.id}`;
@@ -336,12 +297,17 @@ dialogueForm.addEventListener('submit', async (event) => {
   const playerUtterance = dialogueInput.value.trim();
   if (!playerUtterance) return;
 
+  if (!providerReady) {
+    modelStatus.textContent = 'Connect remote AI before talking to Mara.';
+    loadModel.focus();
+    return;
+  }
+
   appendMessage('You', playerUtterance);
   dialogueInput.value = '';
   setConversationBusy(true);
 
   try {
-    await ensureModelReady();
     const result = await conversationEngine.respond(playerUtterance, conversationTurns);
     appendMessage('Mara', result.response.dialogue);
     npcState.textContent = `${result.response.emotion} · ${result.response.gesture}`;
@@ -429,8 +395,6 @@ tavernLight.addComponent('light', {
 });
 app.root.addChild(tavernLight);
 
-if (!useFakeProvider) {
-  void startBackgroundModelLoad();
-}
+setConversationBusy(false);
 
 window.addEventListener('resize', () => app.resizeCanvas());
