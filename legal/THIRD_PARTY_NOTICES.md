@@ -109,6 +109,21 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - Release allowed: yes
 - Evidence: legal/licenses/playcanvas-engine-2.21.4-MIT.txt, https://github.com/playcanvas/engine/blob/v2.21.4/LICENSE
 
+## Puter.js
+
+- ID: `puter-js-2-6-2`
+- Type: `software`
+- Creator/provider: Puter Technologies Inc.
+- License/terms: Apache License 2.0
+- License/terms URL: https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license
+- Source URL: https://github.com/HeyPuter/puter/tree/main/src/puter-js
+- Commercial use: allowed
+- Modification: allowed
+- Redistribution: allowed
+- AI processing: not_applicable
+- Release allowed: yes
+- Evidence: https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license, https://github.com/HeyPuter/puter/blob/main/src/puter-js/package.json
+
 ## @playcanvas/eslint-config
 
 - ID: `playcanvas-eslint-config-3.0.0-beta.8`
@@ -169,6 +184,21 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - Release allowed: yes
 - Evidence: https://github.com/vitejs/vite/blob/v8.2.1/LICENSE
 
+## GPT-5.6 Luna via Puter AI Gateway
+
+- ID: `gpt-5-6-luna-via-puter-m0`
+- Type: `ai_model`
+- Creator/provider: OpenAI; access mediated by Puter AI Gateway
+- License/terms: Hosted model/service terms — release review pending
+- License/terms URL: https://puter.com/terms
+- Source URL: https://docs.puter.com/AI/chat/
+- Commercial use: unclear
+- Modification: not_applicable
+- Redistribution: not_applicable
+- AI processing: not_applicable
+- Release allowed: no
+- Evidence: https://docs.puter.com/AI/chat/, https://docs.puter.com/AI/, https://puter.com/terms
+
 ## Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
 - ID: `qwen2-5-0-5b-instruct-q4f32-1-mlc`
@@ -183,3 +213,18 @@ This inventory summarizes recorded third-party resources. Full license/notice ev
 - AI processing: not_applicable
 - Release allowed: no
 - Evidence: legal/licenses/qwen2.5-0.5b-instruct-base-Apache-2.0.txt, https://huggingface.co/mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC, https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct, https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE
+
+## Puter AI Gateway
+
+- ID: `puter-ai-gateway-experiment-c`
+- Type: `ai_service`
+- Creator/provider: Puter Technologies Inc.
+- License/terms: Puter hosted-service terms — commercial/release review pending
+- License/terms URL: https://puter.com/terms
+- Source URL: https://developer.puter.com/ai/
+- Commercial use: unclear
+- Modification: not_applicable
+- Redistribution: not_applicable
+- AI processing: not_applicable
+- Release allowed: no
+- Evidence: https://developer.puter.com/ai/, https://docs.puter.com/user-pays-model/, https://puter.com/terms

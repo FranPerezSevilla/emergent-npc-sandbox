@@ -371,14 +371,98 @@
       "usedIn": [
         "src/ai/webllm-inference-provider.ts"
       ],
-      "notes": "Active M0 compatibility candidate after the q4f16 Qwen3 experiment failed on the human test GPU. WebLLM includes this q4f32_1 model in its prebuilt catalogue without a shader-f16 requirement; the upstream MLC artifact is about 290 MB and WebLLM reports about 945 MB VRAM. Base Qwen/Qwen2.5-0.5B-Instruct is Apache-2.0, but the exact MLC artifact page was not treated as inheriting that license without explicit evidence. The project does not commit or redistribute model weights; WebLLM downloads the upstream artifact into browser cache at runtime.",
+      "notes": "Experiment B compatibility candidate. It loaded successfully on the human test machine, but the browser became unresponsive / effectively crashed on the first real NPC generation. It is no longer the default M0 path. The optional WebLLM adapter remains in source only as experimental evidence. Exact quantized-artifact terms remain unresolved, so release is not allowed.",
       "evidence": [
         "legal/licenses/qwen2.5-0.5b-instruct-base-Apache-2.0.txt",
         "https://huggingface.co/mlc-ai/Qwen2.5-0.5B-Instruct-q4f32_1-MLC",
         "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct",
         "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE"
       ],
-      "lastReviewed": "2026-09-01"
+      "lastReviewed": "2026-09-02"
+    },
+    {
+      "id": "puter-js-2-6-2",
+      "type": "software",
+      "name": "Puter.js",
+      "creator": "Puter Technologies Inc.",
+      "version": "2.6.2",
+      "sourceUrl": "https://github.com/HeyPuter/puter/tree/main/src/puter-js",
+      "licenseName": "Apache License 2.0",
+      "licenseUrl": "https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license",
+      "reviewStatus": "approved",
+      "releaseAllowed": true,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "allowed",
+      "modification": "allowed",
+      "redistribution": "allowed",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "package.json",
+        "src/ai/puter-inference-provider.ts"
+      ],
+      "notes": "Frontend SDK adopted for M0 Experiment C. The Puter.js subproject and published package identify version 2.6.2 as Apache-2.0. This approval applies to the SDK software only and does not approve the hosted Puter service or any model accessed through it.",
+      "evidence": [
+        "https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license",
+        "https://github.com/HeyPuter/puter/blob/main/src/puter-js/package.json"
+      ],
+      "lastReviewed": "2026-09-02"
+    },
+    {
+      "id": "puter-ai-gateway-experiment-c",
+      "type": "ai_service",
+      "name": "Puter AI Gateway",
+      "creator": "Puter Technologies Inc.",
+      "version": "service reviewed 2026-09-02",
+      "sourceUrl": "https://developer.puter.com/ai/",
+      "licenseName": "Puter hosted-service terms — commercial/release review pending",
+      "licenseUrl": "https://puter.com/terms",
+      "reviewStatus": "pending",
+      "releaseAllowed": false,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "unclear",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "src/ai/puter-inference-provider.ts"
+      ],
+      "notes": "Isolated M0 Experiment C service. Puter developer documentation explicitly supports frontend AI calls with no developer API key and a User-Pays model, but the public Terms of Service contain personal/non-commercial language and reference a separate developer agreement. Do not treat prototype success as commercial or release approval without human/legal review. Users authenticate with Puter and their Puter account is charged/allowanced for AI usage.",
+      "evidence": [
+        "https://developer.puter.com/ai/",
+        "https://docs.puter.com/user-pays-model/",
+        "https://puter.com/terms"
+      ],
+      "lastReviewed": "2026-09-02"
+    },
+    {
+      "id": "gpt-5-6-luna-via-puter-m0",
+      "type": "ai_model",
+      "name": "GPT-5.6 Luna via Puter AI Gateway",
+      "creator": "OpenAI; access mediated by Puter AI Gateway",
+      "version": "gpt-5.6-luna",
+      "sourceUrl": "https://docs.puter.com/AI/chat/",
+      "licenseName": "Hosted model/service terms — release review pending",
+      "licenseUrl": "https://puter.com/terms",
+      "reviewStatus": "pending",
+      "releaseAllowed": false,
+      "attributionRequired": false,
+      "requiredCreditText": "",
+      "commercialUse": "unclear",
+      "modification": "not_applicable",
+      "redistribution": "not_applicable",
+      "aiProcessing": "not_applicable",
+      "usedIn": [
+        "src/ai/puter-inference-provider.ts"
+      ],
+      "notes": "Initial remote model identifier for M0 Experiment C. Puter documentation lists `gpt-5.6-luna` for puter.ai.chat(). Model weights are not distributed by this project; dialogue is transient runtime output. Exact upstream/provider output and commercial terms were not independently established here, so this model is prototype-only and not release-approved.",
+      "evidence": [
+        "https://docs.puter.com/AI/chat/",
+        "https://docs.puter.com/AI/",
+        "https://puter.com/terms"
+      ],
+      "lastReviewed": "2026-09-02"
     }
   ]
 }

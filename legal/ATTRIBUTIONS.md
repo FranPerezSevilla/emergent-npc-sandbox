@@ -88,6 +88,18 @@
 - Used in: `package.json`, `src/main.ts`
 - Notes: Runtime 3D engine bundled into the browser build. Preserve the MIT copyright/license notice with distributed copies or substantial portions of the engine.
 
+### Puter.js
+
+- Creator/provider: Puter Technologies Inc.
+- Registry ID: `puter-js-2-6-2`
+- License/terms: Apache License 2.0
+- Source: https://github.com/HeyPuter/puter/tree/main/src/puter-js
+- License/terms URL: https://github.com/HeyPuter/puter/blob/main/src/puter-js/README.md#license
+- Review status: approved
+- Attribution required: no
+- Used in: `package.json`, `src/ai/puter-inference-provider.ts`
+- Notes: Frontend SDK adopted for M0 Experiment C. The Puter.js subproject and published package identify version 2.6.2 as Apache-2.0. This approval applies to the SDK software only and does not approve the hosted Puter service or any model accessed through it.
+
 ## Tools
 
 ### @playcanvas/eslint-config
@@ -140,6 +152,18 @@
 
 ## AI models
 
+### GPT-5.6 Luna via Puter AI Gateway
+
+- Creator/provider: OpenAI; access mediated by Puter AI Gateway
+- Registry ID: `gpt-5-6-luna-via-puter-m0`
+- License/terms: Hosted model/service terms — release review pending
+- Source: https://docs.puter.com/AI/chat/
+- License/terms URL: https://puter.com/terms
+- Review status: pending
+- Attribution required: no
+- Used in: `src/ai/puter-inference-provider.ts`
+- Notes: Initial remote model identifier for M0 Experiment C. Puter documentation lists `gpt-5.6-luna` for puter.ai.chat(). Model weights are not distributed by this project; dialogue is transient runtime output. Exact upstream/provider output and commercial terms were not independently established here, so this model is prototype-only and not release-approved.
+
 ### Qwen2.5-0.5B-Instruct q4f32_1 (MLC)
 
 - Creator/provider: Qwen Team / MLC community
@@ -150,4 +174,18 @@
 - Review status: pending
 - Attribution required: no
 - Used in: `src/ai/webllm-inference-provider.ts`
-- Notes: Active M0 compatibility candidate after the q4f16 Qwen3 experiment failed on the human test GPU. WebLLM includes this q4f32_1 model in its prebuilt catalogue without a shader-f16 requirement; the upstream MLC artifact is about 290 MB and WebLLM reports about 945 MB VRAM. Base Qwen/Qwen2.5-0.5B-Instruct is Apache-2.0, but the exact MLC artifact page was not treated as inheriting that license without explicit evidence. The project does not commit or redistribute model weights; WebLLM downloads the upstream artifact into browser cache at runtime.
+- Notes: Experiment B compatibility candidate. It loaded successfully on the human test machine, but the browser became unresponsive / effectively crashed on the first real NPC generation. It is no longer the default M0 path. The optional WebLLM adapter remains in source only as experimental evidence. Exact quantized-artifact terms remain unresolved, so release is not allowed.
+
+## AI services
+
+### Puter AI Gateway
+
+- Creator/provider: Puter Technologies Inc.
+- Registry ID: `puter-ai-gateway-experiment-c`
+- License/terms: Puter hosted-service terms — commercial/release review pending
+- Source: https://developer.puter.com/ai/
+- License/terms URL: https://puter.com/terms
+- Review status: pending
+- Attribution required: no
+- Used in: `src/ai/puter-inference-provider.ts`
+- Notes: Isolated M0 Experiment C service. Puter developer documentation explicitly supports frontend AI calls with no developer API key and a User-Pays model, but the public Terms of Service contain personal/non-commercial language and reference a separate developer agreement. Do not treat prototype success as commercial or release approval without human/legal review. Users authenticate with Puter and their Puter account is charged/allowanced for AI usage.
