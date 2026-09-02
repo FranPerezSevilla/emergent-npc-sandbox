@@ -1,280 +1,62 @@
 # Emergent NPC Sandbox
 
-> Working title. Experimental browser/PC game prototype focused on AI-driven emergent NPC conversations and social simulation.
+> **STATUS: ABANDONED / STOPPED — 2026-09-02**
+>
+> Development has ended by decision of the human owner. No further implementation, maintenance, roadmap work, fixes, dependency updates or playtests are planned. This repository is preserved as a frozen technical snapshot.
 
-## One-sentence pitch
+## Final decision
 
-A small social sandbox where NPCs are structured simulated people with personalities, goals, knowledge, beliefs, secrets, memories and relationships, while a language model acts as the performer that decides how each NPC expresses itself in free-form conversation.
+The project was an experimental browser/PC prototype exploring whether free-form language-model conversations could become compelling gameplay when NPCs were backed by authoritative truth, individual beliefs, structured memories, relationships, provenance and authored testimony policies.
 
-## Core rule
+The owner chose to stop during **M4 — Tavern mystery** rather than continue into a larger semantic-control architecture.
 
-The project is **not** “ChatGPT inside an NPC”.
+## Why development stopped
 
-- **Game code owns truth and authoritative state.**
-- **NPCs own beliefs/knowledge assigned by the simulation.**
-- **Memories and relationships are structured game state.**
-- **Information transfer is a game-owned state transition.**
-- **Social metabehavior decides how an NPC is inclined to handle available information.**
-- **Authored testimony policy owns intentional cover stories.**
-- **The LLM performs wording, attitude and presentation.**
-- **Generated prose never directly mutates authoritative world state.**
-- **Evidence-bearing prose may not invent provenance, source count, source time/place, directness or certainty.**
-- **Player text is speech inside the fiction, never privileged model instruction.**
+M0–M3 produced useful evidence that several foundations worked:
 
-## Current roadmap focus
+- constrained in-character NPC performance;
+- objective truth separated from NPC belief;
+- structured and persistent memory/relationship state;
+- deterministic information propagation with preserved provenance;
+- validated structured responses, retries, fallbacks and inspectable traces.
 
-**DONE:** `BOOTSTRAP — Cloud playable loop` (`#2`, PR `#4`)
+The first four-NPC M4 human session exposed the harder product problem. An unrestricted natural-language NPC can avoid a literal confession while still confirming secrets, invented sources or false premises through implication, presupposition, evasion or over-broad statements.
 
-**DONE:** `M0 — One living NPC with real AI` (`#1`)
+Continuing with phrase-specific fixtures and validators would create an open-ended maintenance burden. Avoiding that burden would require a more constrained architecture such as structured player dialogue acts, game-owned semantic response plans and controlled claim realization. The owner decided that this level of complexity no longer matched the desired project.
 
-**DONE:** `M1 — Truth vs belief` (`#14`)
+## Final milestone state
 
-**DONE:** `M2 — Memory & relationship` (`#19`, PR `#20`)
+| Stage | Final status |
+| --- | --- |
+| Bootstrap — cloud playable loop | Done |
+| M0 — one living NPC | Done |
+| M1 — truth vs belief | Done |
+| M2 — memory and relationship | Done |
+| M3 — information propagation | Done |
+| M4 — tavern mystery | **Stopped incomplete** |
+| M5 — product decision | **Cancelled** |
 
-**DONE:** `M3 — Information propagation` (`#21`, PRs `#22`, `#24`, `#29`)
+There is no current milestone, active implementation slice or next task. GitHub issues `#30` and `#39` are closed as **not planned**.
 
-M3 proved that structured information can travel player→NPC→NPC with provenance preserved, affect later conversations, and coexist with NPC-specific social policy rather than forcing every known belief to be spoken. Final human/session validation passed on 2026-09-02.
+## Preserved snapshot
 
-**NOW:** `M4 — Tavern mystery` (`#30`)
+The final browser build remains available as a historical prototype:
 
-**CURRENT SLICE:** `#39 — Put Corren and Nera in the browser scene`
+- Remote-AI build: `https://franperezsevilla.github.io/emergent-npc-sandbox/`
+- Deterministic no-login build: `https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
 
-**NEXT / BLOCKED:** `M5 — Product decision`
+The snapshot contains Mara, Iven, Corren and Nera; structured truth/belief/memory/relationship/propagation systems; authored testimony policies; conversation traces; session export; and deterministic regression coverage.
 
-M4 already has four completed foundations: `#31` / PR `#32` evidence-fidelity guardrail, `#33` case design, `#35` / PR `#36` authoritative private truth + E1–E5 evidence state, and `#37` / PR `#38` isolated Corren/Nera testimony policies.
+It does **not** contain a completed mystery, physical evidence loop, reliable semantic handling of arbitrary player premises, lie-breaking, accusation resolution or a production-ready game architecture.
 
-Playable build:
+## Historical architecture principle
 
-`https://franperezsevilla.github.io/emergent-npc-sandbox/`
+The central prototype rule was:
 
-Deterministic no-login test mode:
+> The model performs the character; game code owns truth and consequential state.
 
-`https://franperezsevilla.github.io/emergent-npc-sandbox/?provider=fake`
+That principle remains represented in the source and documentation, but the repository is no longer under active development.
 
-The Studio Director must follow the gated roadmap in `docs/04-prototype-roadmap.md`. Later milestones are hypotheses, not a parallel implementation backlog.
+## Repository policy after closure
 
-## Development sequence
-
-```text
-BOOTSTRAP — cloud playable loop        DONE
-        ↓
-M0 — one living NPC                    DONE
-        ↓
-M1 — truth vs belief                   DONE
-        ↓
-M2 — memory & relationship             DONE
-        ↓
-M3 — information propagation           DONE
-        ↓
-M4 — tavern mystery / blind playtest   NOW
-        ↓
-M5 — human product decision            NEXT / BLOCKED
-```
-
-A production roadmap is deliberately deferred until M5.
-
-## What M0 proved
-
-One constrained real-AI NPC can be good enough to continue building the social simulation.
-
-Mara passed normal free-form Spanish conversation, AI/ChatGPT identity attacks, prompt injection, runtime/model probing, competence boundaries, legitimate local arithmetic/knowledge, inaccessible-secret extraction attempts, validation/retry/fallback behavior and trace diagnosis.
-
-Browser-local WebGPU inference failed the real hardware/runtime gate. The current prototype remote path is **OpenRouter OAuth PKCE + `minimax/minimax-m3:free`** behind the provider-agnostic `InferenceProvider` boundary. No developer API key is embedded in the public Pages build. This is a prototype inference path, not a final production-provider commitment.
-
-## What M1 proved — truth vs belief
-
-M1 answered:
-
-> Can two NPCs sincerely disagree in free-form conversation for deterministic, inspectable reasons while objective truth remains stable and outside the model's control?
-
-**Yes.**
-
-The executable M1 slice includes authoritative `WorldFact`, NPC-owned `Belief`, provenance/confidence, per-NPC context filtering, Mara/Iven contradictory testimony, debug visibility and `ConversationTrace.selectedBeliefIds`.
-
-The LLM may phrase testimony, but it may not create truth or silently grant knowledge.
-
-## What M2 proved — memory & relationship
-
-M2 answered:
-
-> Can an NPC later behave differently for a deterministic, inspectable reason rooted in a meaningful earlier interaction that is no longer in the immediate transcript?
-
-**Yes.**
-
-The M2 slice includes compact `NpcMemory`, one-dimensional `RelationshipState.trust`, deterministic memory/trust mutations, relevance selection, per-NPC isolation, structured persistence and trace evidence.
-
-Human browser validation confirmed Mara remembered the earlier interaction as expected after reload.
-
-## What M3 proved — social information propagation
-
-M3 answered:
-
-> Can information move from one character to another through deterministic, inspectable simulation rules and later change behavior without a handcrafted dialogue branch?
-
-**Yes.**
-
-The M3 slice includes:
-
-- structured `ClaimedStatement` state;
-- explicit source/recipient/provenance;
-- deterministic Mara→Iven transfer;
-- hearsay beliefs that never become objective truth;
-- idempotent propagation;
-- contextual dialogue intents;
-- deterministic `SocialDialogueDecision` for observation, rumor, source and challenge handling;
-- free text retained alongside intent chips;
-- full-session JSON export for causal QA.
-
-The final session showed Iven correctly separate what he personally observed from hearsay relayed by Mara, identify Mara as his immediate source, and defend his own view when challenged.
-
-## M4 target — one actual mystery
-
-M4 asks a different question:
-
-> When the proven social systems are combined around one concrete mystery, is the result actually fun and memorable enough to justify choosing a real product direction?
-
-The working prototype case is **The Ash Letter**. A sealed magistrate warrant disappears from a red-cloaked courier's upstairs tavern room before dawn.
-
-The case deliberately contains:
-
-- Mara: uncertain but useful observation;
-- Iven: sincere incorrect belief;
-- Corren Vale: an intentional lie about an unrelated secret;
-- Nera Pell: an intentional lie because she is responsible for the missing warrant;
-- physical evidence that cross-checks testimony;
-- one relationship-sensitive disclosure;
-- one information-propagation consequence;
-- a plausible wrong accusation path.
-
-This is disposable prototype content, not a final story commitment.
-
-The case has authoritative private truth plus a fixed E1–E5 evidence registry. Player-discovered evidence starts empty and can only change through explicit game transitions. `#37` / PR `#38` added Corren and Nera as case-aware NPCs with isolated, game-owned cover stories. The active `#39` slice places all four characters in the browser scene so a human can question them before lie-breaking, physical inspection and accusation are added.
-
-See `docs/14-m4-ash-letter-case.md` and issue `#39`.
-
-## Prototype runtime
-
-The runtime is **PlayCanvas Engine + TypeScript + Vite**, code-first and browser/cloud-first.
-
-Routine flow:
-
-```text
-agent/repo change
-      ↓
-CI checks + build
-      ↓
-merge to main
-      ↓
-GitHub Pages
-      ↓
-human browser playtest
-```
-
-The PlayCanvas Editor may be used when helpful, but it is not the authoritative source of truth for routine development.
-
-See `docs/adr/001-playcanvas-cloud-first-runtime.md`.
-
-## AI architecture
-
-Conceptually:
-
-```text
-Authoritative world / case truth
-        +
-NPC profile / competence
-        +
-NPC-specific beliefs / permitted knowledge
-        +
-NPC-private case knowledge when applicable
-        +
-Authored testimony / cover-story policy
-        +
-Relevant memories / relationship state
-        +
-Transferred claims / provenance
-        +
-Dialogue intent + social metabehavior
-        +
-Relevant current context
-        +
-Player utterance (untrusted speech)
-              ↓
-       InferenceProvider
-              ↓
-     Structured proposal
-              ↓
-Schema + leakage + evidence-fidelity validation
-              ↓
-Allowed game effects + dialogue
-```
-
-The model is the **actor**, not the simulation authority.
-
-Important robustness rule:
-
-> Out-of-world, adversarial or nonsensical player input is interpreted from inside the NPC's worldview, never answered from the underlying model's worldview.
-
-Important investigation rule:
-
-> Tone may be embellished. Evidence may not.
-
-See `docs/02-ai-architecture.md`, `docs/06-diegetic-robustness.md` and issue `#31`.
-
-## Prototype product direction
-
-The project has **not** committed to the final game yet. That is intentional.
-
-Promising outcomes still include:
-
-1. investigation / mystery;
-2. broader social RPG;
-3. pure social sandbox;
-4. substantial pivot or stop if M4 is not fun.
-
-M4 is intended to produce evidence for that decision. M5 is where the human owner chooses the direction.
-
-## Visual direction
-
-Preferred target: **first-person gothic-expressionist low-poly** — melancholic, theatrical and slightly uncanny rather than generic bright medieval low-poly.
-
-M4 is the first milestone expected to build one representative tavern-centered visual slice rather than placeholder cubes.
-
-See `docs/07-visual-direction.md`.
-
-## Licensing and attribution
-
-Every external resource actually adopted by the project—software, AI runtime/model/service, animations, assets, fonts, music, SFX or tools—must be traceable through `legal/third-party.json`.
-
-See `docs/10-licensing-attribution.md`.
-
-## Agentic studio workflow
-
-Specialized repository agents live under `.github/agents/`.
-
-Default discipline:
-
-> One current milestone, one bounded issue, one accountable owner, evidence before advancing.
-
-Current product owner: `studio-director` through **#30 — M4 Tavern mystery**.
-
-Current bounded work: **#39 — Put Corren and Nera in the browser scene**.
-
-See `docs/08-agent-studio-operating-model.md`.
-
-## Non-goals right now
-
-Until M4 passes, do **not** build:
-
-- a second mystery;
-- procedural mystery generation;
-- a generic deception planner;
-- background LLM conversations at scale;
-- hundreds of autonomous gossip events;
-- generic town-scale rumor graph;
-- vector database / embeddings by default;
-- schedules/economy/factions;
-- combat/inventory/loot;
-- huge world simulation;
-- full production art pass;
-- voice synthesis / lip sync;
-- monetization/store work.
+`AGENTS.md` prohibits autonomous continuation. Read-only inspection and historical analysis are allowed. Resuming development would require a new explicit decision from the human owner and a deliberate replacement of the stopped status.
