@@ -8,6 +8,22 @@ import type {
 
 export const M0_PUTER_MODEL_ID = 'gpt-5.6-luna';
 
+const extractTextContent = (content: unknown): string | undefined => {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return undefined;
+
+  const parts = content
+    .map((part) => {
+      if (typeof part === 'string') return part;
+      if (typeof part !== 'object' || part === null) return '';
+      const text = 'text' in part ? part.text : undefined;
+      return typeof text === 'string' ? text : '';
+    })
+    .filter((part) => part.length > 0);
+
+  return parts.length > 0 ? parts.join('\n') : undefined;
+};
+
 export class PuterInferenceProvider implements InferenceProvider {
   readonly providerId = 'puter-ai';
   readonly modelId = M0_PUTER_MODEL_ID;
@@ -29,14 +45,13 @@ export class PuterInferenceProvider implements InferenceProvider {
     const startedAt = performance.now();
     const response = await puter.ai.chat(request.messages, {
       model: this.modelId,
-      normalize: true,
       stream: false,
       max_tokens: request.maxTokens,
       temperature: request.temperature
     });
-    const content = response.message?.content;
+    const content = extractTextContent(response.message?.content);
 
-    if (typeof content !== 'string' || content.trim().length === 0) {
+    if (content === undefined || content.trim().length === 0) {
       throw new Error('Puter AI returned an empty or non-text response.');
     }
 
