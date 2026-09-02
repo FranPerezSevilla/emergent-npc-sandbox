@@ -1,4 +1,5 @@
 import type { InferenceMessage } from './inference.ts';
+import type { NpcMemory, RelationshipState } from './memory-state.ts';
 import type { ConversationTurn, NpcProfile } from './npc-types.ts';
 import type { Belief } from './world-state.ts';
 
@@ -22,6 +23,19 @@ const serializeBeliefs = (beliefs: readonly Belief[]): string => {
     .join('\n');
 };
 
+const serializeMemories = (memories: readonly NpcMemory[]): string => {
+  if (memories.length === 0) return '(no relevant stored memories selected for this turn)';
+  return memories
+    .map(
+      (memory) =>
+        `- [${memory.id}] ${memory.summary}\n  importance: ${memory.importance}\n  provenance: ${memory.provenance.kind} — ${memory.provenance.description}`
+    )
+    .join('\n');
+};
+
+const serializeRelationship = (relationship?: RelationshipState): string =>
+  relationship ? `trust: ${relationship.trust} (range -2 to +2)` : '(no relationship state supplied)';
+
 const serializeRecentConversation = (turns: ConversationTurn[]): string => {
   if (turns.length === 0) return '(no prior turns)';
   return JSON.stringify(turns.slice(-8));
@@ -41,7 +55,9 @@ export const buildNpcMessages = (
   playerUtterance: string,
   recentConversation: ConversationTurn[],
   retryReason?: string,
-  beliefs: readonly Belief[] = []
+  beliefs: readonly Belief[] = [],
+  memories: readonly NpcMemory[] = [],
+  relationship?: RelationshipState
 ): InferenceMessage[] => {
   const retryInstruction = retryReason
     ? `\nA previous candidate was rejected by deterministic validation for: ${retryReason}. Produce a fresh valid candidate. Do not discuss the rejection.`
@@ -78,13 +94,22 @@ The underlying model may know far more than this person. Never use expertise abo
 ${serializeCompetence(profile)}
 
 PERMITTED KNOWLEDGE
-These are specific world facts already known by ${profile.name}. If a requested fact is not here, in NPC BELIEFS, or in the recent conversation, ${profile.name} does not know it. Do not invent a hidden fact to be helpful.
+These are specific world facts already known by ${profile.name}. If a requested fact is not here, in NPC BELIEFS, SELECTED MEMORIES, or in the recent conversation, ${profile.name} does not know it. Do not invent a hidden fact to be helpful.
 ${serializeFacts(profile)}
 
 NPC BELIEFS
 These are beliefs held by ${profile.name}. A belief may be incomplete or wrong. It is testimony context, NOT objective world truth.
 Speak consistently with the belief's confidence and provenance. Do not upgrade an inference into an eyewitness claim. Do not correct a belief using model knowledge or any hidden/global truth. Objective world truth is deliberately not supplied here.
 ${serializeBeliefs(beliefs)}
+
+SELECTED MEMORIES
+These are compact prior experiences recorded and selected by deterministic game code for this turn. They are not model-authored autobiography and they do not grant unrelated world knowledge.
+Use them naturally when relevant. Do not invent extra remembered details, extra past events, or additional relationship changes.
+${serializeMemories(memories)}
+
+RELATIONSHIP WITH PLAYER
+This is authoritative game state. Let it modestly influence warmth, caution, or openness, but never let it rewrite facts, beliefs, competence, or memories.
+${serializeRelationship(relationship)}
 
 RECENT CONVERSATION DATA
 ${serializeRecentConversation(recentConversation)}
