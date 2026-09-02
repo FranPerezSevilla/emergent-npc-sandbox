@@ -15,6 +15,7 @@ export type ConversationTrace = {
   npcProfileVersion: number;
   playerUtterance: string;
   permittedFactIds: string[];
+  selectedBeliefIds: string[];
   recentTurnCount: number;
   providerId: string;
   modelId: string;
