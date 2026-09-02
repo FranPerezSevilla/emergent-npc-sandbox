@@ -4,6 +4,7 @@ import test from 'node:test';
 import { ivenProfile } from '../src/ai/iven.ts';
 import { M3FakeInferenceProvider } from '../src/ai/m3-fake-inference-provider.ts';
 import { NpcConversationEngine } from '../src/ai/npc-conversation-engine.ts';
+import { buildNpcMessages } from '../src/ai/prompt.ts';
 import {
   IVEN_PROPAGATED_CLAIM_BELIEF_ID,
   MARA_TO_IVEN_TRANSFER_ID,
@@ -89,6 +90,20 @@ test('Iven later changes testimony because the transferred belief is supplied', 
     'belief-iven-red-traveler-stayed',
     IVEN_PROPAGATED_CLAIM_BELIEF_ID
   ]);
+});
+
+test('M3 prompt requires conflict integration and exact hearsay attribution', () => {
+  let state = recordPlayerRedTravelerClaimToMara(emptyM3State(), '2026-09-02T06:30:00.000Z');
+  state = transferPlayerClaimFromMaraToIven(state, '2026-09-02T06:31:00.000Z');
+  const ivenBeliefs = [...beliefsForNpc('iven'), ...propagatedBeliefsForNpc(state, 'iven')];
+  const messages = buildNpcMessages(ivenProfile, question, [], undefined, ivenBeliefs);
+  const system = messages.find((message) => message.role === 'system')?.content ?? '';
+
+  assert.match(system, /aboutFactId: world-fact-red-traveler-exit/);
+  assert.match(system, /do not silently discard one/i);
+  assert.match(system, /Preserve provenance chains exactly/i);
+  assert.match(system, /never say the player told Iven Holt directly/i);
+  assert.match(system, /Mara relayed the player's claim to Iven/i);
 });
 
 test('M3 claim and transfer state survives storage round-trip', () => {
