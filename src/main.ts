@@ -13,11 +13,12 @@ import {
 } from 'playcanvas';
 
 import type { ConversationTrace } from './ai/conversation-trace.ts';
+import { correnProfile } from './ai/corren.ts';
 import type { DialogueIntent, DialogueIntentRequest } from './ai/dialogue-metabehavior.ts';
 import type { InferenceProvider } from './ai/inference.ts';
 import { ivenProfile } from './ai/iven.ts';
 import { runM0Benchmark } from './ai/m0-benchmark.ts';
-import { M3FakeInferenceProvider } from './ai/m3-fake-inference-provider.ts';
+import { M4FakeInferenceProvider } from './ai/m4-fake-inference-provider.ts';
 import { maraProfile } from './ai/mara.ts';
 import {
   MARA_BAKER_DEBT_MEMORY_ID,
@@ -29,7 +30,8 @@ import {
   saveM2State,
   selectRelevantMemories
 } from './ai/memory-state.ts';
-import { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
+import { neraProfile } from './ai/nera.ts';
+import type { NpcConversationEngine } from './ai/npc-conversation-engine.ts';
 import type { ConversationTurn, NpcProfile } from './ai/npc-types.ts';
 import {
   M1_OPENROUTER_MODEL_ID,
@@ -46,6 +48,9 @@ import {
   transferPlayerClaimFromMaraToIven
 } from './ai/propagation-state.ts';
 import { beliefsForNpc, m1Beliefs, redTravelerExitFact } from './ai/world-state.ts';
+import { loadM4CaseState } from './m4/ash-letter-case-state.ts';
+import { createAshLetterRuntimeEngine } from './m4/ash-letter-runtime.ts';
+import { initialAshLetterTestimonyPolicyState } from './m4/ash-letter-testimony.ts';
 import { buildSessionExport } from './session-export.ts';
 import './starter.css';
 
@@ -75,47 +80,71 @@ if (openRouterProvider) {
   }
 }
 
+let m2State = loadM2State(localStorage);
 let m3State = loadM3State(localStorage);
-const provider: InferenceProvider = useFakeProvider ? new M3FakeInferenceProvider() : openRouterProvider!;
+const m4CaseState = loadM4CaseState(localStorage);
+const m4TestimonyPolicyState = initialAshLetterTestimonyPolicyState();
+const provider: InferenceProvider = useFakeProvider
+  ? new M4FakeInferenceProvider()
+  : openRouterProvider!;
+const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
+const traces: ConversationTrace[] = [];
+
 const beliefsForRuntimeNpc = (npcId: string) => [
   ...beliefsForNpc(npcId),
   ...propagatedBeliefsForNpc(m3State, npcId)
 ];
-let maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForRuntimeNpc('mara'));
-let ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForRuntimeNpc('iven'));
-const traces: ConversationTrace[] = [];
-const providerReady = useFakeProvider || openRouterProvider?.isSignedIn() === true;
-let m2State = loadM2State(localStorage);
 
-(window as unknown as { __npcTraces: ConversationTrace[] }).__npcTraces = traces;
-(window as unknown as { __m3State: unknown }).__m3State = m3State;
-(window as unknown as { __m2State: unknown }).__m2State = m2State;
-(window as unknown as { __m1TruthBeliefs: unknown }).__m1TruthBeliefs = {
+const createRuntimeEngine = (profile: NpcProfile): NpcConversationEngine =>
+  createAshLetterRuntimeEngine(provider, profile, beliefsForRuntimeNpc(profile.id));
+
+type DebugWindow = Window & {
+  __npcTraces: ConversationTrace[];
+  __m1TruthBeliefs: unknown;
+  __m2State: unknown;
+  __m3State: unknown;
+  __m4State: unknown;
+};
+
+const debugWindow = window as DebugWindow;
+debugWindow.__npcTraces = traces;
+debugWindow.__m1TruthBeliefs = {
   objectiveTruth: redTravelerExitFact,
   beliefs: m1Beliefs
+};
+debugWindow.__m2State = m2State;
+debugWindow.__m3State = m3State;
+debugWindow.__m4State = {
+  caseState: m4CaseState,
+  testimonyPolicyState: m4TestimonyPolicyState
 };
 
 document.body.insertAdjacentHTML(
   'beforeend',
   `<div class="hud">
     <section class="bootstrap-panel">
-      <h1>Emergent NPC Sandbox — M3</h1>
-      <p>Click the scene for mouse look. Move with WASD. Approach Mara or Iven and press E.</p>
-      <p>M3 test: explicitly tell Mara you saw the red-cloaked traveler leave, resolve the Mara → Iven social event in Debug, then ask Iven what he thinks happened.</p>
+      <h1>Emergent NPC Sandbox — M4: The Ash Letter</h1>
+      <p>Click the scene for mouse look. Move with WASD. Approach Mara, Iven, Corren or Nera and press E.</p>
+      <p>Early M4 testimony test: question the four people about the missing magistrate warrant. Free conversation works; evidence inspection, lie-breaking and accusation are not implemented yet.</p>
       <div class="provider-row">
         <span class="provider-badge" id="provider-badge"></span>
         <button class="load-model" id="load-model" type="button">Connect OpenRouter</button>
       </div>
       <div class="model-status" id="model-status"></div>
       <details class="debug-panel">
-        <summary>Debug / M3 information propagation</summary>
-        <p>Claim creation and transfer are explicit game-owned transitions. Generated dialogue cannot grant Iven the rumor.</p>
-        <pre id="m3-state-output"></pre>
-        <button class="load-model" id="m3-transfer" type="button">Resolve Mara → Iven social event</button>
-        <button class="load-model" id="m3-reset-state" type="button">Reset M3 claim + transfer</button>
+        <summary>Debug / M4 testimony and regressions</summary>
+        <p>Corren and Nera receive separate game-owned testimony contexts. Their active policy is visible only in QA traces and this debug area, never in normal dialogue.</p>
+        <pre id="m4-state-output"></pre>
         <button class="load-model" id="export-session" type="button">Export session JSON</button>
         <p>Last trace below. All traces remain available as <code>window.__npcTraces</code>.</p>
         <pre id="trace-output">No inference trace yet.</pre>
+        <details>
+          <summary>M3 regression / information propagation</summary>
+          <p>Tell Mara the explicit red-traveler claim, then resolve the deterministic Mara → Iven social event.</p>
+          <pre id="m3-state-output"></pre>
+          <button class="load-model" id="m3-transfer" type="button">Resolve Mara → Iven social event</button>
+          <button class="load-model" id="m3-reset-state" type="button">Reset M3 claim + transfer</button>
+        </details>
         <details>
           <summary>M2 regression / memory &amp; relationship</summary>
           <p>Only structured memory/relationship state persists. Raw dialogue turns are deliberately not saved.</p>
@@ -149,12 +178,12 @@ document.body.insertAdjacentHTML(
       <button class="load-model" id="m2-help-mara" type="button" hidden>Give Mara 3 silver for baker debt</button>
       <div class="dialogue-intents" id="dialogue-intents" aria-label="Quick dialogue intents">
         <button class="dialogue-chip" type="button" data-dialogue-intent="ask_observation">¿Qué viste?</button>
-        <button class="dialogue-chip" type="button" data-dialogue-intent="ask_rumor">¿Qué se rumorea?</button>
+        <button class="dialogue-chip" type="button" data-dialogue-intent="ask_rumor">¿Qué sabes?</button>
         <button class="dialogue-chip" type="button" data-dialogue-intent="ask_source">¿Quién te lo contó?</button>
-        <button class="dialogue-chip" type="button" data-dialogue-intent="challenge">No te creo</button>
+        <button class="dialogue-chip" type="button" data-dialogue-intent="challenge">Tu versión no encaja</button>
       </div>
       <form class="dialogue-form" id="dialogue-form">
-        <input id="dialogue-input" autocomplete="off" maxlength="500" placeholder="Say anything…" aria-label="Message to NPC" />
+        <input id="dialogue-input" autocomplete="off" maxlength="500" placeholder="Pregunta por la orden desaparecida…" aria-label="Message to NPC" />
         <button id="dialogue-send" type="submit">Send</button>
       </form>
     </section>
@@ -178,6 +207,8 @@ const darkStone = makeMaterial(new Color(0.12, 0.13, 0.16));
 const wood = makeMaterial(new Color(0.27, 0.17, 0.12));
 const maraCloth = makeMaterial(new Color(0.34, 0.18, 0.42), 0.22);
 const ivenCloth = makeMaterial(new Color(0.18, 0.28, 0.36), 0.2);
+const correnCloth = makeMaterial(new Color(0.42, 0.12, 0.13), 0.24);
+const neraCloth = makeMaterial(new Color(0.18, 0.34, 0.23), 0.2);
 const npcSkin = makeMaterial(new Color(0.57, 0.47, 0.43), 0.12);
 
 const addBlock = (
@@ -222,8 +253,10 @@ addBlock('tavern-door', [0, 1.2, -7], [1.5, 2.4, 0.24], wood);
 addBlock('crate-left', [-3.3, 0.55, 1.4], [1.1, 1.1, 1.1], wood, [0, 12, 0]);
 addBlock('crate-right', [3.6, 0.35, -0.2], [1.4, 0.7, 1], wood, [0, -10, 0]);
 
-const maraEntity = addNpc(maraProfile, [-1.5, 1.05, -3.4], maraCloth);
-const ivenEntity = addNpc(ivenProfile, [2.4, 1.05, -2.9], ivenCloth);
+const maraEntity = addNpc(maraProfile, [-1.7, 1.05, -3.7], maraCloth);
+const ivenEntity = addNpc(ivenProfile, [2.5, 1.05, -3.2], ivenCloth);
+const correnEntity = addNpc(correnProfile, [-3.8, 1.05, -0.5], correnCloth);
+const neraEntity = addNpc(neraProfile, [3.8, 1.05, 1.7], neraCloth);
 
 const player = new Entity('player');
 player.setPosition(0, 1.65, 5.5);
@@ -245,16 +278,30 @@ const runtimeNpcs: RuntimeNpc[] = [
   {
     profile: maraProfile,
     entity: maraEntity,
-    engine: maraEngine,
+    engine: createRuntimeEngine(maraProfile),
     turns: [],
     intro: 'Mara looks up as you approach.'
   },
   {
     profile: ivenProfile,
     entity: ivenEntity,
-    engine: ivenEngine,
+    engine: createRuntimeEngine(ivenProfile),
     turns: [],
     intro: 'Iven pauses his patrol and gives you a measured look.'
+  },
+  {
+    profile: correnProfile,
+    entity: correnEntity,
+    engine: createRuntimeEngine(correnProfile),
+    turns: [],
+    intro: 'Corren straightens his coat and waits for your question.'
+  },
+  {
+    profile: neraProfile,
+    entity: neraEntity,
+    engine: createRuntimeEngine(neraProfile),
+    turns: [],
+    intro: 'Nera stops her work but keeps a guarded distance.'
   }
 ];
 
@@ -281,6 +328,7 @@ const loadModel = document.getElementById('load-model') as HTMLButtonElement;
 const modelStatus = document.getElementById('model-status') as HTMLDivElement;
 const npcName = document.getElementById('npc-name') as HTMLElement;
 const npcState = document.getElementById('npc-state') as HTMLSpanElement;
+const m4StateOutput = document.getElementById('m4-state-output') as HTMLPreElement;
 const m3StateOutput = document.getElementById('m3-state-output') as HTMLPreElement;
 const m3TellMara = document.getElementById('m3-tell-mara') as HTMLButtonElement;
 const m3Transfer = document.getElementById('m3-transfer') as HTMLButtonElement;
@@ -295,10 +343,10 @@ const benchmarkButton = document.getElementById('run-benchmark') as HTMLButtonEl
 const benchmarkOutput = document.getElementById('benchmark-output') as HTMLPreElement;
 
 providerBadge.textContent = useFakeProvider
-  ? 'FAKE M3 — deterministic information propagation fixture'
+  ? 'FAKE M4 — deterministic four-NPC testimony fixture'
   : `REMOTE AI — OpenRouter / ${M1_OPENROUTER_MODEL_ID}`;
 modelStatus.textContent = useFakeProvider
-  ? 'Deterministic M3 fake mode enabled by ?provider=fake.'
+  ? 'Deterministic M4 fake mode enabled by ?provider=fake.'
   : authCallbackError
     ? `OpenRouter connection failed: ${authCallbackError}`
     : providerReady
@@ -306,6 +354,17 @@ modelStatus.textContent = useFakeProvider
       : 'Connect OpenRouter. Authorization uses browser OAuth PKCE; no API key is embedded in this app.';
 loadModel.hidden = useFakeProvider;
 loadModel.textContent = providerReady ? 'OpenRouter connected' : 'Connect OpenRouter';
+
+m4StateOutput.textContent = JSON.stringify(
+  {
+    scope: 'Early M4 testimony test; no lie-break, evidence inspection or accusation yet.',
+    runtimeNpcIds: runtimeNpcs.map((runtime) => runtime.profile.id),
+    caseState: m4CaseState,
+    testimonyPolicyState: m4TestimonyPolicyState
+  },
+  null,
+  2
+);
 m1StateOutput.textContent = JSON.stringify(
   {
     objectiveTruth: redTravelerExitFact,
@@ -315,13 +374,10 @@ m1StateOutput.textContent = JSON.stringify(
   2
 );
 
-const refreshM3Engines = (): void => {
-  maraEngine = new NpcConversationEngine(provider, maraProfile, beliefsForRuntimeNpc('mara'));
-  ivenEngine = new NpcConversationEngine(provider, ivenProfile, beliefsForRuntimeNpc('iven'));
-  const maraRuntime = runtimeNpcs.find((runtime) => runtime.profile.id === 'mara');
-  const ivenRuntime = runtimeNpcs.find((runtime) => runtime.profile.id === 'iven');
-  if (maraRuntime) maraRuntime.engine = maraEngine;
-  if (ivenRuntime) ivenRuntime.engine = ivenEngine;
+const refreshRuntimeEngines = (): void => {
+  for (const runtime of runtimeNpcs) {
+    runtime.engine = createRuntimeEngine(runtime.profile);
+  }
 };
 
 const updateM3Actions = (): void => {
@@ -351,11 +407,9 @@ const renderM3State = (): void => {
     null,
     2
   );
-  (window as unknown as { __m3State: unknown }).__m3State = m3State;
+  debugWindow.__m3State = m3State;
   updateM3Actions();
 };
-
-renderM3State();
 
 const updateM2Action = (): void => {
   const talkingToMara = activeNpc?.profile.id === 'mara';
@@ -376,10 +430,11 @@ const renderM2State = (): void => {
     null,
     2
   );
-  (window as unknown as { __m2State: unknown }).__m2State = m2State;
+  debugWindow.__m2State = m2State;
   updateM2Action();
 };
 
+renderM3State();
 renderM2State();
 
 const appendMessage = (speaker: string, text: string): void => {
@@ -464,9 +519,9 @@ m3TellMara.addEventListener('click', () => {
   m3State = recordPlayerRedTravelerClaimToMara(m3State, new Date().toISOString());
   if (m3State !== previousState) {
     saveM3State(localStorage, m3State);
-    refreshM3Engines();
-    appendMessage('You', "[You tell Mara that you personally saw the red-cloaked traveler leave through the back door after midnight.]");
-    appendMessage('System', 'M3 claim recorded with source=player and recipient=Mara. Now resolve the Mara → Iven social event in Debug.');
+    refreshRuntimeEngines();
+    appendMessage('You', '[You tell Mara that you personally saw the red-cloaked traveler leave through the back door after midnight.]');
+    appendMessage('System', 'M3 claim recorded with source=player and recipient=Mara. Resolve the Mara → Iven social event in Debug to continue that regression path.');
     modelStatus.textContent = 'M3 structured claim recorded for Mara.';
   }
   renderM3State();
@@ -478,7 +533,7 @@ m3Transfer.addEventListener('click', () => {
   m3State = transferPlayerClaimFromMaraToIven(m3State, new Date().toISOString());
   if (m3State !== previousState) {
     saveM3State(localStorage, m3State);
-    refreshM3Engines();
+    refreshRuntimeEngines();
     modelStatus.textContent = 'M3 social event resolved: Mara relayed the player claim to Iven as hearsay.';
   }
   renderM3State();
@@ -486,7 +541,7 @@ m3Transfer.addEventListener('click', () => {
 
 m3ResetState.addEventListener('click', () => {
   m3State = resetM3State(localStorage);
-  refreshM3Engines();
+  refreshRuntimeEngines();
   traces.length = 0;
   traceOutput.textContent = 'No inference trace yet.';
   modelStatus.textContent = 'M3 claim and transfer state reset.';
@@ -520,7 +575,11 @@ exportSessionButton.addEventListener('click', () => {
         authoredBeliefs: m1Beliefs
       },
       m2: m2State,
-      m3: m3State
+      m3: m3State,
+      m4: {
+        caseState: m4CaseState,
+        testimonyPolicyState: m4TestimonyPolicyState
+      }
     }
   });
 
@@ -533,7 +592,7 @@ exportSessionButton.addEventListener('click', () => {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
-  modelStatus.textContent = 'Session JSON exported. Upload that file to ChatGPT for full-session validation.';
+  modelStatus.textContent = 'Session JSON exported. It includes all four conversations, traces and M4 case/testimony state.';
 });
 
 m2HelpMara.addEventListener('click', () => {
@@ -543,7 +602,7 @@ m2HelpMara.addEventListener('click', () => {
   if (m2State !== previousState) {
     saveM2State(localStorage, m2State);
     appendMessage('You', "[You give Mara three silver coins to help cover the baker's overdue debt.]");
-    appendMessage('System', 'M2 memory recorded. Close the conversation or reload the page, then ask Mara whether she remembers what you did for her.');
+    appendMessage('System', 'M2 memory recorded. Close the conversation or reload, then ask Mara whether she remembers what you did.');
     modelStatus.textContent = 'M2 structured memory recorded · Mara trust is now +1.';
   }
   renderM2State();
@@ -567,8 +626,11 @@ benchmarkButton.addEventListener('click', async () => {
       modelStatus.textContent = 'Connect OpenRouter before running the M0 regression probes.';
       return;
     }
+    const maraRuntime = runtimeNpcs.find((runtime) => runtime.profile.id === 'mara');
+    if (!maraRuntime) throw new Error('Mara runtime is missing.');
+
     setConversationBusy(true);
-    const records = await runM0Benchmark(maraEngine, (completed, total, probe) => {
+    const records = await runM0Benchmark(maraRuntime.engine, (completed, total, probe) => {
       modelStatus.textContent = `M0 regression ${completed}/${total}: ${probe.id}`;
     });
     benchmarkOutput.textContent = JSON.stringify(records, null, 2);
@@ -610,12 +672,30 @@ document.addEventListener('mousemove', (event) => {
 
 dialogueClose.addEventListener('click', closeDialogue);
 
-const quickIntentUtterances: Record<Exclude<DialogueIntent, 'free_text'>, string> = {
+const m3IntentUtterances: Record<Exclude<DialogueIntent, 'free_text'>, string> = {
   ask_observation: '¿Qué viste exactamente sobre el viajero de la capa roja?',
   ask_rumor: '¿Qué has oído decir sobre el viajero de la capa roja?',
   ask_source: '¿Quién te contó eso sobre el viajero de la capa roja?',
   challenge: 'No te creo. Creo que te equivocas sobre el viajero de la capa roja.'
 };
+
+const m4TestimonyUtterances: Record<Exclude<DialogueIntent, 'free_text'>, string> = {
+  ask_observation: '¿Qué viste o hiciste anoche respecto a la orden desaparecida?',
+  ask_rumor: '¿Qué sabes sobre la orden desaparecida?',
+  ask_source: '¿Quién puede confirmar lo que dices sobre la orden?',
+  challenge: 'Tu versión no encaja. Dime qué ocurrió realmente con la orden.'
+};
+
+const usesM3StructuredIntents = (runtime: RuntimeNpc): boolean =>
+  runtime.profile.id === 'mara' || runtime.profile.id === 'iven';
+
+const quickIntentRequest = (
+  runtime: RuntimeNpc,
+  intent: Exclude<DialogueIntent, 'free_text'>
+): DialogueIntentRequest =>
+  usesM3StructuredIntents(runtime)
+    ? { intent, topicFactId: redTravelerExitFact.id }
+    : { intent: 'free_text' };
 
 const submitDialogueTurn = async (
   playerUtterance: string,
@@ -648,7 +728,7 @@ const submitDialogueTurn = async (
     );
     traces.push(result.trace);
     traceOutput.textContent = JSON.stringify(result.trace, null, 2);
-    console.debug('M3 ConversationTrace', result.trace);
+    console.debug('M4 ConversationTrace', result.trace);
 
     const providerFailure = result.trace.attempts.find((attempt) => attempt.providerError !== undefined);
     if (providerFailure?.providerError) {
@@ -665,9 +745,9 @@ const submitDialogueTurn = async (
       { speaker: 'npc', text: result.response.dialogue }
     );
     const decision = result.trace.socialDialogueDecision;
-    modelStatus.textContent = `OpenRouter connected · ${decision.intent} · ${decision.focus}/${decision.stance} · ${result.trace.totalLatencyMs} ms.`;
+    modelStatus.textContent = `${useFakeProvider ? 'Fake M4' : 'OpenRouter connected'} · ${decision.intent} · ${decision.focus}/${decision.stance} · ${result.trace.totalLatencyMs} ms.`;
   } catch (error) {
-    console.error('M3 conversation orchestration failed before a validated response could be produced', error);
+    console.error('M4 conversation orchestration failed before a validated response could be produced', error);
     const message = error instanceof Error ? error.message : String(error);
     modelStatus.textContent = `Conversation system error: ${message}`;
     appendMessage('System', 'Conversation failed before a validated NPC response could be produced.');
@@ -680,11 +760,11 @@ const submitDialogueTurn = async (
 for (const button of dialogueIntentButtons) {
   button.addEventListener('click', () => {
     const intent = button.dataset.dialogueIntent as Exclude<DialogueIntent, 'free_text'> | undefined;
-    if (!intent || !(intent in quickIntentUtterances)) return;
-    void submitDialogueTurn(quickIntentUtterances[intent], {
-      intent,
-      topicFactId: redTravelerExitFact.id
-    });
+    if (!intent || !activeNpc) return;
+    const utterances = usesM3StructuredIntents(activeNpc)
+      ? m3IntentUtterances
+      : m4TestimonyUtterances;
+    void submitDialogueTurn(utterances[intent], quickIntentRequest(activeNpc, intent));
   });
 }
 
