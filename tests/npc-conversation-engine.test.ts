@@ -10,16 +10,16 @@ class ScriptedProvider implements InferenceProvider {
   readonly providerId = 'scripted';
   readonly modelId = 'scripted-model';
   calls = 0;
-  private readonly outputs: Array<string | Error>;
+  private readonly outputs: unknown[];
 
-  constructor(outputs: Array<string | Error>) {
+  constructor(outputs: unknown[]) {
     this.outputs = outputs;
   }
 
   async generate(_request: InferenceProviderRequest): Promise<InferenceProviderResult> {
     const output = this.outputs[Math.min(this.calls, this.outputs.length - 1)];
     this.calls += 1;
-    if (output instanceof Error) throw output;
+    if (typeof output !== 'string') throw output;
     return {
       text: output,
       providerId: this.providerId,
@@ -65,4 +65,24 @@ test('raw provider errors never become NPC dialogue', async () => {
   assert.equal(result.trace.finalSource, 'fallback');
   assert.match(result.trace.attempts[0]?.providerError ?? '', /SECRET_NETWORK_STACK_TOKEN/);
   assert.doesNotMatch(result.response.dialogue, /SECRET_NETWORK_STACK_TOKEN/);
+});
+
+test('structured provider errors keep useful fields but redact sensitive ones', async () => {
+  const provider = new ScriptedProvider([
+    {
+      code: 'model_not_available',
+      message: 'Requested model cannot be used by this account.',
+      status: 403,
+      access_token: 'DO_NOT_LOG_THIS'
+    }
+  ]);
+  const engine = new NpcConversationEngine(provider, maraProfile);
+  const result = await engine.respond('¿Cómo va la taberna?', []);
+  const providerError = result.trace.attempts[0]?.providerError ?? '';
+
+  assert.match(providerError, /model_not_available/);
+  assert.match(providerError, /Requested model cannot be used/);
+  assert.match(providerError, /403/);
+  assert.doesNotMatch(providerError, /DO_NOT_LOG_THIS/);
+  assert.doesNotMatch(result.response.dialogue, /model_not_available|403/i);
 });
