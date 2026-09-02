@@ -8,7 +8,15 @@ The M1 human playtest was blocked by Puter with `phone_verification_required`. T
 
 M1 switches the default remote inference path to OpenRouter using browser-side OAuth PKCE. No developer API key is embedded in the public Pages bundle and no application backend is required for this prototype experiment.
 
-Model candidate: `openai/gpt-oss-20b:free`.
+### Model candidate history
+
+Initial candidate: `openai/gpt-oss-20b:free`.
+
+Human runtime result on 2026-09-02: OpenRouter returned HTTP 404 with `This model is unavailable for free`, so that endpoint failed the availability gate before M1 dialogue quality could be tested.
+
+Current candidate: `minimax/minimax-m3:free`.
+
+At the time of selection OpenRouter listed the MiniMax M3 free endpoint at zero token cost, with text output, high recent availability, and support for `response_format` JSON. The adapter therefore requests `response_format: { type: "json_object" }` while the existing deterministic response validator remains authoritative.
 
 Reasons for this bounded experiment:
 
