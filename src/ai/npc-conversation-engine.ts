@@ -3,6 +3,7 @@ import type { InferenceLoadProgress, InferenceProvider } from './inference.ts';
 import type { ConversationTurn, NpcProfile, NpcResponseV1 } from './npc-types.ts';
 import { buildNpcMessages } from './prompt.ts';
 import { validateNpcResponse } from './response-validation.ts';
+import type { Belief } from './world-state.ts';
 
 export type NpcConversationResult = {
   response: NpcResponseV1;
@@ -12,15 +13,15 @@ export type NpcConversationResult = {
 const likelySpanish = (text: string): boolean =>
   /[¿¡áéíóúñ]|\b(?:hola|qué|que|cómo|como|dime|sabes|eres|tienes|puedes|por qué|dónde|quién)\b/i.test(text);
 
-const fallbackResponse = (playerUtterance: string, providerFailed: boolean): NpcResponseV1 => ({
+const fallbackResponse = (profile: NpcProfile, playerUtterance: string, providerFailed: boolean): NpcResponseV1 => ({
   schemaVersion: 1,
   dialogue: likelySpanish(playerUtterance)
     ? providerFailed
-      ? 'Mara pierde el hilo un instante y niega con la cabeza. «Repítelo.»'
-      : 'Mara frunce el ceño. «No sé de qué estás hablando.»'
+      ? `${profile.name} pierde el hilo un instante y niega con la cabeza. «Repítelo.»`
+      : `${profile.name} frunce el ceño. «No sé de qué estás hablando.»`
     : providerFailed
-      ? 'Mara loses the thread for a moment and shakes her head. “Say that again.”'
-      : 'Mara frowns. “I have no idea what you are talking about.”',
+      ? `${profile.name} loses the thread for a moment and shakes their head. “Say that again.”`
+      : `${profile.name} frowns. “I have no idea what you are talking about.”`,
   emotion: 'confused',
   gesture: 'shake_head',
   intent: 'continue'
@@ -73,10 +74,17 @@ const safeErrorMessage = (error: unknown): string => {
 export class NpcConversationEngine {
   readonly provider: InferenceProvider;
   readonly profile: NpcProfile;
+  readonly beliefs: readonly Belief[];
 
-  constructor(provider: InferenceProvider, profile: NpcProfile) {
+  constructor(provider: InferenceProvider, profile: NpcProfile, beliefs: readonly Belief[] = []) {
+    const foreignBelief = beliefs.find((belief) => belief.ownerNpcId !== profile.id);
+    if (foreignBelief) {
+      throw new Error(`Belief ${foreignBelief.id} belongs to ${foreignBelief.ownerNpcId}, not ${profile.id}.`);
+    }
+
     this.provider = provider;
     this.profile = profile;
+    this.beliefs = Object.freeze([...beliefs]);
   }
 
   async initialize(onProgress?: (progress: InferenceLoadProgress) => void): Promise<void> {
@@ -90,7 +98,13 @@ export class NpcConversationEngine {
     let providerFailed = false;
 
     for (const attempt of [1, 2] as const) {
-      const messages = buildNpcMessages(this.profile, playerUtterance, recentConversation, retryReason);
+      const messages = buildNpcMessages(
+        this.profile,
+        playerUtterance,
+        recentConversation,
+        retryReason,
+        this.beliefs
+      );
 
       try {
         const result = await this.provider.generate({
@@ -131,7 +145,7 @@ export class NpcConversationEngine {
       }
     }
 
-    const response = fallbackResponse(playerUtterance, providerFailed);
+    const response = fallbackResponse(this.profile, playerUtterance, providerFailed);
     const trace = this.makeTrace(
       playerUtterance,
       recentConversation,
@@ -158,6 +172,7 @@ export class NpcConversationEngine {
       npcProfileVersion: this.profile.version,
       playerUtterance,
       permittedFactIds: this.profile.knownFacts.map((fact) => fact.id),
+      selectedBeliefIds: this.beliefs.map((belief) => belief.id),
       recentTurnCount: recentConversation.length,
       providerId: this.provider.providerId,
       modelId: this.provider.modelId,
